@@ -95,13 +95,13 @@ export default function NewPlanPage() {
   };
 
   const labelStyle = "text-[11px] uppercase font-bold text-gray-500 tracking-widest mb-1.5 flex items-center gap-1.5";
-  const inputStyle = "w-full h-11 px-4 rounded-lg border border-border bg-gray-25 focus:border-plano-500 focus:bg-white focus:outline-none transition-all text-sm font-sans shadow-sm";
+  const inputStyle = "w-full h-11 px-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page focus:border-plano-500 focus:bg-white dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans shadow-sm text-text-primary";
 
   return (
     <div className="flex flex-col gap-8 pb-20 max-w-5xl">
       {/* Header */}
       <div className="flex flex-col gap-3">
-        <Link href="/plans" className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit">
+        <Link href="/plans" className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-400 transition-colors w-fit">
           <ArrowLeft size={14} /> Back to Catalog
         </Link>
         <div className="flex items-center justify-between">
@@ -118,11 +118,11 @@ export default function NewPlanPage() {
         {/* Main Form Area */}
         <div className="lg:col-span-2 flex flex-col gap-8">
           
-          <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8 relative overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-48 h-48 bg-plano-50 rounded-full blur-3xl opacity-40"></div>
+          <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8 relative overflow-hidden">
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-plano-50 dark:bg-white/5 rounded-full blur-3xl opacity-40"></div>
             
-            <div className="flex items-center gap-3 pb-5 border-b border-gray-100 relative">
-              <div className="w-10 h-10 rounded-xl bg-plano-50 text-plano-600 flex items-center justify-center border border-plano-100 shadow-sm">
+            <div className="flex items-center gap-3 pb-5 border-b border-sidebar-hover relative">
+              <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/10 text-plano-600 flex items-center justify-center border border-plano-100 dark:border-sidebar-hover shadow-sm">
                 <Layers size={20} />
               </div>
               <h2 className="text-2xl font-serif font-bold text-text-primary">Core Configuration</h2>
@@ -140,9 +140,9 @@ export default function NewPlanPage() {
                     className={cn(inputStyle, "appearance-none pr-10 cursor-pointer")}
                     disabled={loadingDeps}
                   >
-                    <option value="">Choose product...</option>
+                    <option value="" className="bg-bg-surface text-gray-500">Choose product...</option>
                     {products.map(p => (
-                      <option key={p._id} value={p._id}>{p.name} ({p.type})</option>
+                      <option key={p._id} value={p._id} className="bg-bg-surface text-text-primary">{p.name} ({p.type})</option>
                     ))}
                   </select>
                   {loadingDeps ? (
@@ -178,13 +178,13 @@ export default function NewPlanPage() {
                       className={cn(
                         "flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-300 relative",
                         form.billingCycle === cycle.value 
-                          ? "bg-plano-900 border-plano-900 text-white shadow-lg" 
-                          : "bg-white border-border text-text-secondary hover:border-plano-200"
+                          ? "bg-plano-900 dark:bg-plano-600 border-plano-900 dark:border-plano-600 text-white shadow-lg" 
+                          : "bg-white dark:bg-bg-elevated border-border dark:border-sidebar-hover text-text-secondary hover:border-plano-200"
                       )}
                     >
                       <span className="text-[10px] font-bold uppercase tracking-widest">{cycle.label}</span>
                       {form.billingCycle === cycle.value && (
-                        <div className="absolute -top-2 -right-2 w-5 h-5 bg-success-500 rounded-full flex items-center justify-center text-white border-2 border-white">
+                        <div className="absolute -top-2 -right-2 w-5 h-5 bg-success-500 rounded-full flex items-center justify-center text-white border-2 border-white dark:border-bg-surface">
                           <Check size={10} />
                         </div>
                       )}
@@ -206,9 +206,9 @@ export default function NewPlanPage() {
             </div>
           </section>
 
-          <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8">
-            <div className="flex items-center gap-3 pb-5 border-b border-gray-100">
-              <div className="w-10 h-10 rounded-xl bg-success-50 text-success-600 flex items-center justify-center border border-success-100 shadow-sm">
+          <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
+            <div className="flex items-center gap-3 pb-5 border-b border-sidebar-hover">
+              <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-900/10 text-success-600 flex items-center justify-center border border-success-100 dark:border-sidebar-hover shadow-sm">
                 <IndianRupee size={20} />
               </div>
               <h2 className="text-2xl font-serif font-bold text-text-primary">Pricing & Logistics</h2>
@@ -218,7 +218,7 @@ export default function NewPlanPage() {
               <div className="flex flex-col">
                 <label className={labelStyle}>Price *</label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-gray-200 pr-3 mr-3">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-border dark:border-sidebar-hover pr-3 mr-3">
                     {form.currency === 'INR' ? '₹' : '$'}
                   </div>
                   <input 
@@ -241,7 +241,7 @@ export default function NewPlanPage() {
                     className={cn(inputStyle, "appearance-none pr-10 cursor-pointer")}
                     suppressHydrationWarning
                   >
-                    {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {CURRENCIES.map(c => <option key={c} value={c} className="bg-bg-surface text-text-primary">{c}</option>)}
                   </select>
                   <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
@@ -265,14 +265,14 @@ export default function NewPlanPage() {
              <button 
                type="submit"
                disabled={isSubmitting}
-               className="flex-1 h-14 rounded-xl bg-plano-600 text-white text-lg font-bold hover:bg-black transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3"
+               className="flex-1 h-14 rounded-xl bg-plano-600 dark:bg-plano-500 text-white text-lg font-bold hover:bg-black transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3"
              >
                {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
                {isSubmitting ? 'Creating Plan...' : 'Publish Subscription Plan'}
              </button>
              <Link 
                href="/plans"
-               className="px-10 h-14 rounded-xl border-2 border-border bg-white text-lg font-bold text-text-secondary hover:bg-gray-50 transition-all flex items-center justify-center"
+               className="px-10 h-14 rounded-xl border-2 border-border dark:border-sidebar-hover bg-bg-surface text-lg font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
              >
                Discard
              </Link>
@@ -281,7 +281,7 @@ export default function NewPlanPage() {
 
         {/* Right Sidebar: Features & Preview */}
         <div className="flex flex-col gap-6">
-           <section className="bg-white p-6 rounded-card border border-border shadow-sm flex flex-col gap-6">
+           <section className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
               <label className={labelStyle}>Featured Benefits</label>
               <div className="flex gap-2">
                  <input 
@@ -296,7 +296,7 @@ export default function NewPlanPage() {
                  <button 
                    type="button"
                    onClick={addFeature}
-                   className="w-11 h-11 rounded-lg bg-plano-900 text-white flex items-center justify-center shrink-0 hover:bg-black transition-colors"
+                   className="w-11 h-11 rounded-lg bg-plano-900 text-white flex items-center justify-center shrink-0 hover:bg-black transition-colors shadow-lg"
                  >
                    <Plus size={20} />
                  </button>
@@ -304,12 +304,12 @@ export default function NewPlanPage() {
 
               <div className="flex flex-col gap-2 mt-2">
                  {form.features.length === 0 ? (
-                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
+                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic text-center py-4 border-2 border-dashed border-sidebar-hover rounded-lg">
                      No features listed yet
                    </p>
                  ) : (
                    form.features.map((f, i) => (
-                     <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-border group">
+                     <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-border dark:border-sidebar-hover group">
                         <span className="text-xs font-bold text-text-primary flex items-center gap-2">
                           <Check size={14} className="text-success-600" />
                           {f}
@@ -324,41 +324,41 @@ export default function NewPlanPage() {
            </section>
 
            {/* Plan Preview */}
-           <div className="bg-plano-900 rounded-card p-8 flex flex-col gap-6 text-white shadow-2xl relative overflow-hidden group">
+           <div className="bg-bg-page dark:bg-bg-surface rounded-card p-8 flex flex-col gap-6 shadow-xl relative overflow-hidden group border border-border dark:border-white/5">
               <div className="absolute top-0 right-0 p-4">
-                 <Zap size={24} className="text-plano-400 opacity-20 group-hover:opacity-100 transition-opacity" />
+                 <Zap size={24} className="text-plano-600 dark:text-plano-400 opacity-20 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-plano-500 rounded-full blur-[80px] opacity-20"></div>
+              <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-plano-500 rounded-full blur-[80px] opacity-10"></div>
 
               <div className="flex flex-col gap-1.5 relative">
-                 <span className="text-[10px] font-bold text-plano-400 uppercase tracking-[0.3em]">
+                 <span className="text-[10px] font-bold text-plano-600 dark:text-plano-400 uppercase tracking-[0.3em]">
                    {form.billingCycle.replace('_', ' ')} / {form.currency}
                  </span>
-                 <h3 className="text-3xl font-serif font-bold leading-tight">
+                 <h3 className="text-3xl font-serif font-bold leading-tight line-clamp-1 text-text-primary">
                    {form.name || 'Untitled Plan'}
                  </h3>
               </div>
 
               <div className="flex items-baseline gap-1 mt-2">
-                 <span className="text-4xl font-serif font-bold">{formatCurrency(Number(form.price) || 0, form.currency)}</span>
-                 <span className="text-xs font-bold text-plano-400 uppercase">/ {form.billingCycle.split('_')[0]}</span>
+                 <span className="text-4xl font-serif font-bold text-text-primary">{formatCurrency(Number(form.price) || 0, form.currency)}</span>
+                 <span className="text-xs font-bold text-plano-600 dark:text-plano-400 uppercase">/ {form.billingCycle.split('_')[0]}</span>
               </div>
 
-              <div className="flex flex-col gap-3 mt-4 border-t border-white/10 pt-6">
+              <div className="flex flex-col gap-3 mt-4 border-t border-border dark:border-white/10 pt-6">
                  {form.features.slice(0, 4).map((f, i) => (
-                   <div key={i} className="flex items-center gap-3 text-xs font-medium text-plano-100">
-                      <Sparkles size={12} className="text-plano-400 shrink-0" />
+                   <div key={i} className="flex items-center gap-3 text-xs font-medium text-text-secondary dark:text-plano-100">
+                      <Sparkles size={12} className="text-plano-600 dark:text-plano-400 shrink-0" />
                       {f}
                    </div>
                  ))}
-                 {form.features.length > 4 && (
-                   <div className="text-[10px] font-bold uppercase tracking-widest text-plano-400 ml-6">
-                     + {form.features.length - 4} More Benefits
+                 {form.features.length === 0 && (
+                   <div className="text-[10px] italic text-text-tertiary dark:text-plano-400/50 uppercase tracking-widest">
+                     Features will appear here
                    </div>
                  )}
               </div>
 
-              <button disabled type="button" className="w-full h-12 rounded-xl bg-white text-plano-900 font-bold text-sm shadow-xl">
+              <button disabled type="button" className="w-full h-12 rounded-xl bg-plano-600 dark:bg-white text-white dark:text-plano-900 font-bold text-sm shadow-xl active:scale-95 transition-all">
                  Select This Plan
               </button>
            </div>

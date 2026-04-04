@@ -125,7 +125,7 @@ export default function NewQuotationPage() {
   };
 
   const labelStyle = "text-[11px] uppercase font-bold text-gray-500 tracking-widest mb-1.5 flex items-center gap-1.5";
-  const inputStyle = "w-full h-11 px-4 rounded-lg border border-border bg-gray-25 focus:border-plano-500 focus:bg-white focus:outline-none transition-all text-sm font-sans shadow-sm";
+  const inputStyle = "w-full h-11 px-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans shadow-sm text-text-primary";
 
   return (
     <div className="flex flex-col gap-8 pb-20 max-w-5xl">
@@ -149,9 +149,9 @@ export default function NewQuotationPage() {
         <div className="lg:col-span-8 flex flex-col gap-8">
           
           {/* Section 1: Parties involved */}
-          <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8 relative overflow-hidden">
-             <div className="flex items-center gap-3 pb-5 border-b border-gray-100 relative">
-                <div className="w-10 h-10 rounded-xl bg-plano-50 text-plano-600 flex items-center justify-center border border-plano-100 shadow-sm">
+          <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8 relative overflow-hidden">
+             <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover relative">
+                <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center border border-plano-100 dark:border-sidebar-hover shadow-sm">
                   <UserCircle size={20} />
                 </div>
                 <h2 className="text-2xl font-serif font-bold text-text-primary">Customer Profile</h2>
@@ -168,9 +168,9 @@ export default function NewQuotationPage() {
                       onChange={(e) => setForm({...form, userId: e.target.value})}
                       className={cn(inputStyle, "appearance-none pr-10 cursor-pointer")}
                     >
-                      <option value="">Search internal/portal users...</option>
+                      <option value="" className="bg-bg-surface text-gray-500">Search internal/portal users...</option>
                       {users.map(u => (
-                        <option key={u._id} value={u._id}>{u.name} ({u.email})</option>
+                        <option key={u._id} value={u._id} className="bg-bg-surface text-text-primary">{u.name} ({u.email})</option>
                       ))}
                     </select>
                     {loadingDeps ? (
@@ -197,16 +197,16 @@ export default function NewQuotationPage() {
           </section>
 
           {/* Section 2: Items Configuration */}
-          <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8">
-             <div className="flex items-center gap-3 pb-5 border-b border-gray-100">
-                <div className="w-10 h-10 rounded-xl bg-success-50 text-success-600 flex items-center justify-center border border-success-100 shadow-sm">
+          <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
+             <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover">
+                <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-900/10 text-success-600 flex items-center justify-center border border-success-100 dark:border-sidebar-hover shadow-sm">
                   <Plus size={20} />
                 </div>
                 <h2 className="text-2xl font-serif font-bold text-text-primary">Line Items</h2>
              </div>
 
              {/* Add Item Row */}
-             <div className="p-6 bg-gray-50 rounded-xl border border-border flex flex-col gap-6">
+             <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-xl border border-border dark:border-sidebar-hover flex flex-col gap-6">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                    <div className="md:col-span-6 flex flex-col">
                       <label className={labelStyle}>Product</label>
@@ -216,8 +216,8 @@ export default function NewQuotationPage() {
                         onChange={(e) => handleProductSelect(e.target.value)}
                         className={inputStyle}
                       >
-                         <option value="">Select offering...</option>
-                         {products.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                         <option value="" className="bg-bg-surface text-gray-500">Select offering...</option>
+                         {products.map(p => <option key={p._id} value={p._id} className="bg-bg-surface text-text-primary">{p.name}</option>)}
                       </select>
                    </div>
                    <div className="md:col-span-2 flex flex-col">
@@ -234,7 +234,7 @@ export default function NewQuotationPage() {
                    <div className="md:col-span-4 flex flex-col">
                       <label className={labelStyle}>Unit Rate</label>
                       <div className="relative">
-                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold pr-2 border-r border-gray-100 mr-2">₹</div>
+                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold pr-2 border-r border-border dark:border-sidebar-hover mr-2">₹</div>
                          <input 
                            suppressHydrationWarning
                            type="number" 
@@ -259,15 +259,15 @@ export default function NewQuotationPage() {
              <div className="overflow-x-auto mt-4">
                 <table className="w-full text-left">
                    <thead>
-                      <tr className="border-b border-border bg-gray-50/50">
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Selected Item</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-center">Unit Price</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-center whitespace-nowrap">Qty</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right">Total</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right">Action</th>
+                      <tr className="border-b border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/10">
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Selected Item</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center">Unit Price</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center whitespace-nowrap">Qty</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right">Total</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right">Action</th>
                       </tr>
                    </thead>
-                   <tbody className="divide-y divide-gray-100">
+                   <tbody className="divide-y divide-border dark:divide-sidebar-hover">
                       {form.items.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="py-20 text-center">
@@ -276,7 +276,7 @@ export default function NewQuotationPage() {
                         </tr>
                       ) : (
                         form.items.map((item, i) => (
-                           <tr key={i} className="group hover:bg-gray-25 transition-colors">
+                           <tr key={i} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
                               <td className="py-4 px-6">
                                  <span className="text-sm font-bold text-text-primary">{item.name}</span>
                               </td>
@@ -303,7 +303,7 @@ export default function NewQuotationPage() {
           </section>
 
           {/* Section 3: Notes & T&C */}
-          <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-6">
+          <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
              <label className={labelStyle}>Internal Notes & Terms</label>
              <textarea 
                rows={4}
@@ -353,13 +353,13 @@ export default function NewQuotationPage() {
 
               <div className="flex flex-col gap-4 relative">
                  <button 
-                   type="submit"
-                   disabled={isSubmitting}
-                   className="h-14 w-full rounded-xl bg-white text-plano-950 font-bold text-sm shadow-xl hover:bg-gray-100 transition-all flex items-center justify-center gap-3 disabled:opacity-60"
-                 >
-                    {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
-                    {isSubmitting ? 'Issuing Quote...' : 'Issue Performance Quote'}
-                 </button>
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="h-14 w-full rounded-xl bg-plano-400 hover:bg-plano-300 text-plano-950 font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-60 border-2 border-white/20"
+                  >
+                     {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
+                     {isSubmitting ? 'Issuing Quote...' : 'Issue Performance Quote'}
+                  </button>
                  <button type="button" className="text-[10px] font-bold text-plano-400 uppercase tracking-widest hover:text-white transition-colors text-center">
                     Preview Full PDF Document
                  </button>
@@ -367,9 +367,9 @@ export default function NewQuotationPage() {
            </div>
 
            {/* Logistics Info Box */}
-           <div className="bg-white p-6 rounded-card border border-border flex flex-col gap-4">
+           <div className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover flex flex-col gap-4">
               <div className="flex items-start gap-4">
-                 <div className="w-10 h-10 rounded-full bg-info-50 flex items-center justify-center text-info-600 shrink-0">
+                 <div className="w-10 h-10 rounded-full bg-info-50 dark:bg-info-900/20 flex items-center justify-center text-info-600 shrink-0">
                     <Info size={20} />
                  </div>
                  <div className="flex flex-col gap-1">

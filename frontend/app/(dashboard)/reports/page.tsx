@@ -179,8 +179,8 @@ export default function ReportsPage() {
       <div className="flex flex-col lg:flex-row gap-8 pb-12">
          {/* Left Sidebar: Filters */}
          <aside className="w-full lg:w-64 flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
-            <div className="bg-bg-surface p-6 rounded-card border border-border shadow-sm flex flex-col gap-6">
-               <div className="flex items-center gap-2 pb-4 border-b border-gray-100">
+         <div className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
+               <div className="flex items-center gap-2 pb-4 border-b border-border dark:border-sidebar-hover">
                   <Filter size={18} className="text-plano-600" />
                   <h3 className="text-[11px] uppercase font-bold text-text-primary tracking-widest">Report Filters</h3>
                </div>
@@ -194,7 +194,7 @@ export default function ReportsPage() {
                            onClick={() => setPeriod(p.value)}
                            className={cn(
                               "w-full text-left px-3 py-2.5 rounded text-xs font-bold transition-all",
-                              period === p.value ? "bg-plano-900 text-white shadow-md shadow-plano-200" : "text-gray-500 hover:bg-gray-50 hover:text-plano-600"
+                              period === p.value ? "bg-plano-600 dark:bg-plano-500 text-white shadow-md" : "text-gray-500 hover:bg-bg-page hover:text-plano-600 dark:hover:text-plano-400"
                            )}
                         >
                            {p.label}
@@ -203,23 +203,23 @@ export default function ReportsPage() {
                   </div>
                </div>
 
-               <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-gray-100">
+               <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border dark:border-sidebar-hover">
                   <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest flex items-center gap-1.5">
                      <Calendar size={12} /> Custom Range
                   </span>
                   <div className="flex flex-col gap-3">
                      <div className="flex flex-col gap-1">
                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter ml-1">From</span>
-                        <input type="date" className="w-full h-9 px-3 rounded border border-border bg-gray-50 text-[10px] font-bold font-mono" />
+                        <input type="date" className="w-full h-9 px-3 rounded border border-border dark:border-sidebar-hover bg-gray-50 dark:bg-bg-page text-text-primary text-[10px] font-bold font-mono focus:outline-none focus:border-plano-500" />
                      </div>
                      <div className="flex flex-col gap-1">
                         <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter ml-1">To</span>
-                        <input type="date" className="w-full h-9 px-3 rounded border border-border bg-gray-50 text-[10px] font-bold font-mono" />
+                        <input type="date" className="w-full h-9 px-3 rounded border border-border dark:border-sidebar-hover bg-gray-50 dark:bg-bg-page text-text-primary text-[10px] font-bold font-mono focus:outline-none focus:border-plano-500" />
                      </div>
                   </div>
                </div>
 
-               <button className="mt-4 w-full h-11 bg-plano-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-plano-700 transition-all shadow-lg shadow-plano-100">
+               <button className="mt-4 w-full h-11 bg-plano-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-plano-700 transition-all shadow-lg">
                   Refresh Analysis
                </button>
             </div>
@@ -239,7 +239,7 @@ export default function ReportsPage() {
                   </div>
                </div>
                <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-2 px-6 h-11 bg-white border border-border rounded-xl text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:bg-gray-50 hover:border-plano-200 transition-all shadow-sm">
+                  <button className="flex items-center gap-2 px-6 h-11 bg-bg-surface border border-border dark:border-sidebar-hover rounded-xl text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover hover:border-plano-200 transition-all shadow-sm">
                      <Download size={16} />
                      Export PDF
                   </button>
@@ -284,7 +284,7 @@ export default function ReportsPage() {
                            </h3>
                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Gross revenue generated across the selected timeline</p>
                         </div>
-                        <div className="px-4 py-2 bg-success-50 border border-success-100 rounded-lg flex items-center gap-2 text-xs font-bold text-success-700">
+                        <div className="px-4 py-2 bg-success-50 dark:bg-success-900/20 border border-success-100 dark:border-success-800 rounded-lg flex items-center gap-2 text-xs font-bold text-success-700 dark:text-success-400">
                            {totalGrowth}% <ArrowUpRight size={14} />
                         </div>
                      </div>
@@ -297,18 +297,20 @@ export default function ReportsPage() {
                                     <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                                  </linearGradient>
                               </defs>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} dy={15} />
-                              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} dx={-15} tickFormatter={(v) => `₹${v.toLocaleString()}`} />
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148,163,184,0.15)" />
+                              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} dy={15} />
+                              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} dx={-15} tickFormatter={(v) => `₹${v.toLocaleString()}`} />
                               <Tooltip
                                  contentStyle={{
                                     borderRadius: '16px',
-                                    border: '1px solid #e2e8f0',
-                                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                                    border: '1px solid rgba(148,163,184,0.2)',
+                                    background: 'var(--color-bg-surface, #1e1828)',
+                                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.3)',
                                     padding: '12px 16px',
-                                    fontWeight: '700'
+                                    fontWeight: '700',
+                                    color: '#e2e8f0'
                                  }}
-                                 itemStyle={{ color: '#2563eb' }}
+                                 itemStyle={{ color: '#818cf8' }}
                               />
                               <Area type="monotone" dataKey="revenue" stroke="#2563eb" strokeWidth={4} fillOpacity={1} fill="url(#revenueGradient)" />
                            </AreaChart>
@@ -368,28 +370,28 @@ export default function ReportsPage() {
 
                   {/* Detailed Transactions Table */}
                   <div className="bg-bg-surface rounded-card border border-border overflow-hidden shadow-sm mt-4">
-                     <div className="p-6 border-b border-border flex items-center justify-between bg-gray-50/30">
+                     <div className="p-6 border-b border-border dark:border-sidebar-hover flex items-center justify-between bg-gray-50/10 dark:bg-white/5">
                         <div className="flex flex-col gap-1">
                            <h3 className="text-[11px] uppercase font-bold text-gray-500 tracking-widest">Transaction Audit Log</h3>
                            <span className="text-[9px] text-gray-400 font-bold uppercase">Latest payments and reconciliations</span>
                         </div>
                         <div className="relative">
                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                           <input type="text" placeholder="Audit lookup..." className="h-9 pl-9 pr-4 rounded-lg border border-border bg-white text-[10px] font-bold focus:outline-none focus:border-plano-500 transition-all w-48" />
+                           <input type="text" placeholder="Audit lookup..." className="h-9 pl-9 pr-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary text-[10px] font-bold focus:outline-none focus:border-plano-500 dark:focus:bg-white/10 transition-all w-48" />
                         </div>
                      </div>
                      <div className="overflow-x-auto">
                         <table className="w-full text-left">
                            <thead>
-                              <tr className="bg-white border-b border-border">
-                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Date</th>
-                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Customer Profile</th>
-                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Method</th>
-                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right whitespace-nowrap">Gross Amount</th>
-                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-center">Status</th>
+                              <tr className="bg-bg-page dark:bg-white/10 border-b border-border dark:border-sidebar-hover">
+                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Date</th>
+                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Customer Profile</th>
+                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Method</th>
+                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right whitespace-nowrap">Gross Amount</th>
+                                 <th className="py-4 px-8 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center">Status</th>
                               </tr>
                            </thead>
-                           <tbody className="divide-y divide-gray-100">
+                           <tbody className="divide-y divide-border dark:divide-sidebar-hover">
                               {transactions.length === 0 ? (
                                  <tr>
                                     <td colSpan={5} className="py-20 text-center">
@@ -401,22 +403,22 @@ export default function ReportsPage() {
                                  </tr>
                               ) : (
                                  transactions.map((row) => (
-                                    <tr key={row._id} className="group hover:bg-gray-25 transition-colors">
+                                    <tr key={row._id} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
                                        <td className="py-5 px-8 text-xs text-text-secondary font-mono font-bold">
                                           {row.paymentDate ? new Date(row.paymentDate).toLocaleDateString() : '-'}
                                        </td>
                                        <td className="py-5 px-8">
                                           <div className="flex items-center gap-3">
-                                             <div className="w-8 h-8 rounded-full bg-plano-50 text-plano-600 flex items-center justify-center text-[10px] font-bold border border-plano-100">
+                                             <div className="w-8 h-8 rounded-full bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center text-[10px] font-bold border border-plano-100 dark:border-white/5">
                                                 {typeof row.userId === 'object' ? row.userId?.name?.charAt(0) : 'U'}
                                              </div>
-                                             <span className="text-sm font-semibold text-text-primary group-hover:text-plano-600 transition-colors">
+                                             <span className="text-sm font-semibold text-text-primary group-hover:text-plano-600 dark:group-hover:text-plano-400 transition-colors">
                                                 {typeof row.userId === 'object' ? row.userId?.name : 'Customer'}
                                              </span>
                                           </div>
                                        </td>
                                        <td className="py-5 px-8">
-                                          <span className="text-[10px] font-bold uppercase text-gray-400 tracking-widest bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
+                                          <span className="text-[10px] font-bold uppercase text-gray-400 tracking-widest bg-gray-50 dark:bg-white/10 px-2 py-0.5 rounded border border-gray-100 dark:border-white/5">
                                              {(row.paymentMethod || row.method || 'unknown').replace('_', ' ')}
                                           </span>
                                        </td>
@@ -426,9 +428,9 @@ export default function ReportsPage() {
                                        <td className="py-5 px-8 text-center uppercase">
                                           <span className={cn(
                                              "text-[9px] font-bold tracking-widest px-2.5 py-1 rounded-full border shadow-sm",
-                                             row.status === 'completed' ? "bg-success-50 text-success-700 border-success-200" :
-                                                row.status === 'failed' ? "bg-danger-50 text-danger-700 border-danger-200" :
-                                                   "bg-gray-100 text-gray-500 border-gray-200"
+                                             row.status === 'completed' ? "bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-400 border-success-200 dark:border-success-800" :
+                                                row.status === 'failed' ? "bg-danger-50 dark:bg-danger-900/20 text-danger-700 dark:text-danger-400 border-danger-200 dark:border-danger-800" :
+                                                   "bg-gray-100 dark:bg-white/10 text-gray-500 border-gray-200 dark:border-white/10"
                                           )}>
                                              {row.status || 'unknown'}
                                           </span>
@@ -439,7 +441,7 @@ export default function ReportsPage() {
                            </tbody>
                         </table>
                      </div>
-                     <div className="p-6 bg-gray-50/50 flex justify-center border-t border-border">
+                     <div className="p-6 bg-bg-page dark:bg-white/5 flex justify-center border-t border-border dark:border-sidebar-hover">
                         <Link href="/payments" className="text-[10px] font-bold text-plano-600 uppercase tracking-[0.2em] hover:underline flex items-center gap-2">
                            Analyze full activity ledger <ArrowUpRight size={14} />
                         </Link>

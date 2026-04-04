@@ -1,46 +1,33 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import React from 'react';
+import PortalNavbar from '@/components/portal/PortalNavbar';
 import { useAuth } from '@/app/context/AuthContext';
-import { defaultRouteForRole, isPortalRole } from '@/lib/role-routing';
+import { Loader2 } from 'lucide-react';
+import Script from 'next/script';
 
 export default function PortalLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    const { user, isLoading } = useAuth();
-    const router = useRouter();
-    const pathname = usePathname();
-    const isPortalRoot = pathname === '/portal';
+  const { isLoading } = useAuth();
 
-    useEffect(() => {
-        if (isPortalRoot) return;
-        if (isLoading) return;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-bg-page">
+        <Loader2 size={32} className="animate-spin text-plano-600" />
+      </div>
+    );
+  }
 
-        if (!user) {
-            router.replace('/login?next=/portal');
-            return;
-        }
-
-        if (!isPortalRole(user.role)) {
-            router.replace(defaultRouteForRole(user.role));
-        }
-    }, [isLoading, user, router, isPortalRoot]);
-
-    if (isPortalRoot) {
-        return <>{children}</>;
-    }
-
-    if (isLoading || !user || !isPortalRole(user.role)) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-bg-page">
-                <Loader2 size={32} className="animate-spin text-[#714b67]" />
-            </div>
-        );
-    }
-
-    return <>{children}</>;
+  return (
+    <div className="flex flex-col min-h-screen bg-bg-page selection:bg-plano-100 selection:text-plano-900">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <PortalNavbar />
+      <main className="flex-grow">
+        {children}
+      </main>
+    </div>
+  );
 }

@@ -16,18 +16,31 @@ export interface User {
 
 export type ProductType = 'software' | 'service' | 'addon';
 
+export interface Variant {
+  id: string;
+  _id?: string;
+  attribute: string;
+  value: string;
+  extraPrice: number;
+}
+
 export interface Product {
   id: string;
+  _id?: string;
   name: string;
   description?: string;
   sku?: string;
   type: ProductType;
+  salesPrice: number;
+  costPrice: number;
   basePrice: number;
   currency: string;
   unitLabel: string;
   isActive: boolean;
   taxApplicable: boolean;
   taxIds: (string | Tax)[];
+  plans?: Plan[];
+  variants?: Variant[];
   createdBy: string | User;
   createdAt: string;
   updatedAt: string;
@@ -46,6 +59,11 @@ export interface Plan {
   trialDays: number;
   features: string[];
   maxUsers?: number | null;
+  minQuantity: number;
+  isAutoClose: boolean;
+  isClosable: boolean;
+  isPausable: boolean;
+  isRenewable: boolean;
   isActive: boolean;
   discountIds: (string | Discount)[];
   taxIds: (string | Tax)[];

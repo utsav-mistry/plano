@@ -88,33 +88,45 @@ export default function InvoicesPage() {
                      placeholder="Search by invoice # or customer..."
                      value={search}
                      onChange={(e) => setSearch(e.target.value)}
-                     className="w-full h-10 pl-10 pr-4 rounded-input border border-border bg-gray-25 focus:border-plano-500 focus:outline-none transition-all text-sm font-sans"
+                     className="w-full h-10 pl-10 pr-4 rounded-input border border-border dark:border-sidebar-hover bg-gray-25 dark:bg-bg-page focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans text-text-primary"
                   />
                </div>
 
                <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-2 px-4 h-10 border border-border bg-white rounded-input text-xs font-bold uppercase tracking-widest text-text-secondary hover:bg-gray-50 transition-colors">
+                  <button className="flex items-center gap-2 px-4 h-10 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-xs font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover transition-colors">
                      <Filter size={14} />
                      Filters
                   </button>
-                  <button className="flex items-center gap-2 px-4 h-10 border border-border bg-white rounded-input text-xs font-bold uppercase tracking-widest text-text-secondary hover:bg-gray-50 transition-colors">
+                  <button className="flex items-center gap-2 px-4 h-10 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-xs font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover transition-colors">
                      <Download size={14} />
                      Export
                   </button>
                </div>
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+            <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar">
                {tabs.map((tab) => (
                   <button
                      key={tab.value}
                      onClick={() => setActiveTab(tab.value)}
                      className={cn(
-                        "px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300",
+                        "px-5 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-200",
                         activeTab === tab.value
-                           ? "bg-plano-900 text-white shadow-md"
-                           : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                           ? "bg-plano-600 dark:bg-plano-500 text-white shadow-lg shadow-plano-600/20"
+                           : "bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-400"
                      )}
+                     onMouseEnter={(e) => {
+                        if (activeTab !== tab.value) {
+                           (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#714b67';
+                           (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
+                        }
+                     }}
+                     onMouseLeave={(e) => {
+                        if (activeTab !== tab.value) {
+                           (e.currentTarget as HTMLButtonElement).style.backgroundColor = '';
+                           (e.currentTarget as HTMLButtonElement).style.color = '';
+                        }
+                     }}
                   >
                      {tab.label}
                   </button>
@@ -123,7 +135,7 @@ export default function InvoicesPage() {
          </div>
 
          {/* Invoices Table */}
-         <div className="bg-bg-surface rounded-card border border-border overflow-hidden shadow-sm min-h-[400px] flex flex-col">
+         <div className="bg-bg-surface rounded-card border border-border dark:border-sidebar-hover overflow-hidden shadow-sm min-h-[400px] flex flex-col">
             {isLoading ? (
                <div className="flex-1 flex flex-col items-center justify-center gap-3 py-20">
                   <Loader2 className="w-8 h-8 text-plano-600 animate-spin" />
@@ -131,7 +143,7 @@ export default function InvoicesPage() {
                </div>
             ) : error ? (
                <div className="flex-1 flex flex-col items-center justify-center gap-3 py-20 text-center px-6">
-                  <div className="w-12 h-12 rounded-full bg-danger-50 flex items-center justify-center text-danger-500 text-sm">
+                  <div className="w-12 h-12 rounded-full bg-danger-50 dark:bg-danger-900/20 flex items-center justify-center text-danger-500 text-sm">
                      <AlertCircle size={24} />
                   </div>
                   <p className="text-sm font-bold text-text-primary uppercase tracking-tight">{error}</p>
@@ -144,7 +156,7 @@ export default function InvoicesPage() {
                </div>
             ) : filteredInvoices.length === 0 ? (
                <div className="flex-1 flex flex-col items-center justify-center gap-4 py-20 text-center px-6">
-                  <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-300">
+                  <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300">
                      <FileText size={32} />
                   </div>
                   <p className="text-lg font-serif font-bold text-text-primary">No invoices found</p>
@@ -153,19 +165,19 @@ export default function InvoicesPage() {
                <div className="overflow-x-auto">
                   <table className="w-full text-left">
                      <thead>
-                        <tr className="border-b border-border bg-gray-50/50">
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap">Invoice #</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap">Customer</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap">Issue Date</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap">Due Date</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap text-right">Amount</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap text-center">Status</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap text-right">Actions</th>
+                        <tr className="border-b border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/10">
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Invoice #</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Customer</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Issue Date</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Due Date</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-right">Amount</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-center">Status</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-right">Actions</th>
                         </tr>
                      </thead>
-                     <tbody className="divide-y divide-gray-100">
+                     <tbody className="divide-y divide-border dark:divide-sidebar-hover">
                         {filteredInvoices.map((inv: any) => (
-                           <tr key={inv._id || inv.id} className="group hover:bg-gray-25 transition-colors">
+                           <tr key={inv._id || inv.id} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
                               <td className="py-4 px-6">
                                  <div className="flex flex-col">
                                     <span className="text-xs font-mono font-bold text-text-primary tracking-tighter">{inv.invoiceNumber}</span>
@@ -179,7 +191,7 @@ export default function InvoicesPage() {
                               </td>
                               <td className="py-4 px-6">
                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-plano-100 text-plano-700 flex items-center justify-center text-[10px] font-bold border border-plano-200">
+                                    <div className="w-8 h-8 rounded-full bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center text-[10px] font-bold border border-plano-100 dark:border-white/5">
                                        {typeof inv.userId === 'object' ? inv.userId?.name?.charAt(0) : 'U'}
                                     </div>
                                     <span className="text-sm font-semibold text-text-primary">
@@ -200,11 +212,11 @@ export default function InvoicesPage() {
                               </td>
                               <td className="py-4 px-6 text-center">
                                  <span className={cn(
-                                    "text-[10px] font-bold uppercase tracking-tighter px-2.5 py-1 rounded-full",
-                                    inv.status === 'paid' ? "bg-success-50 text-success-700 border border-success-200" :
-                                       inv.status === 'overdue' ? "bg-danger-50 text-danger-700 border border-danger-200" :
-                                          inv.status === 'confirmed' ? "bg-info-50 text-info-700 border border-info-200" :
-                                             "bg-gray-100 text-gray-500 border border-gray-200"
+                                    "text-[10px] font-bold uppercase tracking-tighter px-2.5 py-1 rounded-full border",
+                                    inv.status === 'paid' ? "bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-500 border-success-200 dark:border-success-800" :
+                                       inv.status === 'overdue' ? "bg-danger-50 dark:bg-danger-900/20 text-danger-700 dark:text-danger-500 border-danger-200 dark:border-danger-800" :
+                                          inv.status === 'confirmed' ? "bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-500 border-info-200 dark:border-info-800" :
+                                             "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10"
                                  )}>
                                     {inv.status}
                                  </span>
@@ -213,11 +225,11 @@ export default function InvoicesPage() {
                                  <div className="flex items-center justify-end gap-2">
                                     <Link
                                        href={`/invoices/${inv._id || inv.id}`}
-                                       className="p-1.5 rounded-btn hover:bg-plano-50 text-gray-400 hover:text-plano-600 transition-all opacity-0 group-hover:opacity-100"
+                                       className="p-1.5 rounded-btn hover:bg-plano-50 dark:hover:bg-white/10 text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 transition-all opacity-0 group-hover:opacity-100"
                                     >
                                        <Eye size={18} />
                                     </Link>
-                                    <button className="p-1.5 rounded-btn hover:bg-gray-100 text-gray-400 hover:text-text-primary transition-all">
+                                    <button className="p-1.5 rounded-btn hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-text-primary transition-all">
                                        <MoreVertical size={18} />
                                     </button>
                                  </div>

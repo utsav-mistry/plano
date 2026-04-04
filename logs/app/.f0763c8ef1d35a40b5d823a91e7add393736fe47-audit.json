@@ -9,6 +9,11 @@
             "date": 1775297458355,
             "name": "D:\\plano\\logs\\app\\app-2026-04-04.log",
             "hash": "944a315666849a47cc6e333faf5ca65f3060821d35956ee0b8c3725f9287d4c6"
+        },
+        {
+            "date": 1775335040944,
+            "name": "D:\\plano\\logs\\app\\app-2026-04-05.log",
+            "hash": "52594abd8622d6ddca2fcf49310b8142e9653216e2968e69ea6e91ba05f10e29"
         }
     ],
     "hashType": "sha256"

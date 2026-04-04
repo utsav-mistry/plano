@@ -82,14 +82,14 @@ export default function Topbar({ collapsed }: { collapsed: boolean }) {
   return (
     <header
       className={cn(
-        "h-14 bg-white border-b border-border fixed top-0 right-0 z-40 flex items-center justify-between px-6 transition-all duration-300",
+        "h-14 bg-bg-surface border-b border-sidebar-hover fixed top-0 right-0 z-40 flex items-center justify-between px-6 transition-all duration-300",
         collapsed ? "left-16" : "left-60"
       )}
     >
       {/* Search / Left Side */}
       <div className="flex-1 max-w-sm">
         <div className="relative group">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-plano-600 transition-colors" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-plano-400 transition-colors" />
           <input
             ref={searchInputRef}
             type="text"
@@ -98,19 +98,19 @@ export default function Topbar({ collapsed }: { collapsed: boolean }) {
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             placeholder="Search anything..."
-            className="w-full bg-gray-50 border border-border focus:border-plano-400 focus:bg-white rounded-input h-9 pl-10 pr-16 text-xs outline-none transition-all placeholder:text-gray-400"
+            className="w-full bg-gray-50 dark:bg-white/5 border border-border dark:border-sidebar-hover focus:border-plano-400 dark:focus:bg-white/10 rounded-input h-9 pl-10 pr-16 text-xs outline-none transition-all placeholder:text-gray-400 text-text-primary"
           />
           <div className={cn(
             "absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none transition-all",
             (isFocused || searchQuery) ? "opacity-0 invisible" : "opacity-100 visible"
           )}>
-            <kbd className="h-5 px-1.5 flex items-center justify-center bg-white border border-border rounded text-[10px] font-mono font-bold text-gray-400 shadow-sm">{platformKey}</kbd>
-            <kbd className="h-5 px-1.5 flex items-center justify-center bg-white border border-border rounded text-[10px] font-mono font-bold text-gray-400 shadow-sm">K</kbd>
+            <kbd className="h-5 px-1.5 flex items-center justify-center bg-bg-surface border border-border dark:border-sidebar-hover rounded text-[10px] font-mono font-bold text-gray-400 shadow-sm">{platformKey}</kbd>
+            <kbd className="h-5 px-1.5 flex items-center justify-center bg-bg-surface border border-border dark:border-sidebar-hover rounded text-[10px] font-mono font-bold text-gray-400 shadow-sm">K</kbd>
           </div>
 
           {/* Search Suggestions Dropdown */}
           {isFocused && searchQuery && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-border py-2 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-bg-elevated rounded-xl shadow-2xl border border-sidebar-hover py-2 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
 
               {/* Navigation Section */}
               {navSuggestions.length > 0 && (
@@ -185,32 +185,32 @@ export default function Topbar({ collapsed }: { collapsed: boolean }) {
       {/* Right Side */}
       <div className="flex items-center gap-3">
         {/* Notifications */}
-        <button className="p-2 rounded-btn hover:bg-gray-50 relative text-gray-500">
+        <button className="p-2 rounded-btn hover:bg-sidebar-hover relative text-gray-500">
           <Bell size={18} />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-danger-500 rounded-full border-2 border-white"></span>
+          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-danger-500 rounded-full border-2 border-bg-surface"></span>
         </button>
 
         {/* Theme Toggle */}
         <button
           onClick={toggleDarkMode}
-          className="p-2 rounded-btn hover:bg-gray-50 text-gray-500"
+          className="p-2 rounded-btn hover:bg-sidebar-hover text-gray-500"
         >
           {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        <div className="h-8 w-px bg-border mx-1"></div>
+        <div className="h-8 w-px bg-sidebar-hover mx-1"></div>
 
         {/* User Profile */}
         <div className="relative">
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center gap-3 cursor-pointer group hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors border border-transparent"
+            className="flex items-center gap-3 cursor-pointer group hover:bg-sidebar-hover px-2 py-1 rounded-lg transition-colors border border-transparent"
           >
             <div className="flex flex-col items-end">
               <span className="text-xs font-sans font-bold text-text-primary uppercase tracking-tight">{user?.name || 'User'}</span>
               <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{user?.role || 'Admin'}</span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-plano-100 flex items-center justify-center text-plano-700 text-xs font-bold border border-plano-200 uppercase">
+            <div className="w-8 h-8 rounded-full bg-sidebar-hover flex items-center justify-center text-plano-300 text-xs font-bold border border-sidebar-hover uppercase">
               {user?.name.charAt(0) || 'U'}
             </div>
           </button>
@@ -218,8 +218,8 @@ export default function Topbar({ collapsed }: { collapsed: boolean }) {
           {isProfileOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsProfileOpen(false)} />
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-card shadow-xl border border-border z-50 py-2 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-4 py-3 border-b border-gray-100">
+              <div className="absolute right-0 mt-2 w-56 bg-bg-elevated rounded-card shadow-xl border border-sidebar-hover z-50 py-2 animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-4 py-3 border-b border-sidebar-hover">
                   <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest mb-1">Signed in as</p>
                   <p className="text-sm font-bold text-text-primary truncate">{user?.email || 'user@plano.app'}</p>
                 </div>
@@ -228,23 +228,23 @@ export default function Topbar({ collapsed }: { collapsed: boolean }) {
                   <Link
                     href={`${routePrefix}/profile`}
                     onClick={() => setIsProfileOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] text-text-secondary hover:bg-gray-50 font-bold uppercase tracking-widest transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] text-text-secondary hover:bg-sidebar-hover font-bold uppercase tracking-widest transition-colors"
                   >
                     <User size={14} className="text-plano-400" /> Profile
                   </Link>
                   <Link
                     href={`${routePrefix}/settings`}
                     onClick={() => setIsProfileOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] text-text-secondary hover:bg-gray-50 font-bold uppercase tracking-widest transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] text-text-secondary hover:bg-sidebar-hover font-bold uppercase tracking-widest transition-colors"
                   >
                     <SettingsIcon size={14} className="text-plano-400" /> settings
                   </Link>
                 </div>
 
-                <div className="border-t border-gray-100 pt-1">
+                <div className="border-t border-sidebar-hover pt-1">
                   <button
                     onClick={logout}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-xs text-danger-600 hover:bg-danger-50 font-bold uppercase tracking-widest"
+                    className="w-full flex items-center gap-3 px-4 py-2 text-xs text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 font-bold uppercase tracking-widest"
                   >
                     <LogOut size={14} /> Sign Out
                   </button>

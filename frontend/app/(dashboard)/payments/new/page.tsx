@@ -91,7 +91,7 @@ export default function RecordPaymentPage() {
     }
   };
 
-  const field = 'h-11 px-4 rounded-lg border border-border bg-gray-25 text-sm font-medium outline-none transition-all focus:border-plano-500 focus:bg-white w-full shadow-sm';
+  const field = 'h-11 px-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary text-sm font-medium outline-none transition-all focus:border-plano-500 dark:focus:bg-white/10 w-full shadow-sm';
   const label = 'text-[11px] uppercase font-bold tracking-widest text-gray-500 mb-1.5 flex items-center gap-1.5';
 
   return (
@@ -110,7 +110,7 @@ export default function RecordPaymentPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8">
+      <form onSubmit={handleSubmit} className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
         
         {/* Source Invoice Selection */}
         <div className="flex flex-col">
@@ -224,12 +224,12 @@ export default function RecordPaymentPage() {
             placeholder="Any internal context for this payment..."
             value={form.notes}
             onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
-            className="w-full p-4 rounded-lg border border-border bg-gray-25 focus:border-plano-500 focus:bg-white focus:outline-none transition-all text-sm font-sans resize-none shadow-sm"
+            className="w-full p-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans resize-none shadow-sm"
           />
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
+        <div className="flex items-center gap-4 pt-6 border-t border-border dark:border-sidebar-hover">
           <button 
             suppressHydrationWarning
             type="submit"
@@ -241,7 +241,7 @@ export default function RecordPaymentPage() {
           </button>
           <Link 
             href="/payments"
-            className="px-8 h-12 rounded-xl border border-border bg-white text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all flex items-center justify-center"
+            className="px-8 h-12 rounded-xl border border-border dark:border-sidebar-hover bg-bg-surface text-sm font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
           >
             Cancel
           </Link>

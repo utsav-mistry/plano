@@ -56,7 +56,7 @@ export default function ProfilePage() {
   };
 
   const labelStyle = "text-[10px] uppercase font-bold text-gray-400 tracking-[0.2em] mb-2 block";
-  const inputStyle = "w-full h-12 px-4 rounded-xl border border-border bg-gray-25 focus:border-plano-500 focus:bg-white focus:outline-none transition-all text-sm font-semibold text-text-primary shadow-sm";
+  const inputStyle = "w-full h-12 px-4 rounded-xl border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-semibold text-text-primary shadow-sm";
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -64,8 +64,8 @@ export default function ProfilePage() {
         return (
           <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4 duration-300">
             <form onSubmit={handleUpdateProfile} className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8">
-              <div className="flex items-center gap-3 pb-5 border-b border-gray-100">
-                 <div className="w-10 h-10 rounded-xl bg-plano-50 text-plano-600 flex items-center justify-center border border-plano-100 shadow-sm">
+              <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover">
+                 <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center border border-plano-100 dark:border-sidebar-hover shadow-sm">
                    <User size={20} />
                  </div>
                  <h2 className="text-2xl font-serif font-bold text-text-primary">Personal Information</h2>
@@ -90,20 +90,20 @@ export default function ProfilePage() {
                  <label className={labelStyle}>Primary Contact Email</label>
                  <div className="relative">
                    <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                   <input 
-                     disabled
-                     suppressHydrationWarning
-                     type="email" 
-                     value={form.email}
-                     className={cn(inputStyle, "pl-11 bg-gray-100 cursor-not-allowed opacity-70")}
-                   />
+                    <input 
+                      disabled
+                      suppressHydrationWarning
+                      type="email" 
+                      value={form.email}
+                      className={cn(inputStyle, "pl-11 dark:bg-white/5 cursor-not-allowed opacity-70")}
+                    />
                  </div>
                  <p className="mt-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1.5 ml-1">
                    <Shield size={10} className="text-success-500" /> This account is linked to your enterprise directory.
                  </p>
               </div>
    
-              <div className="pt-4 border-t border-gray-100 flex items-center gap-4">
+              <div className="pt-4 border-t border-border dark:border-sidebar-hover flex items-center gap-4">
                  <button 
                    type="submit"
                    disabled={isSubmitting}
@@ -127,7 +127,7 @@ export default function ProfilePage() {
                     { label: 'Login Status', value: 'Verified', icon: <CheckCircle2 size={14} className="text-success-600" /> },
                     { label: '2FA Auth', value: 'Not Active', icon: <AlertCircle size={14} className="text-danger-500" /> },
                   ].map((item, i) => (
-                    <div key={i} className="p-4 rounded-xl bg-gray-50 border border-border flex items-center justify-between group hover:border-plano-200 transition-all">
+                    <div key={i} className="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-border dark:border-sidebar-hover flex items-center justify-between group hover:border-plano-200 transition-all">
                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                          {item.icon}
                          {item.label}
@@ -143,37 +143,37 @@ export default function ProfilePage() {
       case 'security':
         return (
           <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8">
-              <div className="flex items-center gap-3 pb-5 border-b border-gray-100">
-                 <div className="w-10 h-10 rounded-xl bg-plano-50 text-plano-600 flex items-center justify-center border border-plano-100 shadow-sm">
+            <div className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
+              <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover">
+                 <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center border border-plano-100 dark:border-sidebar-hover shadow-sm">
                    <Key size={20} />
                  </div>
                  <h2 className="text-2xl font-serif font-bold text-text-primary">Security Settings</h2>
               </div>
 
               <div className="flex flex-col gap-6">
-                 <div className="p-6 rounded-2xl border border-border bg-gray-50/50 flex items-center justify-between">
+                 <div className="p-6 rounded-2xl border border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/5 flex items-center justify-between">
                     <div className="flex flex-col gap-1">
                        <span className="text-sm font-bold text-text-primary">Two-Factor Authentication (2FA)</span>
                        <p className="text-xs text-gray-500">Secure your account with an extra layer of protection.</p>
                     </div>
-                    <button className="px-4 py-2 rounded-lg bg-plano-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-black transition-all shadow-sm">
+                    <button className="px-4 py-2 rounded-lg bg-plano-600 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-plano-700 transition-all shadow-sm">
                        Enable 2FA
                     </button>
                  </div>
 
-                 <div className="p-6 rounded-2xl border border-border bg-gray-50/50 flex items-center justify-between">
+                 <div className="p-6 rounded-2xl border border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/5 flex items-center justify-between">
                     <div className="flex flex-col gap-1">
                        <span className="text-sm font-bold text-text-primary">Change Password</span>
                        <p className="text-xs text-gray-500">Last changed 4 months ago.</p>
                     </div>
-                    <button className="px-4 py-2 rounded-lg border-2 border-plano-100 text-plano-700 text-[10px] font-bold uppercase tracking-widest hover:bg-plano-50 transition-all">
+                    <button className="px-4 py-2 rounded-lg border-2 border-plano-200 dark:border-sidebar-hover text-plano-600 dark:text-plano-400 text-[10px] font-bold uppercase tracking-widest hover:bg-plano-50 dark:hover:bg-white/10 transition-all">
                        Update Password
                     </button>
                  </div>
 
-                 <div className="p-6 rounded-2xl border border-border bg-gray-50/50 flex flex-col gap-4">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                 <div className="p-6 rounded-2xl border border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/5 flex flex-col gap-4">
+                    <div className="flex items-center justify-between border-b border-border dark:border-sidebar-hover pb-4">
                        <div className="flex flex-col gap-1">
                           <span className="text-sm font-bold text-text-primary">Active Sessions</span>
                           <p className="text-xs text-gray-500">Devices currently logged into your account.</p>
@@ -184,7 +184,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex items-center justify-between">
                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center shadow-sm">
+                          <div className="w-8 h-8 rounded-lg bg-bg-surface dark:bg-white/10 border border-border dark:border-sidebar-hover flex items-center justify-center shadow-sm">
                              <img src="https://flagcdn.com/in.svg" className="w-4 h-auto opacity-70" alt="India" />
                           </div>
                           <div className="flex flex-col">
@@ -202,8 +202,8 @@ export default function ProfilePage() {
       case 'privacy':
         return (
           <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4 duration-300">
-             <div className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8">
-              <div className="flex items-center justify-between pb-5 border-b border-gray-100">
+             <div className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
+              <div className="flex items-center justify-between pb-5 border-b border-border dark:border-sidebar-hover">
                  <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-plano-600 text-white flex items-center justify-center border border-plano-600 shadow-sm">
                        <Shield size={20} />
@@ -218,13 +218,13 @@ export default function ProfilePage() {
               <div className="flex flex-col gap-8">
                  {/* Export Section */}
                  <div className="flex flex-col gap-4">
-                    <h4 className="text-[11px] font-bold text-plano-900 uppercase tracking-widest flex items-center gap-2">
+                    <h4 className="text-[11px] font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
                        <Database size={14} className="text-plano-500" /> Export Personal Data
                     </h4>
                     <p className="text-sm text-gray-500 leading-relaxed">
                        Download a comprehensive archive of your profile, settings, and subscription history in standard JSON format.
                     </p>
-                    <button className="h-12 rounded-xl border-2 border-plano-100 bg-plano-50 text-plano-700 text-sm font-bold flex items-center justify-center gap-2 hover:bg-plano-600 hover:text-white hover:border-plano-600 transition-all group">
+                    <button className="h-12 rounded-xl border-2 border-plano-200 dark:border-sidebar-hover bg-plano-50 dark:bg-white/5 text-plano-700 dark:text-plano-400 text-sm font-bold flex items-center justify-center gap-2 hover:bg-plano-600 hover:text-white hover:border-plano-600 transition-all group">
                        <Download size={18} className="group-hover:-translate-y-0.5 transition-transform" />
                        Request Data Export
                     </button>
@@ -232,46 +232,32 @@ export default function ProfilePage() {
 
                  {/* Integrations */}
                  <div className="flex flex-col gap-4">
-                    <h4 className="text-[11px] font-bold text-plano-900 uppercase tracking-widest flex items-center gap-2">
+                    <h4 className="text-[11px] font-bold text-text-primary uppercase tracking-widest flex items-center gap-2">
                        <Lock size={14} className="text-success-500" /> Authorized Systems
                     </h4>
-                    <div className="rounded-2xl border border-gray-100 p-4 bg-gray-50/30 flex items-center justify-between">
+                    <div className="rounded-2xl border border-border dark:border-sidebar-hover p-4 bg-gray-50/30 dark:bg-white/5 flex items-center justify-between">
                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center shadow-sm text-xs font-bold font-serif">P</div>
+                          <div className="w-8 h-8 rounded-lg bg-bg-surface dark:bg-white/10 border border-border dark:border-sidebar-hover flex items-center justify-center shadow-sm text-xs font-bold font-serif text-text-primary">P</div>
                           <div className="flex flex-col">
-                             <span className="text-xs font-bold text-plano-900">Plano Core Directory</span>
+                             <span className="text-xs font-bold text-text-primary">Plano Core Directory</span>
                              <span className="text-[10px] text-gray-400 font-medium tracking-tight">Access Level: Administrative</span>
                           </div>
                        </div>
-                       <span className="px-2 py-0.5 rounded-full bg-success-50 text-[10px] font-bold text-success-700">ACTIVE</span>
+                       <span className="px-2 py-0.5 rounded-full bg-success-50 dark:bg-success-900/20 text-[10px] font-bold text-success-700 dark:text-success-400">ACTIVE</span>
                     </div>
                  </div>
 
-                 {/* Danger Zone */}
-                 <div className="pt-6 border-t border-red-50 flex flex-col gap-4">
-                    <h4 className="text-[11px] font-bold text-danger-600 uppercase tracking-widest flex items-center gap-2 font-mono">
-                       <AlertCircle size={14} /> Critical: Danger Zone
-                    </h4>
-                    <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-danger-50/30 border border-danger-100">
-                       <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-bold text-danger-700">Request Account Deletion</span>
-                          <span className="text-[10px] text-danger-600/70 font-medium">This action is permanent and cannot be undone.</span>
-                       </div>
-                       <button className="px-4 h-10 rounded-lg bg-danger-600 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-black transition-all whitespace-nowrap shadow-md">
-                          Close Account
-                       </button>
-                    </div>
-                 </div>
+
               </div>
 
-              <div className="bg-gray-100/50 p-6 rounded-2xl flex items-center justify-between">
+              <div className="bg-gray-100/30 dark:bg-white/5 p-6 rounded-2xl flex items-center justify-between border border-border dark:border-sidebar-hover">
                  <div className="flex items-center gap-2 text-[11px] text-gray-500 font-medium">
                     <Shield size={12} className="text-plano-400" />
                     Last reviewed on Feb 12, 2026
                  </div>
                  <Link 
                    href="/privacy-policy" 
-                   className="text-[11px] font-bold text-plano-600 hover:text-black flex items-center gap-1 uppercase tracking-wider"
+                   className="text-[11px] font-bold text-plano-600 hover:text-plano-400 flex items-center gap-1 uppercase tracking-wider"
                  >
                     Full Policy <ExternalLink size={10} />
                  </Link>
@@ -321,64 +307,64 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Profile Sidebar */}
         <div className="lg:col-span-1 flex flex-col gap-6">
-           <section className="bg-white p-6 rounded-card border border-border shadow-sm flex flex-col gap-6">
+           <section className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-text-tertiary">Quick Actions</h3>
               <div className="flex flex-col gap-2">
                  <button 
                    onClick={() => setActiveTab('personal')}
                    className={cn(
                     "flex items-center justify-between px-4 py-3 rounded-xl transition-all group text-xs font-bold uppercase tracking-widest",
-                    activeTab === 'personal' ? "bg-plano-300 text-plano-900" : "bg-white text-gray-500 hover:bg-gray-50"
+                    activeTab === 'personal' ? "bg-plano-600 dark:bg-plano-500 text-white" : "bg-bg-page dark:bg-white/5 text-gray-500 hover:bg-sidebar-hover dark:hover:bg-white/10"
                    )}
                  >
                     <div className="flex items-center gap-3">
                       <User size={16} /> Personal Info
                     </div>
-                    {activeTab === 'personal' && <ChevronRight size={14} className="text-plano-600" />}
+                    {activeTab === 'personal' && <ChevronRight size={14} className="text-white" />}
                  </button>
 
                  <button 
                    onClick={() => setActiveTab('security')}
                    className={cn(
                     "flex items-center justify-between px-4 py-3 rounded-xl transition-all group text-xs font-bold uppercase tracking-widest",
-                    activeTab === 'security' ? "bg-plano-300 text-plano-900" : "bg-white text-gray-500 hover:bg-gray-50"
+                    activeTab === 'security' ? "bg-plano-600 dark:bg-plano-500 text-white" : "bg-bg-page dark:bg-white/5 text-gray-500 hover:bg-sidebar-hover dark:hover:bg-white/10"
                    )}
                  >
                     <div className="flex items-center gap-3">
                       <Key size={16} /> Security Settings
                     </div>
-                    {activeTab === 'security' && <ChevronRight size={14} className="text-plano-600" />}
+                    {activeTab === 'security' && <ChevronRight size={14} className="text-white" />}
                  </button>
 
                  <button 
                    onClick={() => setActiveTab('privacy')}
                    className={cn(
                     "flex items-center justify-between px-4 py-3 rounded-xl transition-all group text-xs font-bold uppercase tracking-widest",
-                    activeTab === 'privacy' ? "bg-plano-300 text-plano-900" : "bg-white text-gray-500 hover:bg-gray-50"
+                    activeTab === 'privacy' ? "bg-plano-600 dark:bg-plano-500 text-white" : "bg-bg-page dark:bg-white/5 text-gray-500 hover:bg-sidebar-hover dark:hover:bg-white/10"
                    )}
                  >
                     <div className="flex items-center gap-3">
                       <Shield size={16} /> Data Privacy
                     </div>
-                    {activeTab === 'privacy' && <ChevronRight size={14} className="text-plano-600" />}
+                    {activeTab === 'privacy' && <ChevronRight size={14} className="text-white" />}
                  </button>
                  
-                 <div className="h-px bg-gray-100 my-2"></div>
+                 <div className="h-px bg-border dark:bg-sidebar-hover my-2"></div>
 
                  <button 
                    onClick={logout}
-                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-danger-50 text-danger-600 text-xs font-bold uppercase tracking-widest hover:bg-danger-100 transition-all font-mono"
+                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-danger-50 dark:bg-danger-900/10 text-danger-600 dark:text-danger-400 text-xs font-bold uppercase tracking-widest hover:bg-danger-100 dark:hover:bg-danger-900/20 transition-all font-mono"
                  >
                     <LogOut size={16} /> Sign out session
                  </button>
               </div>
            </section>
 
-           <div className="bg-info-50/50 p-6 rounded-card border border-info-100 flex items-start gap-4 shadow-sm">
+           <div className="bg-info-50/30 dark:bg-white/5 p-6 rounded-card border border-info-100 dark:border-sidebar-hover flex items-start gap-4 shadow-sm">
               <Clock size={20} className="text-info-500 shrink-0 mt-1" />
               <div className="flex flex-col gap-1">
-                 <span className="text-[10px] font-bold text-info-700 uppercase tracking-widest">System Status</span>
-                 <p className="text-[10px] text-info-600 font-medium leading-relaxed">
+                 <span className="text-[10px] font-bold text-info-700 dark:text-plano-400 uppercase tracking-widest">System Status</span>
+                 <p className="text-[10px] text-info-600 dark:text-text-secondary font-medium leading-relaxed">
                    Account integrity active. Last ID synchronization at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.
                  </p>
               </div>

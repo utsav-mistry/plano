@@ -152,7 +152,7 @@ export default function NewInvoicePage() {
         }
     };
 
-    const field = 'h-11 px-4 rounded-lg border border-border bg-gray-25 text-sm font-medium outline-none transition-all focus:border-plano-500 focus:bg-white w-full shadow-sm';
+    const field = 'h-11 px-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary text-sm font-medium outline-none transition-all focus:border-plano-500 dark:focus:bg-white/10 w-full shadow-sm';
     const label = 'text-[11px] uppercase font-bold tracking-widest text-gray-500 mb-1.5 flex items-center gap-1.5';
 
     return (
@@ -169,9 +169,9 @@ export default function NewInvoicePage() {
 
             <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-8 flex flex-col gap-8">
-                    <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8">
-                        <div className="flex items-center gap-3 pb-5 border-b border-gray-100">
-                            <div className="w-10 h-10 rounded-xl bg-plano-50 text-plano-600 flex items-center justify-center border border-plano-100 shadow-sm">
+                    <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
+                        <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover">
+                            <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center border border-plano-100 dark:border-sidebar-hover shadow-sm">
                                 <UserCircle2 size={20} />
                             </div>
                             <h2 className="text-2xl font-serif font-bold text-text-primary">Customer</h2>
@@ -229,10 +229,10 @@ export default function NewInvoicePage() {
                         </div>
                     </section>
 
-                    <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8">
-                        <div className="flex items-center justify-between gap-4 pb-5 border-b border-gray-100">
+                    <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
+                        <div className="flex items-center justify-between gap-4 pb-5 border-b border-border dark:border-sidebar-hover">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-success-50 text-success-600 flex items-center justify-center border border-success-100 shadow-sm">
+                                <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-900/10 text-success-600 flex items-center justify-center border border-success-100 dark:border-sidebar-hover shadow-sm">
                                     <ReceiptText size={20} />
                                 </div>
                                 <h2 className="text-2xl font-serif font-bold text-text-primary">Line Items</h2>
@@ -249,17 +249,17 @@ export default function NewInvoicePage() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="border-b border-border bg-gray-50/50">
-                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Description</th>
-                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-center whitespace-nowrap">Qty</th>
-                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right whitespace-nowrap">Unit Price</th>
-                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right whitespace-nowrap">Discount</th>
-                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right whitespace-nowrap">Tax</th>
-                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right whitespace-nowrap">Total</th>
-                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right whitespace-nowrap">Action</th>
+                                    <tr className="border-b border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/10">
+                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Description</th>
+                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center whitespace-nowrap">Qty</th>
+                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right whitespace-nowrap">Unit Price</th>
+                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right whitespace-nowrap">Discount</th>
+                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right whitespace-nowrap">Tax</th>
+                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right whitespace-nowrap">Total</th>
+                                        <th className="py-4 px-4 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right whitespace-nowrap">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-border dark:divide-sidebar-hover">
                                     {form.items.map((item, index) => (
                                         <tr key={index} className="align-top">
                                             <td className="py-4 px-4 w-[32%]">
@@ -317,7 +317,7 @@ export default function NewInvoicePage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => removeItem(index)}
-                                                    className="p-2 rounded-lg text-gray-300 hover:text-danger-600 hover:bg-danger-50 transition-all"
+                                                    className="p-2 rounded-lg text-gray-300 hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all"
                                                     aria-label="Remove line item"
                                                 >
                                                     <Trash2 size={16} />
@@ -330,14 +330,14 @@ export default function NewInvoicePage() {
                         </div>
                     </section>
 
-                    <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-6">
+                    <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
                         <label className={label}>Internal Notes</label>
                         <textarea
                             rows={4}
                             value={form.notes}
                             onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
                             placeholder="Optional internal notes or payment instructions"
-                            className="w-full p-4 rounded-lg border border-border bg-gray-25 focus:border-plano-500 focus:bg-white focus:outline-none transition-all text-sm font-sans resize-none shadow-sm"
+                            className="w-full p-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans resize-none shadow-sm"
                         />
                     </section>
                 </div>

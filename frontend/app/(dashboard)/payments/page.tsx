@@ -73,7 +73,7 @@ export default function PaymentsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex items-center justify-between gap-4 bg-bg-surface p-4 rounded-card border border-border shadow-sm">
+      <div className="flex items-center justify-between gap-4 bg-bg-surface p-4 rounded-card border border-border dark:border-sidebar-hover shadow-sm">
         <div className="relative flex-1 max-w-sm">
            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
            <input 
@@ -81,15 +81,15 @@ export default function PaymentsPage() {
              placeholder="Search by transaction ID or user..."
              value={search}
              onChange={(e) => setSearch(e.target.value)}
-             className="w-full h-10 pl-10 pr-4 rounded-input border border-border bg-gray-25 focus:border-plano-500 focus:outline-none transition-all text-sm font-sans"
+             className="w-full h-10 pl-10 pr-4 rounded-input border border-border dark:border-sidebar-hover bg-gray-25 dark:bg-bg-page focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans text-text-primary"
            />
         </div>
         <div className="flex items-center gap-2">
-           <button className="flex items-center gap-2 px-4 h-10 border border-border bg-white rounded-input text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:bg-gray-50 transition-colors">
+           <button className="flex items-center gap-2 px-4 h-10 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover transition-colors">
               <Filter size={14} />
               Filters
            </button>
-           <button className="flex items-center gap-2 px-4 h-10 border border-border bg-white rounded-input text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:bg-gray-50 transition-colors">
+           <button className="flex items-center gap-2 px-4 h-10 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover transition-colors">
               <Download size={14} />
               Export
            </button>
@@ -97,7 +97,7 @@ export default function PaymentsPage() {
       </div>
 
       {/* Payments Table */}
-      <div className="bg-bg-surface rounded-card border border-border overflow-hidden shadow-sm min-h-[400px] flex flex-col">
+      <div className="bg-bg-surface rounded-card border border-border dark:border-sidebar-hover overflow-hidden shadow-sm min-h-[400px] flex flex-col">
          {isLoading ? (
             <div className="flex-1 flex flex-col items-center justify-center py-20 gap-3">
                <Loader2 className="w-8 h-8 text-plano-600 animate-spin" />
@@ -111,7 +111,7 @@ export default function PaymentsPage() {
             </div>
          ) : filteredPayments.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center py-24 gap-4 text-center px-6">
-              <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-300">
+              <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300">
                 <Banknote size={32} />
               </div>
               <p className="text-lg font-serif font-bold text-text-primary">No payments found</p>
@@ -123,19 +123,19 @@ export default function PaymentsPage() {
             <div className="overflow-x-auto">
                <table className="w-full text-left">
                   <thead>
-                     <tr className="border-b border-border bg-gray-50/50">
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap">Payment ID</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap">Source</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap">Customer</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap">Method</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap text-right">Amount</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap text-center">Status</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap text-right">Actions</th>
+                     <tr className="border-b border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/10">
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Payment ID</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Source</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Customer</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Method</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-right">Amount</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-center">Status</th>
+                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-right">Actions</th>
                      </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-border dark:divide-sidebar-hover">
                      {filteredPayments.map((pay) => (
-                        <tr key={pay._id} className="group hover:bg-gray-25 transition-colors">
+                        <tr key={pay._id} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
                            <td className="py-4 px-6">
                               <div className="flex flex-col">
                                 <span className="text-xs font-mono font-bold text-text-primary tracking-tighter">PAY-{pay._id.slice(-6).toUpperCase()}</span>
@@ -158,9 +158,9 @@ export default function PaymentsPage() {
                            <td className="py-4 px-6">
                               <span className={cn(
                                  "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
-                                 pay.paymentMethod === 'bank_transfer' ? "bg-plano-50 text-plano-700 border-plano-200" :
-                                 pay.paymentMethod === 'card' ? "bg-info-50 text-info-700 border-info-200" :
-                                 "bg-gray-100 text-gray-700 border-gray-200"
+                                 pay.paymentMethod === 'bank_transfer' ? "bg-plano-50 dark:bg-white/10 text-plano-700 dark:text-plano-400 border-plano-200 dark:border-white/10" :
+                                 pay.paymentMethod === 'card' ? "bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-500 border-info-200 dark:border-info-800" :
+                                 "bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-white/10"
                               )}>
                                  {pay.paymentMethod.replace('_', ' ')}
                               </span>
@@ -170,20 +170,20 @@ export default function PaymentsPage() {
                            </td>
                            <td className="py-4 px-6 text-center">
                               <span className={cn(
-                                 "text-[10px] font-bold uppercase tracking-tighter px-2.5 py-1 rounded-full",
-                                 pay.status === 'completed' ? "bg-success-50 text-success-700 border border-success-200" : 
-                                 pay.status === 'failed' ? "bg-danger-50 text-danger-700 border border-danger-200" :
-                                 "bg-gray-100 text-gray-500 border border-gray-200"
+                                 "text-[10px] font-bold uppercase tracking-tighter px-2.5 py-1 rounded-full border",
+                                 pay.status === 'completed' ? "bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-500 border-success-200 dark:border-success-800" : 
+                                 pay.status === 'failed' ? "bg-danger-50 dark:bg-danger-900/20 text-danger-700 dark:text-danger-500 border-danger-200 dark:border-danger-800" :
+                                 "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10"
                               )}>
                                  {pay.status}
                               </span>
                            </td>
                            <td className="py-4 px-6 text-right">
                               <div className="flex items-center justify-end gap-2">
-                                 <button className="p-1.5 rounded-btn hover:bg-plano-50 text-gray-400 hover:text-plano-600 transition-all">
+                                 <button className="p-1.5 rounded-btn hover:bg-plano-50 dark:hover:bg-white/10 text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 transition-all">
                                     <ArrowUpRight size={18} />
                                  </button>
-                                 <button className="p-1.5 rounded-btn hover:bg-gray-100 text-gray-400 hover:text-text-primary transition-all">
+                                 <button className="p-1.5 rounded-btn hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-text-primary transition-all">
                                     <MoreVertical size={18} />
                                  </button>
                               </div>

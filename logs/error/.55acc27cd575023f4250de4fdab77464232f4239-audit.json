@@ -9,6 +9,11 @@
             "date": 1775297458357,
             "name": "D:\\plano\\logs\\error\\error-2026-04-04.log",
             "hash": "eac36862ae258b5dcd158bf423030b1381fdf6dc8e20f0fb223b4d230592ecb5"
+        },
+        {
+            "date": 1775335040946,
+            "name": "D:\\plano\\logs\\error\\error-2026-04-05.log",
+            "hash": "92e0e93f177ad89e4e7e96116373b3e0954896d9ac4962704f9b9f4484582cb7"
         }
     ],
     "hashType": "sha256"

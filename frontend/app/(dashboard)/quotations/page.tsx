@@ -53,11 +53,11 @@ export default function QuotationsPage() {
         </Link>
       </div>
 
-      <div className="flex items-center justify-between gap-4 bg-bg-surface p-4 rounded-card border border-border shadow-sm">
+      <div className="flex items-center justify-between gap-4 bg-bg-surface p-4 rounded-card border border-border dark:border-sidebar-hover shadow-sm">
         <div className="relative flex-1 max-w-sm">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input type="text" placeholder="Search quotations..."
-            className="w-full h-10 pl-10 pr-4 rounded-input border border-border bg-gray-25 focus:border-plano-500 focus:outline-none transition-all text-sm font-sans" />
+            className="w-full h-10 pl-10 pr-4 rounded-input border border-border dark:border-sidebar-hover bg-gray-25 dark:bg-bg-page focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans text-text-primary" />
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export default function QuotationsPage() {
         </div>
       ) : quotations.length === 0 ? (
         <div className="flex flex-col items-center py-24 gap-4 text-center">
-          <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-300">
+          <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300">
             <FileText size={32} />
           </div>
           <p className="text-lg font-serif font-bold text-text-primary">No quotations yet</p>
@@ -88,10 +88,10 @@ export default function QuotationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {quotations.map((q: any) => (
             <div key={q._id}
-              className="bg-bg-surface border border-border rounded-card p-6 flex flex-col gap-5 hover:shadow-md hover:-translate-y-1 transition-all group">
+              className="bg-bg-surface border border-border dark:border-sidebar-hover rounded-card p-6 flex flex-col gap-5 hover:shadow-md hover:-translate-y-1 transition-all group">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-plano-50 text-plano-600 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center border border-plano-100 dark:border-white/5">
                     <FileSignature size={20} />
                   </div>
                   <div className="flex flex-col">
@@ -104,16 +104,16 @@ export default function QuotationsPage() {
                     </div>
                   </div>
                 </div>
-                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full
-                  ${q.status === 'accepted' ? 'bg-success-50 text-success-700'
-                    : q.status === 'sent' ? 'bg-info-50 text-info-700'
-                    : q.status === 'expired' ? 'bg-danger-50 text-danger-700'
-                    : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${
+                  q.status === 'accepted' ? 'bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-500 border-success-200 dark:border-success-800'
+                    : q.status === 'sent' ? 'bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-500 border-info-200 dark:border-info-800'
+                    : q.status === 'expired' ? 'bg-danger-50 dark:bg-danger-900/20 text-danger-700 dark:text-danger-500 border-danger-200 dark:border-danger-800'
+                    : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10'}`}>
                   {q.status ?? 'draft'}
                 </span>
               </div>
 
-              <div className="flex flex-col gap-2 py-4 border-y border-gray-100">
+              <div className="flex flex-col gap-2 py-4 border-y border-border dark:border-sidebar-hover">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Customer</span>
                   <span className="text-xs font-bold text-text-primary">
@@ -144,7 +144,7 @@ export default function QuotationsPage() {
                 )}
                 <div className="flex items-center gap-2 ml-auto">
                   <Link href={`/quotations/${q._id}`}
-                    className="p-2 rounded-btn border border-border bg-white text-gray-400 hover:text-plano-600 transition-all">
+                    className="p-2 rounded-btn border border-border dark:border-sidebar-hover bg-bg-surface text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 hover:bg-plano-50 dark:hover:bg-white/10 transition-all">
                     <ExternalLink size={16} />
                   </Link>
                 </div>

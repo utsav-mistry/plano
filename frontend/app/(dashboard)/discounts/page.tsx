@@ -74,7 +74,7 @@ export default function DiscountsPage() {
         </div>
       ) : discounts.length === 0 ? (
         <div className="flex flex-col items-center py-24 gap-4 text-center">
-          <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-gray-300">
+          <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-300">
             <FileText size={32} />
           </div>
           <p className="text-lg font-serif font-bold text-text-primary">No discounts yet</p>
@@ -92,7 +92,7 @@ export default function DiscountsPage() {
 
               <div className="flex items-start justify-between relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-plano-50 text-plano-600 flex items-center justify-center border border-plano-100">
+                  <div className="w-10 h-10 rounded-lg bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center border border-plano-100 dark:border-white/5">
                     <TicketPercent size={20} />
                   </div>
                   <div className="flex flex-col">
@@ -113,13 +113,13 @@ export default function DiscountsPage() {
                   <span className="text-xs font-bold text-gray-400 pb-2 uppercase tracking-widest">OFF</span>
                 </div>
                 {discount.appliesTo && (
-                  <span className="text-[10px] font-bold text-plano-600 uppercase tracking-widest bg-plano-50 border border-plano-100 px-2.5 py-1 rounded-full self-start">
+                  <span className="text-[10px] font-bold text-plano-600 dark:text-plano-400 uppercase tracking-widest bg-plano-50 dark:bg-white/10 border border-plano-100 dark:border-white/5 px-2.5 py-1 rounded-full self-start">
                     On: {discount.appliesTo}
                   </span>
                 )}
               </div>
 
-              <div className="flex flex-col gap-3 pt-4 border-t border-gray-100 relative z-10">
+              <div className="flex flex-col gap-3 pt-4 border-t border-border dark:border-sidebar-hover relative z-10">
                 {discount.usageLimit > 0 && (
                   <>
                     <div className="flex items-center justify-between">
@@ -128,7 +128,7 @@ export default function DiscountsPage() {
                         {discount.usageCount ?? 0} / {discount.usageLimit} uses
                       </span>
                     </div>
-                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-1.5 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
                       <div className={cn('h-full rounded-full transition-all', discount.isActive ? 'bg-plano-600' : 'bg-gray-300')}
                         style={{ width: `${Math.min(((discount.usageCount ?? 0) / discount.usageLimit) * 100, 100)}%` }} />
                     </div>
@@ -147,16 +147,16 @@ export default function DiscountsPage() {
               <div className="flex items-center justify-end gap-2 relative z-10">
                 <button onClick={() => handleToggle(discount._id)}
                   className={cn('p-2 rounded-btn transition-colors',
-                    discount.isActive ? 'text-gray-400 hover:text-warning-600 hover:bg-warning-50'
-                      : 'text-success-600 hover:bg-success-50')}>
+                    discount.isActive ? 'text-gray-400 hover:text-warning-600 hover:bg-warning-50 dark:hover:bg-warning-900/20'
+                      : 'text-success-600 hover:bg-success-50 dark:hover:bg-success-900/20')}>
                   <Power size={16} />
                 </button>
                 <Link href={`/discounts/${discount._id}/edit`}
-                  className="p-2 rounded-btn text-gray-400 hover:text-plano-600 hover:bg-plano-50 transition-colors">
+                  className="p-2 rounded-btn text-gray-400 hover:text-plano-600 hover:bg-plano-50 dark:hover:bg-white/10 transition-colors">
                   <Edit2 size={16} />
                 </Link>
                 <button onClick={() => handleDelete(discount._id)}
-                  className="p-2 rounded-btn text-gray-400 hover:text-danger-600 hover:bg-danger-50 transition-colors">
+                  className="p-2 rounded-btn text-gray-400 hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-colors">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -165,7 +165,7 @@ export default function DiscountsPage() {
 
           {/* Add new card */}
           <Link href="/discounts/new"
-            className="bg-bg-page border-2 border-dashed border-border rounded-card p-6 flex flex-col items-center justify-center gap-4 hover:bg-white hover:border-plano-400 transition-all group min-h-[280px]">
+            className="bg-bg-page border-2 border-dashed border-border dark:border-sidebar-hover rounded-card p-6 flex flex-col items-center justify-center gap-4 hover:bg-bg-surface hover:border-plano-400 transition-all group min-h-[280px]">
             <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-plano-50 flex items-center justify-center text-gray-400 group-hover:text-plano-600 transition-all">
               <Plus size={24} />
             </div>

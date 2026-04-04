@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -8,7 +8,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 import { defaultRouteForRole } from '@/lib/role-routing';
 
-export default function LoginPage() {
+function LoginContent() {
   const { login, user, isLoading: authLoading } = useAuth();
   const { error: toastError } = useToast();
   const router = useRouter();
@@ -169,5 +169,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-12"><Loader2 size={32} className="animate-spin text-[#714b67]" /></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -144,13 +144,13 @@ export default function UsersManagementPage() {
          </div>
 
          {/* Tabs / Multi-Filter Bar */}
-         <div className="bg-bg-surface p-4 rounded-card border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center p-1 bg-gray-100 rounded-input border border-border w-full md:w-auto">
+         <div className="bg-bg-surface p-4 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center p-1 bg-gray-100 dark:bg-white/5 rounded-input border border-border dark:border-sidebar-hover w-full md:w-auto">
                <button
                   onClick={() => setActiveTab('INTERNAL')}
                   className={cn(
                      "flex-1 md:flex-none px-6 py-2 rounded-btn text-xs font-bold uppercase tracking-widest transition-all",
-                     activeTab === 'INTERNAL' ? "bg-white text-plano-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                     activeTab === 'INTERNAL' ? "bg-white dark:bg-plano-600 text-plano-600 dark:text-white shadow-sm" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                   )}
                >
                   Team Members ({internalUsers.length})
@@ -159,7 +159,7 @@ export default function UsersManagementPage() {
                   onClick={() => setActiveTab('CUSTOMER')}
                   className={cn(
                      "flex-1 md:flex-none px-6 py-2 rounded-btn text-xs font-bold uppercase tracking-widest transition-all",
-                     activeTab === 'CUSTOMER' ? "bg-white text-plano-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                     activeTab === 'CUSTOMER' ? "bg-white dark:bg-plano-600 text-plano-600 dark:text-white shadow-sm" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                   )}
                >
                   Customers ({customers.length})
@@ -174,17 +174,17 @@ export default function UsersManagementPage() {
                      placeholder={activeTab === 'INTERNAL' ? "Search team..." : "Search customers..."}
                      value={search}
                      onChange={(e) => setSearch(e.target.value)}
-                     className="w-full h-10 pl-10 pr-4 rounded-input border border-border bg-gray-25 focus:border-plano-500 focus:bg-white focus:outline-none transition-all text-sm font-sans"
+                     className="w-full h-10 pl-10 pr-4 rounded-input border border-border dark:border-sidebar-hover bg-gray-25 dark:bg-bg-page focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans text-text-primary"
                   />
                </div>
-               <button className="p-2.5 border border-border bg-white rounded-input text-gray-400 hover:text-text-primary transition-colors">
+               <button className="p-2.5 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-gray-400 hover:text-text-primary transition-colors">
                   <Filter size={18} />
                </button>
             </div>
          </div>
 
          {/* Content Table */}
-         <div className="bg-bg-surface rounded-card border border-border overflow-hidden shadow-sm min-h-[400px] flex flex-col">
+         <div className="bg-bg-surface rounded-card border border-border dark:border-sidebar-hover overflow-hidden shadow-sm min-h-[400px] flex flex-col">
             {isLoading ? (
                <div className="flex-1 flex flex-col items-center justify-center py-20 gap-3">
                   <Loader2 className="w-8 h-8 text-plano-600 animate-spin" />
@@ -198,7 +198,7 @@ export default function UsersManagementPage() {
                </div>
             ) : filteredUsers.length === 0 ? (
                <div className="flex-1 flex flex-col items-center justify-center py-24 gap-4 text-center px-6">
-                  <UserCircle size={48} className="text-gray-200" />
+                  <UserCircle size={48} className="text-gray-200 dark:text-white/10" />
                   <p className="text-lg font-serif font-bold text-text-primary">No users found</p>
                   <p className="text-xs text-text-secondary font-medium max-w-[200px]">We could not find any {activeTab.toLowerCase()} matching your search.</p>
                </div>
@@ -206,27 +206,27 @@ export default function UsersManagementPage() {
                <div className="overflow-x-auto">
                   <table className="w-full text-left">
                      <thead>
-                        <tr className="border-b border-border bg-gray-50/50">
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">
+                        <tr className="border-b border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/10">
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest">
                               {activeTab === 'INTERNAL' ? 'User Profile' : 'Customer Profile'}
                            </th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Role / Type</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Joined On</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-center">Status</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right">Actions</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Role / Type</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Joined On</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center">Status</th>
+                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right">Actions</th>
                         </tr>
                      </thead>
-                     <tbody className="divide-y divide-gray-100">
+                     <tbody className="divide-y divide-border dark:divide-sidebar-hover">
                         {filteredUsers.map((user) => (
-                           <tr key={user._id} className="group hover:bg-gray-25 transition-colors">
+                           <tr key={user._id} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
                               <td className="py-4 px-6">
                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-plano-50 border border-plano-100 flex items-center justify-center text-plano-700 font-bold text-xs">
+                                    <div className="w-10 h-10 rounded-full bg-plano-50 dark:bg-white/10 border border-plano-100 dark:border-white/5 flex items-center justify-center text-plano-700 dark:text-plano-300 font-bold text-xs">
                                        {user.name.split(' ').map((n: string) => n[0]).join('')}
                                     </div>
                                     <div className="flex flex-col">
                                        <span className="text-sm font-bold text-text-primary">{user.name}</span>
-                                       <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest group-hover:text-plano-600 transition-colors">
+                                       <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest group-hover:text-plano-600 dark:group-hover:text-plano-400 transition-colors">
                                           {user.email}
                                        </span>
                                     </div>
@@ -234,12 +234,12 @@ export default function UsersManagementPage() {
                               </td>
                               <td className="py-4 px-6">
                                  <div className="flex items-center gap-1.5">
-                                    {user.role === 'admin' ? <ShieldCheck size={12} className="text-plano-600" /> : null}
+                                    {user.role === 'admin' ? <ShieldCheck size={12} className="text-plano-600 dark:text-plano-400" /> : null}
                                     <span className={cn(
                                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border",
-                                       user.role === 'admin' ? "bg-plano-900 border-plano-900 text-white" :
-                                          user.role === 'portal_user' ? "bg-warning-50 border-warning-100 text-warning-700" :
-                                             "bg-gray-100 border-gray-200 text-text-secondary"
+                                       user.role === 'admin' ? "bg-plano-600 dark:bg-plano-500 border-plano-600 dark:border-plano-400 text-white" :
+                                          user.role === 'portal_user' ? "bg-warning-50 dark:bg-warning-900/20 border-warning-100 dark:border-warning-800 text-warning-700 dark:text-warning-400" :
+                                             "bg-gray-100 dark:bg-white/10 border-gray-200 dark:border-white/10 text-text-secondary"
                                     )}>
                                        {user.role.replace('_', ' ')}
                                     </span>
@@ -260,7 +260,7 @@ export default function UsersManagementPage() {
                                     onClick={() => toggleUserStatus(user._id)}
                                     className={cn(
                                        "w-10 h-5 rounded-full relative transition-all shadow-sm",
-                                       user.isActive ? "bg-success-500" : "bg-gray-300"
+                                       user.isActive ? "bg-success-500" : "bg-gray-300 dark:bg-white/20"
                                     )}
                                  >
                                     <div className={cn(
@@ -271,7 +271,7 @@ export default function UsersManagementPage() {
                               </td>
                               <td className="py-4 px-6 text-right">
                                  <div className="flex items-center justify-end gap-2">
-                                    <button className="p-2 rounded-btn text-gray-400 hover:text-plano-600 hover:bg-plano-50 transition-all">
+                                    <button className="p-2 rounded-btn text-gray-400 hover:text-plano-600 hover:bg-plano-50 dark:hover:bg-white/10 transition-all">
                                        <Mail size={16} />
                                     </button>
                                     {user.role === 'portal_user' ? (
@@ -279,7 +279,7 @@ export default function UsersManagementPage() {
                                           type="button"
                                           onClick={() => setUserPendingDelete(user)}
                                           disabled={deletingUserId === user._id}
-                                          className="p-2 rounded-btn text-gray-400 hover:text-danger-600 hover:bg-danger-50 transition-all disabled:opacity-50"
+                                          className="p-2 rounded-btn text-gray-400 hover:text-danger-600 hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-all disabled:opacity-50"
                                           title="Delete invited/customer user"
                                        >
                                           {deletingUserId === user._id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
@@ -296,8 +296,8 @@ export default function UsersManagementPage() {
          </div>
 
          {showInviteModal ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-               <div className="w-full max-w-md rounded-2xl border border-border bg-white p-6 shadow-2xl">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+               <div className="w-full max-w-md rounded-2xl border border-border dark:border-sidebar-hover bg-bg-surface shadow-2xl p-6">
                   <h2 className="text-xl font-bold text-text-primary">Invite Customer</h2>
                   <p className="mt-1 text-sm text-text-secondary">An invitation email with an Accept Invitation button will be sent automatically.</p>
 
@@ -307,14 +307,14 @@ export default function UsersManagementPage() {
                         value={inviteForm.name}
                         onChange={(e) => setInviteForm((prev) => ({ ...prev, name: e.target.value }))}
                         placeholder="Customer name"
-                        className="h-11 rounded-lg border border-border px-3 text-sm outline-none focus:border-plano-500"
+                        className="h-11 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary px-3 text-sm outline-none focus:border-plano-500 dark:focus:bg-white/10 w-full"
                      />
                      <input
                         type="email"
                         value={inviteForm.email}
                         onChange={(e) => setInviteForm((prev) => ({ ...prev, email: e.target.value }))}
                         placeholder="customer@example.com"
-                        className="h-11 rounded-lg border border-border px-3 text-sm outline-none focus:border-plano-500"
+                        className="h-11 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary px-3 text-sm outline-none focus:border-plano-500 dark:focus:bg-white/10 w-full"
                      />
                   </div>
 
@@ -325,7 +325,7 @@ export default function UsersManagementPage() {
                            if (isInviting) return;
                            setShowInviteModal(false);
                         }}
-                        className="h-10 rounded-lg border border-border px-4 text-sm font-semibold text-text-secondary hover:bg-gray-50"
+                        className="h-10 rounded-lg border border-border dark:border-sidebar-hover bg-bg-page px-4 text-sm font-semibold text-text-secondary hover:bg-sidebar-hover transition-colors"
                      >
                         Cancel
                      </button>
@@ -343,8 +343,8 @@ export default function UsersManagementPage() {
          ) : null}
 
          {userPendingDelete ? (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-               <div className="w-full max-w-md rounded-2xl border border-border bg-white p-6 shadow-2xl">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+               <div className="w-full max-w-md rounded-2xl border border-border dark:border-sidebar-hover bg-bg-surface shadow-2xl p-6">
                   <h2 className="text-xl font-bold text-text-primary">Delete User</h2>
                   <p className="mt-1 text-sm text-text-secondary">
                      Delete {userPendingDelete.name} ({userPendingDelete.email})? This action cannot be undone from the dashboard.
@@ -355,7 +355,7 @@ export default function UsersManagementPage() {
                         type="button"
                         disabled={deletingUserId === userPendingDelete._id}
                         onClick={() => setUserPendingDelete(null)}
-                        className="h-10 rounded-lg border border-border px-4 text-sm font-semibold text-text-secondary hover:bg-gray-50 disabled:opacity-50"
+                        className="h-10 rounded-lg border border-border dark:border-sidebar-hover bg-bg-page px-4 text-sm font-semibold text-text-secondary hover:bg-sidebar-hover transition-colors disabled:opacity-50"
                      >
                         Cancel
                      </button>

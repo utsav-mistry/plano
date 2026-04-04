@@ -68,7 +68,7 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
   return (
     <aside
       className={cn(
-        "bg-sidebar-bg text-sidebar-text flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300",
+        "bg-sidebar-bg text-sidebar-text flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300 border-r border-white/5",
         collapsed ? "w-16" : "w-60"
       )}
     >
@@ -87,34 +87,39 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 no-scrollbar">
         {navGroups.map((group, idx) => (
-          <div key={idx} className="mb-4">
-            {!collapsed && (
-              <h3 className="px-3 mb-1.5 text-[10px] uppercase tracking-widest text-sidebar-muted font-semibold">
-                {group.label}
-              </h3>
-            )}
-            <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const scopedHref = `${routePrefix}${item.href}`;
-                const isActive = pathname === scopedHref || pathname.startsWith(`${scopedHref}/`);
-                return (
-                  <Link
-                    key={item.name}
-                    href={scopedHref}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-1.5 rounded-btn font-sans text-sm transition-colors",
-                      isActive
-                        ? "bg-plano-600 text-white"
-                        : "text-sidebar-text hover:bg-sidebar-hover"
-                    )}
-                  >
-                    <item.icon size={18} className={cn(isActive ? "text-white" : "text-sidebar-muted")} />
-                    {!collapsed && <span className="whitespace-nowrap">{item.name}</span>}
-                  </Link>
-                );
-              })}
+          <React.Fragment key={idx}>
+            <div className="mb-4">
+              {!collapsed && (
+                <h3 className="px-3 mb-1.5 text-[10px] uppercase tracking-widest text-sidebar-muted font-semibold">
+                  {group.label}
+                </h3>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const scopedHref = `${routePrefix}${item.href}`;
+                  const isActive = pathname === scopedHref || pathname.startsWith(`${scopedHref}/`);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={scopedHref}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-1.5 rounded-btn font-sans text-sm transition-colors",
+                        isActive
+                          ? "bg-plano-600 text-white"
+                          : "text-sidebar-text hover:bg-sidebar-hover"
+                      )}
+                    >
+                      <item.icon size={18} className={cn(isActive ? "text-white" : "text-sidebar-muted")} />
+                      {!collapsed && <span className="whitespace-nowrap">{item.name}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+            {idx < navGroups.length - 1 && (
+              <div className="h-px bg-sidebar-hover/30 mx-3 my-4" />
+            )}
+          </React.Fragment>
         ))}
       </nav>
 
