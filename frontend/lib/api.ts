@@ -16,18 +16,39 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/a
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const url = `${API_BASE_URL}${path}`;
+  
+  // Get token from localStorage (client-side only check)
+  const token = typeof window !== 'undefined' ? localStorage.getItem('plano_token') : null;
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   });
 
+  // Handle No Content (204)
+  if (response.status === 204) {
+    return { success: true, data: null as any };
+  }
+
   const data = await response.json();
+  
   if (!response.ok) {
+    // Handle unauthorized - clear token and redirect if necessary
+    if (response.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('plano_token');
+    }
     throw new Error(data.message || 'Something went wrong');
   }
+  
   return data as ApiResponse<T>;
 }
 
@@ -36,14 +57,18 @@ export const api = {
   auth: {
     login: (credentials: any) => 
       request<{ user: User, token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
-    signup: (data: any) => 
-      request<{ user: User, token: string }>('/auth/signup', { method: 'POST', body: JSON.stringify(data) }),
+    register: (data: any) => 
+      request<{ user: User, token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
     logout: () => 
       request<null>('/auth/logout', { method: 'POST' }),
     me: () => 
       request<User>('/auth/me'),
+    forgotPassword: (data: any) =>
+      request<null>('/auth/forgot-password', { method: 'POST', body: JSON.stringify(data) }),
+    resetPassword: (token: string, data: any) =>
+      request<null>(`/auth/reset-password/${token}`, { method: 'POST', body: JSON.stringify(data) }),
     refresh: () => 
-      request<{ token: string }>('/auth/refresh', { method: 'POST' }),
+      request<{ token: string }>('/auth/refresh-token', { method: 'POST' }),
   },
   
   // ─── Users ─────────────────────────────────────────────────

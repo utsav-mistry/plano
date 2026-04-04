@@ -14,34 +14,57 @@ import RevenueChart from '@/components/dashboard/RevenueChart';
 import StatusDonut from '@/components/dashboard/StatusDonut';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/app/context/AuthContext';
+import { api } from '@/lib/api';
+import { KPIStats } from '@/types';
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const [stats, setStats] = React.useState<KPIStats | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await api.reports.getDashboardStats();
+        if (response.success) {
+          setStats(response.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch dashboard stats', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchStats();
+  }, []);
+
   const kpis = [
     {
       label: 'Active Subscriptions',
-      value: '248',
-      trend: 14,
+      value: stats?.activeSubscriptions.toString() || '0',
+      trend: stats?.activeSubscriptionsTrend || 0,
       icon: <Users size={20} />,
       iconColorClass: 'bg-plano-50 text-plano-600',
     },
     {
       label: 'Monthly Recurring Revenue',
-      value: '₹4,82,500',
-      trend: 8.2,
+      value: stats ? `₹${stats.mrr.toLocaleString('en-IN')}` : '₹0',
+      trend: stats?.mrrTrend || 0,
       icon: <TrendingUp size={20} />,
       iconColorClass: 'bg-success-50 text-success-500',
     },
     {
       label: 'Overdue Invoices',
-      value: '12',
-      trend: 25,
+      value: stats?.overdueInvoices.toString() || '0',
+      trend: stats?.overdueInvoicesTrend || 0,
       icon: <AlertCircle size={20} />,
       iconColorClass: 'bg-danger-50 text-danger-500',
     },
     {
       label: 'New Subscriptions (30d)',
-      value: '42',
-      trend: -5,
+      value: stats?.newSubscriptions30d.toString() || '0',
+      trend: stats?.newSubscriptions30dTrend || 0,
       icon: <UserPlus size={20} />,
       iconColorClass: 'bg-warning-50 text-warning-500',
     },
@@ -52,7 +75,7 @@ export default function Dashboard() {
       {/* Header section */}
       <div className="flex items-end justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-4xl">Good morning, Ravi 👋</h1>
+          <h1 className="text-4xl">Good morning, {user?.name.split(' ')[0] || 'User'} 👋</h1>
           <p className="text-sm text-text-secondary font-medium tracking-wide">
             Here's what's happening with Plano today.
           </p>
