@@ -6,6 +6,22 @@
 
 module.exports = {
   apps: [
+    // ── Next.js Frontend ───────────────────────────────────────
+    {
+      name: "frontend",
+      script: "frontend/node_modules/next/dist/bin/next",
+      args: "start -p 3000",
+      instances: 1,
+      exec_mode: "fork",
+      autorestart: true,
+      max_memory_restart: "500M",
+      out_file: "/dev/null",
+      error_file: "/dev/null",
+      env: {
+        NODE_ENV: "production"
+      }
+    },
+
     // ── Express API ────────────────────────────────────────────
     {
       name: "backend",

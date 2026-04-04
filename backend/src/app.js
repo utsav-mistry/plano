@@ -26,6 +26,29 @@ import reportRoutes from './modules/reports/report.routes.js';
 
 const app = express();
 
+// ─── Public Health Check (open CORS) ─────────────────────────
+app.get('/health', (req, res) => {
+  const mem = process.memoryUsage();
+  const toMb = (bytes) => Math.round((bytes / 1024 / 1024) * 100) / 100;
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(200).json({
+    status: 'ok',
+    service: 'plano-api',
+    environment: process.env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+    uptimeSeconds: Math.floor(process.uptime()),
+    pid: process.pid,
+    memoryMb: {
+      rss: toMb(mem.rss),
+      heapTotal: toMb(mem.heapTotal),
+      heapUsed: toMb(mem.heapUsed),
+      external: toMb(mem.external),
+    },
+  });
+});
+
 // ─── Security ────────────────────────────────────────────────
 const corsOptions = {
   origin: (origin, callback) => {
@@ -66,17 +89,6 @@ app.use(globalLimiter);
 
 // ─── Request Logging ──────────────────────────────────────────
 app.use(requestLogger);
-
-// ─── Health Check ─────────────────────────────────────────────
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Plano API is healthy',
-    environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString(),
-    uptime: `${Math.floor(process.uptime())}s`,
-  });
-});
 
 // ─── API Routes ───────────────────────────────────────────────
 const API_PREFIX = `/api/${process.env.API_VERSION || 'v1'}`;

@@ -26,7 +26,7 @@ echo "===== Plano Setup — $(date) =====" | tee -a $LOG_DIR/deploy.log
 
 # ── Install system dependencies (Node, Redis, Nginx, PM2) ─────
 apt-get update -qq
-apt-get install -y nodejs redis-server nginx
+apt-get install -y nodejs redis-server nginx git
 
 # Install PM2 if not present
 if ! command -v pm2 &>/dev/null; then
@@ -49,7 +49,7 @@ cd status && npm install --omit=dev && cd ..
 # Build Next.js frontend if present
 if [ -f "frontend/package.json" ]; then
   echo "Building Next.js frontend..." | tee -a $LOG_DIR/deploy.log
-  cd frontend && npm install --omit=dev && npm run build && cd ..
+  cd frontend && npm install && npm run build && npm prune --omit=dev && cd ..
 fi
 
 # ── Set up environment files ──────────────────────────────────
@@ -66,7 +66,7 @@ chmod 755 $APP_DIR/backend/storage
 
 # ── Export PM2_HOME so it persists across sessions ────────────
 grep -q "PM2_HOME" /etc/environment || \
-  echo "export PM2_HOME=/home/app/.pm2" | tee -a /etc/environment
+  echo "PM2_HOME=/home/app/.pm2" | tee -a /etc/environment
 source /etc/environment
 
 # ── Copy Nginx config ─────────────────────────────────────────
