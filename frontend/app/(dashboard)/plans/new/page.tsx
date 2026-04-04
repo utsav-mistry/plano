@@ -361,66 +361,6 @@ export default function NewPlanPage() {
               </button>
             </div>
 
-            <div className="flex flex-col gap-2 mt-2">
-              {form.features.length === 0 ? (
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
-                  No features listed yet
-                </p>
-              ) : (
-                form.features.map((f, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-border group">
-                    <span className="text-xs font-bold text-text-primary flex items-center gap-2">
-                      <Check size={14} className="text-success-600" />
-                      {f}
-                    </span>
-                    <button type="button" onClick={() => removeFeature(f)} className="text-gray-300 hover:text-danger-600 transition-colors opacity-0 group-hover:opacity-100">
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
-
-          {/* Plan Preview */}
-          <div className="bg-plano-900 rounded-card p-8 flex flex-col gap-6 text-white shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4">
-              <Zap size={24} className="text-plano-400 opacity-20 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-plano-500 rounded-full blur-[80px] opacity-20"></div>
-
-            <div className="flex flex-col gap-1.5 relative">
-              <span className="text-[10px] font-bold text-plano-400 uppercase tracking-[0.3em]">
-                {form.billingCycle.replace('_', ' ')} / {form.currency}
-              </span>
-              <h3 className="text-3xl font-serif font-bold leading-tight">
-                {form.name || 'Untitled Plan'}
-              </h3>
-            </div>
-
-            <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-4xl font-serif font-bold">{formatCurrency(Number(form.price) || 0, form.currency)}</span>
-              <span className="text-xs font-bold text-plano-400 uppercase">/ {form.billingCycle.split('_')[0]}</span>
-            </div>
-
-            <div className="flex flex-col gap-3 mt-4 border-t border-white/10 pt-6">
-              {form.features.slice(0, 4).map((f, i) => (
-                <div key={i} className="flex items-center gap-3 text-xs font-medium text-plano-100">
-                  <Sparkles size={12} className="text-plano-400 shrink-0" />
-                  {f}
-                </div>
-              ))}
-              {form.features.length > 4 && (
-                <div className="text-[10px] font-bold uppercase tracking-widest text-plano-400 ml-6">
-                  + {form.features.length - 4} More Benefits
-                </div>
-              )}
-            </div>
-
-            <button disabled type="button" className="w-full h-12 rounded-xl bg-white text-plano-900 font-bold text-sm shadow-xl">
-              Select This Plan
-            </button>
-          </div>
         </div>
       </form>
     </div>
