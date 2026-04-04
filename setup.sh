@@ -95,8 +95,8 @@ CRON_JOB="0 2 * * * $APP_DIR/logs-cleanup.sh >> $LOG_DIR/deploy.log 2>&1"
 echo "" | tee -a $LOG_DIR/deploy.log
 echo "===== Setup complete — $(date) =====" | tee -a $LOG_DIR/deploy.log
 echo ""
-echo "  Web:    domain.tld         → localhost:3000"
-echo "  API:    api.domain.tld     → localhost:5000"
-echo "  Status: status.domain.tld  → localhost:4000"
+echo "  Web:    planoo.tech         → localhost:3000"
+echo "  API:    api.planoo.tech     → localhost:5000"
+echo "  Status: status.planoo.tech  → localhost:4000"
 echo ""
 pm2 list

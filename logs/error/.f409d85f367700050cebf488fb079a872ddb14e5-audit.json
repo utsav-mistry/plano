@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "D:\\Codebase\\plano\\logs\\error\\.f409d85f367700050cebf488fb079a872ddb14e5-audit.json",
+    "files": [
+        {
+            "date": 1775299174620,
+            "name": "D:\\Codebase\\plano\\logs\\error\\error-2026-04-04.log",
+            "hash": "3cb12f62af13e9cebd7abcc44fe3d32bbc7084cbfa02a96d70abab127c3419ad"
+        }
+    ],
+    "hashType": "sha256"
+}

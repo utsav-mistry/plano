@@ -126,9 +126,9 @@ sudo nano /etc/nginx/sites-available/plano
 
 | Subdomain | Proxies to |
 |---|---|
-| `domain.tld` | `localhost:3000` (Next.js) |
-| `api.domain.tld` | `localhost:5000` (Express) |
-| `status.domain.tld` | `localhost:4000` (BullMQ Board) |
+| `planoo.tech` | `localhost:3000` (Next.js) |
+| `api.planoo.tech` | `localhost:5000` (Express) |
+| `status.planoo.tech` | `localhost:4000` (BullMQ Board) |
 
 ### PM2 — Initialize
 
