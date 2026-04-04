@@ -1,19 +1,9 @@
 {
   "name": "plano-status",
   "version": "1.0.0",
-  "description": "Plano — BullMQ Status Board",
   "type": "module",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
-  "dependencies": {
-    "@bull-board/api": "^5.17.0",
-    "@bull-board/express": "^5.17.0",
-    "bullmq": "^5.4.0",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "ioredis": "^5.3.2"
+    "dev":   "node --watch server.js"
   }
 }
