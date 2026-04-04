@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight, Loader2, Check, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
+import { defaultRouteForRole } from '@/lib/role-routing';
 
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
@@ -50,7 +50,6 @@ function PasswordStrength({ password }: { password: string }) {
 export default function SignupPage() {
   const { register, user, isLoading: authLoading } = useAuth();
   const { error: toastError } = useToast();
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -58,9 +57,9 @@ export default function SignupPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!authLoading && user) {
-      router.push('/dashboard');
+      window.location.href = defaultRouteForRole(user?.role);
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

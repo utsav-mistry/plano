@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Plus, 
-  ArrowLeft, 
-  Save, 
-  Info, 
-  Layers, 
-  IndianRupee, 
+import {
+  Plus,
+  ArrowLeft,
+  Save,
+  Info,
+  Layers,
+  IndianRupee,
   Check,
   Loader2,
   ChevronDown,
@@ -32,7 +31,6 @@ const BILLING_CYCLES = [
 const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
 
 export default function NewPlanPage() {
-  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -85,7 +83,7 @@ export default function NewPlanPage() {
       });
       if (res.success) {
         success('Plan active!', 'Your new billing plan is now live.');
-        router.push('/plans');
+        window.location.href = '/admin/plans';
       }
     } catch (err: any) {
       toastError('Setup failed', err.message);
@@ -117,10 +115,10 @@ export default function NewPlanPage() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Form Area */}
         <div className="lg:col-span-2 flex flex-col gap-8">
-          
+
           <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8 relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-48 h-48 bg-plano-50 rounded-full blur-3xl opacity-40"></div>
-            
+
             <div className="flex items-center gap-3 pb-5 border-b border-gray-100 relative">
               <div className="w-10 h-10 rounded-xl bg-plano-50 text-plano-600 flex items-center justify-center border border-plano-100 shadow-sm">
                 <Layers size={20} />
@@ -132,11 +130,11 @@ export default function NewPlanPage() {
               <div className="flex flex-col">
                 <label className={labelStyle}>Link to Product *</label>
                 <div className="relative">
-                  <select 
+                  <select
                     suppressHydrationWarning
                     required
                     value={form.productId}
-                    onChange={(e) => setForm({...form, productId: e.target.value})}
+                    onChange={(e) => setForm({ ...form, productId: e.target.value })}
                     className={cn(inputStyle, "appearance-none pr-10 cursor-pointer")}
                     disabled={loadingDeps}
                   >
@@ -154,13 +152,13 @@ export default function NewPlanPage() {
               </div>
               <div className="flex flex-col">
                 <label className={labelStyle}>Plan Name *</label>
-                <input 
+                <input
                   suppressHydrationWarning
                   required
-                  type="text" 
+                  type="text"
                   placeholder="e.g. Pro Monthly Tier"
                   value={form.name}
-                  onChange={(e) => setForm({...form, name: e.target.value})}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className={inputStyle}
                 />
               </div>
@@ -171,14 +169,14 @@ export default function NewPlanPage() {
                 <label className={labelStyle}>Billing Cycle *</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {BILLING_CYCLES.map((cycle) => (
-                    <button 
+                    <button
                       key={cycle.value}
                       type="button"
-                      onClick={() => setForm({...form, billingCycle: cycle.value})}
+                      onClick={() => setForm({ ...form, billingCycle: cycle.value })}
                       className={cn(
                         "flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-300 relative",
-                        form.billingCycle === cycle.value 
-                          ? "bg-plano-900 border-plano-900 text-white shadow-lg" 
+                        form.billingCycle === cycle.value
+                          ? "bg-plano-900 border-plano-900 text-white shadow-lg"
                           : "bg-white border-border text-text-secondary hover:border-plano-200"
                       )}
                     >
@@ -195,11 +193,11 @@ export default function NewPlanPage() {
 
               <div className="flex flex-col">
                 <label className={labelStyle}>Description</label>
-                <textarea 
+                <textarea
                   rows={3}
                   placeholder="Summarize the core value proposition of this plan..."
                   value={form.description}
-                  onChange={(e) => setForm({...form, description: e.target.value})}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
                   className={cn(inputStyle, "h-24 py-4 resize-none")}
                 />
               </div>
@@ -221,13 +219,13 @@ export default function NewPlanPage() {
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-gray-200 pr-3 mr-3">
                     {form.currency === 'INR' ? '₹' : '$'}
                   </div>
-                  <input 
+                  <input
                     suppressHydrationWarning
                     required
-                    type="number" 
+                    type="number"
                     placeholder="0.00"
                     value={form.price}
-                    onChange={(e) => setForm({...form, price: e.target.value})}
+                    onChange={(e) => setForm({ ...form, price: e.target.value })}
                     className={cn(inputStyle, "pl-14 font-mono font-bold")}
                   />
                 </div>
@@ -237,7 +235,7 @@ export default function NewPlanPage() {
                 <div className="relative">
                   <select
                     value={form.currency}
-                    onChange={(e) => setForm({...form, currency: e.target.value})}
+                    onChange={(e) => setForm({ ...form, currency: e.target.value })}
                     className={cn(inputStyle, "appearance-none pr-10 cursor-pointer")}
                     suppressHydrationWarning
                   >
@@ -248,12 +246,12 @@ export default function NewPlanPage() {
               </div>
               <div className="flex flex-col">
                 <label className={labelStyle}>Trial (Days)</label>
-                <input 
+                <input
                   suppressHydrationWarning
-                  type="number" 
+                  type="number"
                   placeholder="0"
                   value={form.trialDays}
-                  onChange={(e) => setForm({...form, trialDays: e.target.value})}
+                  onChange={(e) => setForm({ ...form, trialDays: e.target.value })}
                   className={inputStyle}
                 />
               </div>
@@ -262,106 +260,106 @@ export default function NewPlanPage() {
 
           {/* Action Footer */}
           <div className="flex items-center gap-4">
-             <button 
-               type="submit"
-               disabled={isSubmitting}
-               className="flex-1 h-14 rounded-xl bg-plano-600 text-white text-lg font-bold hover:bg-black transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3"
-             >
-               {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
-               {isSubmitting ? 'Creating Plan...' : 'Publish Subscription Plan'}
-             </button>
-             <Link 
-               href="/plans"
-               className="px-10 h-14 rounded-xl border-2 border-border bg-white text-lg font-bold text-text-secondary hover:bg-gray-50 transition-all flex items-center justify-center"
-             >
-               Discard
-             </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 h-14 rounded-xl bg-plano-600 text-white text-lg font-bold hover:bg-black transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3"
+            >
+              {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
+              {isSubmitting ? 'Creating Plan...' : 'Publish Subscription Plan'}
+            </button>
+            <Link
+              href="/plans"
+              className="px-10 h-14 rounded-xl border-2 border-border bg-white text-lg font-bold text-text-secondary hover:bg-gray-50 transition-all flex items-center justify-center"
+            >
+              Discard
+            </Link>
           </div>
         </div>
 
         {/* Right Sidebar: Features & Preview */}
         <div className="flex flex-col gap-6">
-           <section className="bg-white p-6 rounded-card border border-border shadow-sm flex flex-col gap-6">
-              <label className={labelStyle}>Featured Benefits</label>
-              <div className="flex gap-2">
-                 <input 
-                    suppressHydrationWarning
-                    type="text" 
-                    placeholder="e.g. 24/7 Support"
-                    value={featureInput}
-                    onChange={(e) => setFeatureInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
-                    className={inputStyle}
-                 />
-                 <button 
-                   type="button"
-                   onClick={addFeature}
-                   className="w-11 h-11 rounded-lg bg-plano-900 text-white flex items-center justify-center shrink-0 hover:bg-black transition-colors"
-                 >
-                   <Plus size={20} />
-                 </button>
-              </div>
-
-              <div className="flex flex-col gap-2 mt-2">
-                 {form.features.length === 0 ? (
-                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
-                     No features listed yet
-                   </p>
-                 ) : (
-                   form.features.map((f, i) => (
-                     <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-border group">
-                        <span className="text-xs font-bold text-text-primary flex items-center gap-2">
-                          <Check size={14} className="text-success-600" />
-                          {f}
-                        </span>
-                        <button type="button" onClick={() => removeFeature(f)} className="text-gray-300 hover:text-danger-600 transition-colors opacity-0 group-hover:opacity-100">
-                          <X size={14} />
-                        </button>
-                     </div>
-                   ))
-                 )}
-              </div>
-           </section>
-
-           {/* Plan Preview */}
-           <div className="bg-plano-900 rounded-card p-8 flex flex-col gap-6 text-white shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4">
-                 <Zap size={24} className="text-plano-400 opacity-20 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-plano-500 rounded-full blur-[80px] opacity-20"></div>
-
-              <div className="flex flex-col gap-1.5 relative">
-                 <span className="text-[10px] font-bold text-plano-400 uppercase tracking-[0.3em]">
-                   {form.billingCycle.replace('_', ' ')} / {form.currency}
-                 </span>
-                 <h3 className="text-3xl font-serif font-bold leading-tight">
-                   {form.name || 'Untitled Plan'}
-                 </h3>
-              </div>
-
-              <div className="flex items-baseline gap-1 mt-2">
-                 <span className="text-4xl font-serif font-bold">{formatCurrency(Number(form.price) || 0, form.currency)}</span>
-                 <span className="text-xs font-bold text-plano-400 uppercase">/ {form.billingCycle.split('_')[0]}</span>
-              </div>
-
-              <div className="flex flex-col gap-3 mt-4 border-t border-white/10 pt-6">
-                 {form.features.slice(0, 4).map((f, i) => (
-                   <div key={i} className="flex items-center gap-3 text-xs font-medium text-plano-100">
-                      <Sparkles size={12} className="text-plano-400 shrink-0" />
-                      {f}
-                   </div>
-                 ))}
-                 {form.features.length > 4 && (
-                   <div className="text-[10px] font-bold uppercase tracking-widest text-plano-400 ml-6">
-                     + {form.features.length - 4} More Benefits
-                   </div>
-                 )}
-              </div>
-
-              <button disabled type="button" className="w-full h-12 rounded-xl bg-white text-plano-900 font-bold text-sm shadow-xl">
-                 Select This Plan
+          <section className="bg-white p-6 rounded-card border border-border shadow-sm flex flex-col gap-6">
+            <label className={labelStyle}>Featured Benefits</label>
+            <div className="flex gap-2">
+              <input
+                suppressHydrationWarning
+                type="text"
+                placeholder="e.g. 24/7 Support"
+                value={featureInput}
+                onChange={(e) => setFeatureInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
+                className={inputStyle}
+              />
+              <button
+                type="button"
+                onClick={addFeature}
+                className="w-11 h-11 rounded-lg bg-plano-900 text-white flex items-center justify-center shrink-0 hover:bg-black transition-colors"
+              >
+                <Plus size={20} />
               </button>
-           </div>
+            </div>
+
+            <div className="flex flex-col gap-2 mt-2">
+              {form.features.length === 0 ? (
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
+                  No features listed yet
+                </p>
+              ) : (
+                form.features.map((f, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-border group">
+                    <span className="text-xs font-bold text-text-primary flex items-center gap-2">
+                      <Check size={14} className="text-success-600" />
+                      {f}
+                    </span>
+                    <button type="button" onClick={() => removeFeature(f)} className="text-gray-300 hover:text-danger-600 transition-colors opacity-0 group-hover:opacity-100">
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+
+          {/* Plan Preview */}
+          <div className="bg-plano-900 rounded-card p-8 flex flex-col gap-6 text-white shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4">
+              <Zap size={24} className="text-plano-400 opacity-20 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-plano-500 rounded-full blur-[80px] opacity-20"></div>
+
+            <div className="flex flex-col gap-1.5 relative">
+              <span className="text-[10px] font-bold text-plano-400 uppercase tracking-[0.3em]">
+                {form.billingCycle.replace('_', ' ')} / {form.currency}
+              </span>
+              <h3 className="text-3xl font-serif font-bold leading-tight">
+                {form.name || 'Untitled Plan'}
+              </h3>
+            </div>
+
+            <div className="flex items-baseline gap-1 mt-2">
+              <span className="text-4xl font-serif font-bold">{formatCurrency(Number(form.price) || 0, form.currency)}</span>
+              <span className="text-xs font-bold text-plano-400 uppercase">/ {form.billingCycle.split('_')[0]}</span>
+            </div>
+
+            <div className="flex flex-col gap-3 mt-4 border-t border-white/10 pt-6">
+              {form.features.slice(0, 4).map((f, i) => (
+                <div key={i} className="flex items-center gap-3 text-xs font-medium text-plano-100">
+                  <Sparkles size={12} className="text-plano-400 shrink-0" />
+                  {f}
+                </div>
+              ))}
+              {form.features.length > 4 && (
+                <div className="text-[10px] font-bold uppercase tracking-widest text-plano-400 ml-6">
+                  + {form.features.length - 4} More Benefits
+                </div>
+              )}
+            </div>
+
+            <button disabled type="button" className="w-full h-12 rounded-xl bg-white text-plano-900 font-bold text-sm shadow-xl">
+              Select This Plan
+            </button>
+          </div>
         </div>
       </form>
     </div>

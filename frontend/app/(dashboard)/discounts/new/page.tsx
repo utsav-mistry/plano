@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Plus, 
-  ArrowLeft, 
-  Save, 
-  Info, 
-  Ticket, 
-  IndianRupee, 
+import {
+  Plus,
+  ArrowLeft,
+  Save,
+  Info,
+  Ticket,
+  IndianRupee,
   Check,
   Loader2,
   ChevronDown,
@@ -35,7 +34,6 @@ const DISCOUNT_ENTITY_TARGETS = [
 ];
 
 export default function NewDiscountPage() {
-  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,7 +68,7 @@ export default function NewDiscountPage() {
       });
       if (res.success) {
         success('Coupon published!', 'The discount code is now active for users.');
-        router.push('/discounts');
+        window.location.href = '/admin/discounts';
       }
     } catch (err: any) {
       toastError('Setup interrupted', err.message);
@@ -102,10 +100,10 @@ export default function NewDiscountPage() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content Area */}
         <div className="lg:col-span-2 flex flex-col gap-8">
-          
+
           <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8">
-               <Ticket size={80} className="text-gray-50 opacity-20 -rotate-12" />
+              <Ticket size={80} className="text-gray-50 opacity-20 -rotate-12" />
             </div>
 
             <div className="flex items-center gap-3 pb-5 border-b border-gray-100 relative">
@@ -119,29 +117,29 @@ export default function NewDiscountPage() {
               <div className="flex flex-col">
                 <label className={labelStyle}>Coupon Code *</label>
                 <div className="relative">
-                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-plano-400 font-bold border-r border-gray-200 pr-3 mr-3 uppercase text-xs">
-                     CODE
-                   </div>
-                   <input 
-                     suppressHydrationWarning
-                     required
-                     type="text" 
-                     placeholder="e.g. SUMMER25"
-                     value={form.code}
-                     onChange={(e) => setForm({...form, code: e.target.value.toUpperCase()})}
-                     className={cn(inputStyle, "pl-16 font-mono font-bold tracking-widest")}
-                   />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-plano-400 font-bold border-r border-gray-200 pr-3 mr-3 uppercase text-xs">
+                    CODE
+                  </div>
+                  <input
+                    suppressHydrationWarning
+                    required
+                    type="text"
+                    placeholder="e.g. SUMMER25"
+                    value={form.code}
+                    onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                    className={cn(inputStyle, "pl-16 font-mono font-bold tracking-widest")}
+                  />
                 </div>
               </div>
               <div className="flex flex-col">
                 <label className={labelStyle}>Campaign Name *</label>
-                <input 
+                <input
                   suppressHydrationWarning
                   required
-                  type="text" 
+                  type="text"
                   placeholder="e.g. 2025 Summer Sprint"
                   value={form.name}
-                  onChange={(e) => setForm({...form, name: e.target.value})}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className={inputStyle}
                 />
               </div>
@@ -152,26 +150,26 @@ export default function NewDiscountPage() {
                 <label className={labelStyle}>Discount Type & Value *</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {DISCOUNT_TYPES.map((type) => (
-                    <button 
+                    <button
                       key={type.value}
                       type="button"
-                      onClick={() => setForm({...form, type: type.value as 'percentage'|'fixed'})}
+                      onClick={() => setForm({ ...form, type: type.value as 'percentage' | 'fixed' })}
                       className={cn(
                         "flex items-center gap-4 p-5 rounded-xl border-2 transition-all duration-300 relative",
-                        form.type === type.value 
-                          ? "bg-plano-50 border-plano-500 text-plano-700 shadow-lg ring-4 ring-plano-100" 
+                        form.type === type.value
+                          ? "bg-plano-50 border-plano-500 text-plano-700 shadow-lg ring-4 ring-plano-100"
                           : "bg-white border-border text-text-secondary hover:border-plano-200"
                       )}
                     >
                       <div className={cn(
                         "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
-                         form.type === type.value ? "bg-plano-600 text-white" : "bg-gray-100 text-gray-400"
+                        form.type === type.value ? "bg-plano-600 text-white" : "bg-gray-100 text-gray-400"
                       )}>
                         {type.icon}
                       </div>
                       <div className="flex flex-col text-left">
-                         <span className="text-xs font-bold uppercase tracking-widest">{type.label}</span>
-                         <span className="text-[10px] opacity-60 font-medium">Billed as per {type.value}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest">{type.label}</span>
+                        <span className="text-[10px] opacity-60 font-medium">Billed as per {type.value}</span>
                       </div>
                       {form.type === type.value && (
                         <div className="absolute top-2 right-2 w-5 h-5 bg-plano-600 rounded-full flex items-center justify-center text-white">
@@ -186,18 +184,18 @@ export default function NewDiscountPage() {
               <div className="flex flex-col">
                 <label className={labelStyle}>Discount Amount Value *</label>
                 <div className="relative">
-                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-gray-200 pr-3 mr-3">
-                     {form.type === 'percentage' ? '%' : '₹'}
-                   </div>
-                   <input 
-                     suppressHydrationWarning
-                     required
-                     type="number" 
-                     placeholder={form.type === 'percentage' ? '25' : '500'}
-                     value={form.value}
-                     onChange={(e) => setForm({...form, value: e.target.value})}
-                     className={cn(inputStyle, "pl-16 font-mono font-bold text-lg")}
-                   />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-gray-200 pr-3 mr-3">
+                    {form.type === 'percentage' ? '%' : '₹'}
+                  </div>
+                  <input
+                    suppressHydrationWarning
+                    required
+                    type="number"
+                    placeholder={form.type === 'percentage' ? '25' : '500'}
+                    value={form.value}
+                    onChange={(e) => setForm({ ...form, value: e.target.value })}
+                    className={cn(inputStyle, "pl-16 font-mono font-bold text-lg")}
+                  />
                 </div>
               </div>
             </div>
@@ -216,11 +214,11 @@ export default function NewDiscountPage() {
                 <label className={labelStyle}>Valid From</label>
                 <div className="relative">
                   <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
-                  <input 
+                  <input
                     suppressHydrationWarning
-                    type="date" 
+                    type="date"
                     value={form.validFrom}
-                    onChange={(e) => setForm({...form, validFrom: e.target.value})}
+                    onChange={(e) => setForm({ ...form, validFrom: e.target.value })}
                     className={cn(inputStyle, "pl-11 pr-4")}
                   />
                 </div>
@@ -229,11 +227,11 @@ export default function NewDiscountPage() {
                 <label className={labelStyle}>Expires After (Optional)</label>
                 <div className="relative">
                   <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
-                  <input 
+                  <input
                     suppressHydrationWarning
-                    type="date" 
+                    type="date"
                     value={form.validTo}
-                    onChange={(e) => setForm({...form, validTo: e.target.value})}
+                    onChange={(e) => setForm({ ...form, validTo: e.target.value })}
                     className={cn(inputStyle, "pl-11 pr-4")}
                   />
                 </div>
@@ -243,105 +241,105 @@ export default function NewDiscountPage() {
             <div className="flex flex-col">
               <label className={labelStyle}>Total Usage Limit (0 = Unlimited)</label>
               <div className="relative">
-                 <Zap size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
-                 <input 
-                   suppressHydrationWarning
-                   type="number" 
-                   placeholder="e.g. 500 redemptions"
-                   value={form.usageLimit}
-                   onChange={(e) => setForm({...form, usageLimit: e.target.value})}
-                   className={cn(inputStyle, "pl-11")}
-                 />
+                <Zap size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
+                <input
+                  suppressHydrationWarning
+                  type="number"
+                  placeholder="e.g. 500 redemptions"
+                  value={form.usageLimit}
+                  onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
+                  className={cn(inputStyle, "pl-11")}
+                />
               </div>
             </div>
           </section>
 
           {/* Action Footer */}
           <div className="flex items-center gap-4">
-             <button 
-               type="submit"
-               disabled={isSubmitting}
-               className="flex-1 h-14 rounded-xl bg-plano-600/90 hover:bg-plano-700 text-white text-lg font-bold transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3 decoration-none border-0"
-             >
-               {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
-               {isSubmitting ? 'Publishing...' : 'Publish Discount Campaign'}
-             </button>
-             <Link 
-               href="/discounts"
-               className="px-10 h-14 rounded-xl border-2 border-border bg-white text-lg font-bold text-text-secondary hover:bg-gray-50 transition-all flex items-center justify-center"
-             >
-               Discard
-             </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 h-14 rounded-xl bg-plano-600/90 hover:bg-plano-700 text-white text-lg font-bold transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3 decoration-none border-0"
+            >
+              {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
+              {isSubmitting ? 'Publishing...' : 'Publish Discount Campaign'}
+            </button>
+            <Link
+              href="/discounts"
+              className="px-10 h-14 rounded-xl border-2 border-border bg-white text-lg font-bold text-text-secondary hover:bg-gray-50 transition-all flex items-center justify-center"
+            >
+              Discard
+            </Link>
           </div>
         </div>
 
         {/* Right Sidebar: Target Selection & Summary */}
         <div className="flex flex-col gap-6">
-           <section className="bg-white p-8 rounded-card border border-border shadow-sm flex flex-col gap-6">
-              <div className="flex items-center gap-2 pb-4 border-b border-gray-100">
-                 <LayoutDashboard size={18} className="text-plano-600" />
-                 <label className={labelStyle}>Applies To</label>
+          <section className="bg-white p-8 rounded-card border border-border shadow-sm flex flex-col gap-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-gray-100">
+              <LayoutDashboard size={18} className="text-plano-600" />
+              <label className={labelStyle}>Applies To</label>
+            </div>
+
+            <div className="flex flex-col gap-4 mt-2">
+              {DISCOUNT_ENTITY_TARGETS.map((target) => (
+                <button
+                  key={target.value}
+                  type="button"
+                  onClick={() => setForm({ ...form, appliesTo: target.value })}
+                  className={cn(
+                    "flex flex-col p-4 rounded-xl border-2 transition-all text-left group",
+                    form.appliesTo === target.value
+                      ? "bg-plano-900 border-plano-900 text-white shadow-lg"
+                      : "bg-bg-page border-border text-text-secondary hover:border-plano-100"
+                  )}
+                >
+                  <span className="text-xs font-bold uppercase tracking-widest">{target.label}</span>
+                  <span className={cn(
+                    "text-[10px] mt-1 font-medium",
+                    form.appliesTo === target.value ? "text-plano-300" : "text-gray-400"
+                  )}>{target.sub}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Campaign Summary Card */}
+          <div className="bg-plano-50 rounded-card p-8 flex flex-col gap-6 border-2 border-dashed border-plano-200">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-plano-600 uppercase tracking-widest border border-plano-200 rounded-full px-3 py-1 w-fit bg-white">Campaign Preview</span>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col">
+                <span className="text-[9px] uppercase font-bold text-gray-400 tracking-widest">Active Coupon</span>
+                <h4 className="text-3xl font-serif font-bold text-plano-900 tracking-tighter">
+                  {form.code || '...'}
+                </h4>
               </div>
 
-              <div className="flex flex-col gap-4 mt-2">
-                 {DISCOUNT_ENTITY_TARGETS.map((target) => (
-                    <button 
-                      key={target.value}
-                      type="button"
-                      onClick={() => setForm({...form, appliesTo: target.value})}
-                      className={cn(
-                        "flex flex-col p-4 rounded-xl border-2 transition-all text-left group",
-                        form.appliesTo === target.value 
-                          ? "bg-plano-900 border-plano-900 text-white shadow-lg" 
-                          : "bg-bg-page border-border text-text-secondary hover:border-plano-100"
-                      )}
-                    >
-                       <span className="text-xs font-bold uppercase tracking-widest">{target.label}</span>
-                       <span className={cn(
-                         "text-[10px] mt-1 font-medium",
-                         form.appliesTo === target.value ? "text-plano-300" : "text-gray-400"
-                       )}>{target.sub}</span>
-                    </button>
-                 ))}
-              </div>
-           </section>
-
-           {/* Campaign Summary Card */}
-           <div className="bg-plano-50 rounded-card p-8 flex flex-col gap-6 border-2 border-dashed border-plano-200">
-              <div className="flex flex-col gap-1">
-                 <span className="text-[10px] font-bold text-plano-600 uppercase tracking-widest border border-plano-200 rounded-full px-3 py-1 w-fit bg-white">Campaign Preview</span>
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                 <div className="flex flex-col">
-                    <span className="text-[9px] uppercase font-bold text-gray-400 tracking-widest">Active Coupon</span>
-                    <h4 className="text-3xl font-serif font-bold text-plano-900 tracking-tighter">
-                       {form.code || '...'}
-                    </h4>
-                 </div>
-
-                 <div className="flex flex-col">
-                   <span className="text-[9px] uppercase font-bold text-gray-400 tracking-widest">Reduction Value</span>
-                   <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-mono font-bold text-success-600">
-                        {form.type === 'percentage' ? `${form.value || '0'}%` : formatCurrency(Number(form.value) || 0, 'INR')}
-                      </span>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">OFF Total</span>
-                   </div>
-                 </div>
-
-                 <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-plano-100 italic">
-                    <p className="text-xs text-plano-700 leading-relaxed">
-                       {form.name ? `"${form.name}"` : 'Campaign title...'} will apply to {form.appliesTo.replace('_', ' ')} based on the configured logic.
-                    </p>
-                 </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] uppercase font-bold text-gray-400 tracking-widest">Reduction Value</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-mono font-bold text-success-600">
+                    {form.type === 'percentage' ? `${form.value || '0'}%` : formatCurrency(Number(form.value) || 0, 'INR')}
+                  </span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">OFF Total</span>
+                </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-white border border-plano-100 flex items-center gap-3">
-                 <div className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></div>
-                 <span className="text-[10px] font-bold text-success-700 uppercase tracking-widest">Valid across catalog</span>
+              <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-plano-100 italic">
+                <p className="text-xs text-plano-700 leading-relaxed">
+                  {form.name ? `"${form.name}"` : 'Campaign title...'} will apply to {form.appliesTo.replace('_', ' ')} based on the configured logic.
+                </p>
               </div>
-           </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white border border-plano-100 flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></div>
+              <span className="text-[10px] font-bold text-success-700 uppercase tracking-widest">Valid across catalog</span>
+            </div>
+          </div>
         </div>
       </form>
     </div>

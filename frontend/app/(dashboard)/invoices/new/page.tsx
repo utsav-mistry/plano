@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
     ArrowLeft,
     Calendar,
@@ -29,7 +28,6 @@ const createEmptyLineItem = () => ({
 });
 
 export default function NewInvoicePage() {
-    const router = useRouter();
     const { success, error: toastError } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
@@ -143,7 +141,7 @@ export default function NewInvoicePage() {
             if (res.success) {
                 success('Invoice created', 'The manual invoice is ready for review.');
                 const createdInvoice = (res.data as any)?.invoice ?? res.data;
-                router.push(createdInvoice?._id ? `/invoices/${createdInvoice._id}` : '/invoices');
+                window.location.href = createdInvoice?._id ? `/admin/invoices/${createdInvoice._id}` : '/admin/invoices';
             }
         } catch (err: any) {
             toastError('Creation failed', err.message);

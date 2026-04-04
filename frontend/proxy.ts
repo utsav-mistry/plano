@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const isAdminPath = pathname.startsWith('/admin');
     const isPortalPath = pathname.startsWith('/portal');
@@ -11,7 +11,6 @@ export function middleware(req: NextRequest) {
         return NextResponse.next();
     }
 
-    // Keep /portal publicly accessible as a temporary placeholder page.
     if (isPortalRoot) {
         return NextResponse.next();
     }

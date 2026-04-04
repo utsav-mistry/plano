@@ -3,15 +3,15 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  ArrowRight, 
-  CheckCircle2, 
-  Loader2, 
-  MailWarning, 
-  Mail, 
-  Send, 
-  ShieldCheck, 
-  FileText, 
+import {
+  ArrowRight,
+  CheckCircle2,
+  Loader2,
+  MailWarning,
+  Mail,
+  Send,
+  ShieldCheck,
+  FileText,
   UserCheck,
   ChevronRight
 } from 'lucide-react';
@@ -24,7 +24,7 @@ function VerifyEmailContent() {
   const token = searchParams.get('token') || '';
   const initialEmail = searchParams.get('email') || '';
   const isRegistered = searchParams.get('registered') === '1';
-  
+
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('Verifying your email...');
   const [email, setEmail] = useState(initialEmail);
@@ -50,15 +50,15 @@ function VerifyEmailContent() {
         if (res.success) {
           setStatus('success');
           setMessage('Your email has been verified successfully.');
-          
+
           // For token-based verification, show the agreement modal after a success beat
           setTimeout(() => {
             setShowAgreement(true);
           }, 800);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setStatus('error');
-        setMessage(err.message || 'Verification link is invalid or expired.');
+        setMessage(err instanceof Error ? err.message : 'Verification link is invalid or expired.');
       }
     }
 
@@ -79,15 +79,15 @@ function VerifyEmailContent() {
         setStatus('idle');
         setMessage('Verification email sent. Check your inbox.');
       }
-    } catch (err: any) {
-      toastError('Unable to send', err.message || 'Please try again.');
+    } catch (err: unknown) {
+      toastError('Unable to send', err instanceof Error ? err.message : 'Please try again.');
     } finally {
       setIsResending(false);
     }
   };
 
   const handleAgreeAndContinue = () => {
-    router.push('/login?verified=1');
+    window.location.href = '/login?verified=1';
   };
 
   return (
@@ -95,43 +95,43 @@ function VerifyEmailContent() {
       {/* Agreement Modal */}
       {showAgreement && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-           <div className="absolute inset-0 bg-plano-950/40 backdrop-blur-sm" />
-           <div className="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
-              <div className="w-16 h-16 rounded-2xl bg-success-50 text-success-600 flex items-center justify-center mx-auto mb-6 shadow-sm">
-                 <ShieldCheck size={32} />
-              </div>
-              
-              <h2 className="font-serif text-2xl font-bold text-plano-900 mb-2">Almost there!</h2>
-              <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-                To complete your setup and dive into Plano, please review and accept our updated terms of service.
-              </p>
+          <div className="absolute inset-0 bg-plano-950/40 backdrop-blur-sm" />
+          <div className="relative w-full max-w-sm bg-white rounded-[2rem] p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="w-16 h-16 rounded-2xl bg-success-50 text-success-600 flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <ShieldCheck size={32} />
+            </div>
 
-              <div className="flex flex-col gap-3 mb-8">
-                 <Link href="/privacy-policy" target="_blank" className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-plano-50 hover:border-plano-200 transition-all group">
-                    <div className="flex items-center gap-3">
-                       <FileText size={18} className="text-plano-600" />
-                       <span className="text-xs font-bold text-plano-900 uppercase tracking-widest text-left">Privacy Policy</span>
-                    </div>
-                    <ChevronRight size={14} className="text-gray-300 group-hover:text-plano-400 group-hover:translate-x-1 transition-all" />
-                 </Link>
+            <h2 className="font-serif text-2xl font-bold text-plano-900 mb-2">Almost there!</h2>
+            <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+              To complete your setup and dive into Plano, please review and accept our updated terms of service.
+            </p>
 
-                 <Link href="/terms-of-service" target="_blank" className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-plano-50 hover:border-plano-200 transition-all group cursor-pointer">
-                    <div className="flex items-center gap-3">
-                       <UserCheck size={18} className="text-plano-600" />
-                       <span className="text-xs font-bold text-plano-900 uppercase tracking-widest text-left">Terms of Service</span>
-                    </div>
-                    <ChevronRight size={14} className="text-gray-300 group-hover:text-plano-400 group-hover:translate-x-1 transition-all" />
-                 </Link>
-              </div>
+            <div className="flex flex-col gap-3 mb-8">
+              <Link href="/privacy-policy" target="_blank" className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-plano-50 hover:border-plano-200 transition-all group">
+                <div className="flex items-center gap-3">
+                  <FileText size={18} className="text-plano-600" />
+                  <span className="text-xs font-bold text-plano-900 uppercase tracking-widest text-left">Privacy Policy</span>
+                </div>
+                <ChevronRight size={14} className="text-gray-300 group-hover:text-plano-400 group-hover:translate-x-1 transition-all" />
+              </Link>
 
-              <button 
-                onClick={handleAgreeAndContinue}
-                className="w-full h-14 rounded-xl bg-plano-600 text-white font-bold text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-2"
-              >
-                Agree and Continue
-                <ArrowRight size={16} />
-              </button>
-           </div>
+              <Link href="/terms-of-service" target="_blank" className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-plano-50 hover:border-plano-200 transition-all group cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <UserCheck size={18} className="text-plano-600" />
+                  <span className="text-xs font-bold text-plano-900 uppercase tracking-widest text-left">Terms of Service</span>
+                </div>
+                <ChevronRight size={14} className="text-gray-300 group-hover:text-plano-400 group-hover:translate-x-1 transition-all" />
+              </Link>
+            </div>
+
+            <button
+              onClick={handleAgreeAndContinue}
+              className="w-full h-14 rounded-xl bg-plano-600 text-white font-bold text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-2"
+            >
+              Agree and Continue
+              <ArrowRight size={16} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -165,7 +165,7 @@ function VerifyEmailContent() {
         <p className="text-sm text-gray-500 font-medium px-2 leading-relaxed">
           {message}
         </p>
-        
+
         {isRegistered && status === 'idle' && email && (
           <p className="text-[13px] font-bold mt-1" style={{ color: '#714b67' }}>{email}</p>
         )}

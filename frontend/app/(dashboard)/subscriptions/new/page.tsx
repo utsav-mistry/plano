@@ -1,26 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 
 export default function NewSubscriptionPage() {
-  const router = useRouter();
   const { success, error: toastError } = useToast();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [plans, setPlans]   = useState<any[]>([]);
-  const [users, setUsers]   = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loadingDeps, setLoadingDeps] = useState(true);
 
   const [form, setForm] = useState({
-    userId:    '',
-    planId:    '',
+    userId: '',
+    planId: '',
     startDate: new Date().toISOString().slice(0, 10),
-    notes:     '',
+    notes: '',
   });
 
   // Load plans and users for the dropdowns
@@ -46,7 +44,7 @@ export default function NewSubscriptionPage() {
       }
     }
     loadDeps();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +61,7 @@ export default function NewSubscriptionPage() {
       });
       if (res.success) {
         success('Subscription created!', 'The subscription is now in Draft status.');
-        router.push('/subscriptions');
+        window.location.href = '/admin/subscriptions';
       }
     } catch (err: any) {
       toastError('Failed to create subscription', err.message);
@@ -80,7 +78,7 @@ export default function NewSubscriptionPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <Link
-          href="/subscriptions"
+          href="/admin/subscriptions"
           className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit"
         >
           <ArrowLeft size={14} /> Back to Subscriptions
@@ -179,7 +177,7 @@ export default function NewSubscriptionPage() {
               {isSubmitting ? 'Creating...' : 'Create Subscription'}
             </button>
             <Link
-              href="/subscriptions"
+              href="/admin/subscriptions"
               className="px-6 py-2.5 rounded-btn border border-border text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all"
             >
               Cancel

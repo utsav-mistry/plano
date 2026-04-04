@@ -43,14 +43,18 @@ if [ -n "$(git log HEAD..origin/main --oneline)" ]; then
   # Rebuild Next.js frontend if it exists
   if [ -f "frontend/package.json" ]; then
     echo "Building Next.js frontend..." | tee -a $LOG_FILE
-    cd frontend && npm install && npm run build && npm prune --omit=dev && cd ..
+    cd frontend || exit 1
+    npm install || exit 1
+    npm run build || exit 1
+    npm prune --omit=dev || exit 1
+    cd ..
   fi
 
   # ── Reload using shared PM2 instance (zero-downtime) ───────
   pm2 reload frontend
   pm2 reload backend
   pm2 reload workers
-  pm2 restart status     # Single instance — restart is fine
+  pm2 reload status    
 
   echo "Deployment successful" | tee -a $LOG_FILE
 else
