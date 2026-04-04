@@ -21,6 +21,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/app/context/AuthContext';
 
 const navGroups = [
   {
@@ -63,6 +64,7 @@ const navGroups = [
 
 export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boolean; toggleCollapsed: () => void }) {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   return (
     <aside 
@@ -84,15 +86,15 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto py-3 px-2 no-scrollbar">
         {navGroups.map((group, idx) => (
-          <div key={idx} className="mb-6">
+          <div key={idx} className="mb-4">
             {!collapsed && (
-              <h3 className="px-3 mb-2 text-[10px] uppercase tracking-widest text-sidebar-muted font-semibold">
+              <h3 className="px-3 mb-1.5 text-[10px] uppercase tracking-widest text-sidebar-muted font-semibold">
                 {group.label}
               </h3>
             )}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {group.items.map((item) => {
                 const isActive = pathname === item.href;
                 return (
@@ -100,7 +102,7 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-btn font-sans text-sm transition-colors",
+                      "flex items-center gap-3 px-3 py-1.5 rounded-btn font-sans text-sm transition-colors",
                       isActive 
                         ? "bg-plano-600 text-white" 
                         : "text-sidebar-text hover:bg-sidebar-hover"
@@ -120,16 +122,18 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
       <div className="p-4 border-t border-sidebar-hover">
         {collapsed ? (
           <div className="flex flex-col items-center gap-4">
-             <div className="w-8 h-8 rounded-full bg-plano-500 flex items-center justify-center text-xs font-bold">RM</div>
+             <div className="w-8 h-8 rounded-full bg-plano-500 flex items-center justify-center text-xs font-bold uppercase">{user?.name?.charAt(0) || 'U'}</div>
              <button onClick={toggleCollapsed} className="p-1 hover:bg-sidebar-hover rounded"><ChevronRight size={16} /></button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-plano-500 flex items-center justify-center text-xs font-bold">RM</div>
+              <div className="w-8 h-8 rounded-full bg-plano-500 flex items-center justify-center text-xs font-bold border border-white/20 uppercase">
+                 {user?.name?.charAt(0) || 'U'}
+              </div>
               <div className="flex flex-col">
-                <span className="text-xs font-medium">Ravi Mistry</span>
-                <span className="text-[10px] text-sidebar-muted">Admin</span>
+                <span className="text-xs font-medium truncate max-w-[100px]">{user?.name || 'Authorized User'}</span>
+                <span className="text-[10px] text-sidebar-muted uppercase font-bold tracking-widest">{user?.role || 'Operator'}</span>
               </div>
             </div>
             <button onClick={toggleCollapsed} className="p-1 hover:bg-sidebar-hover rounded text-sidebar-muted"><ChevronLeft size={16} /></button>

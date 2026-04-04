@@ -17,36 +17,46 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser]       = useState<User | null>(null);
+  const [token, setToken]     = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Check for stored token on load
     const storedToken = localStorage.getItem('plano_token');
-    const storedUser = localStorage.getItem('plano_user');
+    const storedUser  = localStorage.getItem('plano_user');
 
     if (storedToken && storedUser) {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
-      // Optionally verify the token with /auth/me
-      verifyAuth();
+      verifyAuth();           // Validate token is still alive
     } else {
       setIsLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /** 
+   * Calls GET /auth/me — backend returns the User object directly as `data`.
+   * If the token is invalid/expired the request throws and we force logout.
+   */
   const verifyAuth = async () => {
     try {
       const response = await api.auth.me();
-      if (response.success) {
-        setUser(response.data);
-        localStorage.setItem('plano_user', JSON.stringify(response.data));
+      if (response.success && response.data) {
+        // Backend returns user directly as data (not wrapped in { user })
+        const freshUser = response.data as unknown as User;
+        setUser(freshUser);
+        localStorage.setItem('plano_user', JSON.stringify(freshUser));
       }
     } catch (err) {
       console.error('Session verification failed', err);
-      logout();
+      // Token is stale/invalid — clear and redirect to login
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('plano_token');
+      localStorage.removeItem('plano_user');
+      router.push('/login');
     } finally {
       setIsLoading(false);
     }
@@ -57,12 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const response = await api.auth.login(credentials);
       if (response.success && response.data) {
-        const { user, token } = response.data;
+        // Backend returns { user, token }
+        const { user, token } = response.data as any;
         setUser(user);
         setToken(token);
         localStorage.setItem('plano_token', token);
         localStorage.setItem('plano_user', JSON.stringify(user));
-        router.push('/');
+        router.push('/dashboard');
       }
     } catch (err: any) {
       throw new Error(err.message || 'Login failed');
@@ -76,12 +87,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const response = await api.auth.register(data);
       if (response.success && response.data) {
-        const { user, token } = response.data;
+        // Backend returns { user, token }
+        const { user, token } = response.data as any;
         setUser(user);
         setToken(token);
         localStorage.setItem('plano_token', token);
         localStorage.setItem('plano_user', JSON.stringify(user));
-        router.push('/');
+        router.push('/dashboard');
       }
     } catch (err: any) {
       throw new Error(err.message || 'Registration failed');

@@ -4,6 +4,7 @@ import React from 'react';
 import { Search, Bell, Moon, Sun, User, LogOut, Settings as SettingsIcon, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/app/context/AuthContext';
+import Link from 'next/link';
 
 export default function Topbar({ collapsed }: { collapsed: boolean }) {
   const { user, logout } = useAuth();
@@ -77,12 +78,20 @@ export default function Topbar({ collapsed }: { collapsed: boolean }) {
                 </div>
                 
                 <div className="py-1">
-                  <button className="w-full flex items-center gap-3 px-4 py-2 text-xs text-text-secondary hover:bg-gray-50 font-bold uppercase tracking-widest">
-                    <User size={14} /> Profile
-                  </button>
-                  <button className="w-full flex items-center gap-3 px-4 py-2 text-xs text-text-secondary hover:bg-gray-50 font-bold uppercase tracking-widest">
-                    <SettingsIcon size={14} /> settings
-                  </button>
+                  <Link 
+                    href="/profile" 
+                    onClick={() => setIsProfileOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] text-text-secondary hover:bg-gray-50 font-bold uppercase tracking-widest transition-colors"
+                  >
+                    <User size={14} className="text-plano-400" /> Profile
+                  </Link>
+                  <Link 
+                    href="/settings" 
+                    onClick={() => setIsProfileOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-[10px] text-text-secondary hover:bg-gray-50 font-bold uppercase tracking-widest transition-colors"
+                  >
+                    <SettingsIcon size={14} className="text-plano-400" /> settings
+                  </Link>
                 </div>
 
                 <div className="border-t border-gray-100 pt-1">

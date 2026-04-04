@@ -2,6 +2,7 @@ export type UserRole = 'ADMIN' | 'INTERNAL_USER' | 'CUSTOMER';
 
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   role: UserRole;
@@ -204,6 +205,9 @@ export interface KPIStats {
   overdueInvoicesTrend: number;
   newSubscriptions30d: number;
   newSubscriptions30dTrend: number;
+  closedSubscriptions?: number;
+  confirmedSubscriptions?: number;
+  draftSubscriptions?: number;
 }
 
 export interface ChartDataPoint {
@@ -212,4 +216,3 @@ export interface ChartDataPoint {
   revenue?: number;
   value?: number;
 }
-

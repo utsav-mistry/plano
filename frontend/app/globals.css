@@ -114,3 +114,13 @@
   --color-sidebar-bg:     #1a0f17;
   --color-sidebar-hover:  #2a1a27;
 }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

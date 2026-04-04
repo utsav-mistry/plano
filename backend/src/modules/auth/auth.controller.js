@@ -5,7 +5,9 @@ import catchAsync from '../../utils/catchAsync.js';
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  // 'strict' blocks the cookie on cross-origin requests (localhost:3000 → localhost:5000).
+  // Use 'lax' in development so the refresh token cookie is sent during token rotation.
+  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
 };
 
 /**
@@ -33,7 +35,7 @@ const cookieOptions = {
 export const register = catchAsync(async (req, res) => {
   const { user, accessToken, refreshToken } = await authService.register(req.body);
   res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
-  new ApiResponse(201, { user, accessToken }, 'Registration successful').send(res);
+  new ApiResponse(201, { user, token: accessToken }, 'Registration successful').send(res);
 });
 
 /**
@@ -61,7 +63,7 @@ export const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const { user, accessToken, refreshToken } = await authService.login(email, password);
   res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
-  new ApiResponse(200, { user, accessToken }, 'Login successful').send(res);
+  new ApiResponse(200, { user, token: accessToken }, 'Login successful').send(res);
 });
 
 export const logout = catchAsync(async (req, res) => {
@@ -74,7 +76,7 @@ export const refreshToken = catchAsync(async (req, res) => {
   const token = req.cookies?.refreshToken || req.body?.refreshToken;
   const { accessToken, refreshToken: newRefresh } = await authService.refreshTokens(token);
   res.cookie('refreshToken', newRefresh, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
-  new ApiResponse(200, { accessToken }, 'Token refreshed').send(res);
+  new ApiResponse(200, { token: accessToken }, 'Token refreshed').send(res);
 });
 
 export const forgotPassword = catchAsync(async (req, res) => {
@@ -88,5 +90,6 @@ export const resetPassword = catchAsync(async (req, res) => {
 });
 
 export const getMe = catchAsync(async (req, res) => {
-  new ApiResponse(200, { user: req.user }, 'Profile fetched').send(res);
+  // Return the user object directly so frontend can read response.data as User
+  new ApiResponse(200, req.user, 'Profile fetched').send(res);
 });

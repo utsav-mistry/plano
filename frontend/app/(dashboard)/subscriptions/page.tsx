@@ -35,7 +35,9 @@ export default function SubscriptionsPage() {
         const params = activeTab !== 'ALL' ? { status: activeTab.toLowerCase() } : {};
         const response = await api.subscriptions.getAll(params);
         if (response.success) {
-          setSubscriptions(response.data);
+          // Backend returns { subscriptions, total, page, pages } — extract the array
+          const data = response.data as any;
+          setSubscriptions(data?.subscriptions ?? data ?? []);
         }
       } catch (err: any) {
         setError(err.message || 'Failed to load subscriptions');
@@ -52,6 +54,26 @@ export default function SubscriptionsPage() {
     { label: 'Quotation', value: 'QUOTATION' },
     { label: 'Active', value: 'ACTIVE' },
     { label: 'Expired', value: 'EXPIRED' },
+  ];
+
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await api.reports.getSubscriptionReport();
+        if (res.success) setStats(res.data);
+      } catch (err) {
+        console.error('Failed to fetch subscription stats', err);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  const statsCards = [
+    { label: 'Active Subs', count: stats?.activeSubscriptions || 0, trend: '+0%', color: 'text-success-600', bg: 'bg-success-50' },
+    { label: 'Expiring this month', count: stats?.expiringThisMonth || 0, trend: '0%', color: 'text-warning-600', bg: 'bg-warning-50' },
+    { label: 'Overdue Revenue', count: stats ? formatCurrency(stats.overdueRevenue, 'INR') : '₹0', trend: '0%', color: 'text-danger-600', bg: 'bg-danger-50' },
   ];
 
   return (
@@ -75,15 +97,13 @@ export default function SubscriptionsPage() {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-         {[
-           { label: 'Active Subs', count: 248, trend: '+14%', color: 'text-success-600', bg: 'bg-success-50' },
-           { label: 'Expiring this month', count: 12, trend: '-2%', color: 'text-warning-600', bg: 'bg-warning-50' },
-           { label: 'Overdue Revenue', count: '₹2.4L', trend: '+18%', color: 'text-danger-600', bg: 'bg-danger-50' },
-         ].map((stat, i) => (
+         {statsCards.map((stat, i) => (
             <div key={i} className="bg-bg-surface p-4 rounded-card border border-border shadow-sm flex items-center justify-between">
                <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">{stat.label}</span>
-                  <span className="text-2xl font-serif font-bold text-text-primary">{stat.count}</span>
+                  <span className="text-2xl font-serif font-bold text-text-primary">
+                    {typeof stat.count === 'string' ? stat.count : stat.count.toLocaleString()}
+                  </span>
                </div>
                <div className={cn("px-2 py-1 rounded-full text-[10px] font-bold uppercase", stat.bg, stat.color)}>
                   {stat.trend}

@@ -14,43 +14,110 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-  const url = `${API_BASE_URL}${path}`;
-  
-  // Get token from localStorage (client-side only check)
-  const token = typeof window !== 'undefined' ? localStorage.getItem('plano_token') : null;
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
-  };
+// ─── Token Refresh Mutex ──────────────────────────────────────────────
+// Prevents multiple parallel requests from each triggering a refresh.
+let isRefreshing = false;
+let refreshQueue: Array<(token: string) => void> = [];
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+function notifyQueue(newToken: string) {
+  refreshQueue.forEach(cb => cb(newToken));
+  refreshQueue = [];
+}
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
+async function silentRefresh(): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+    method: 'POST',
+    credentials: 'include',          // sends the httpOnly refreshToken cookie
+    headers: { 'Content-Type': 'application/json' },
   });
 
-  // Handle No Content (204)
+  if (!res.ok) throw new Error('Refresh failed');
+
+  const body = await res.json();
+  const newToken: string = body?.data?.token;
+  if (!newToken) throw new Error('No token in refresh response');
+
+  localStorage.setItem('plano_token', newToken);
+  return newToken;
+}
+
+// ─── Core Request ─────────────────────────────────────────────────────
+async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  const url = `${API_BASE_URL}${path}`;
+
+  const getToken = () =>
+    typeof window !== 'undefined' ? localStorage.getItem('plano_token') : null;
+
+  const buildHeaders = (token: string | null): Record<string, string> => ({
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  });
+
+  // ── First attempt ──────────────────────────────────────────────────
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',           // send cookies (refresh token) on every request
+    headers: buildHeaders(getToken()),
+  });
+
+  // 204 No Content
   if (response.status === 204) {
     return { success: true, data: null as any };
   }
 
   const data = await response.json();
-  
-  if (!response.ok) {
-    // Handle unauthorized - clear token and redirect if necessary
-    if (response.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('plano_token');
+
+  // ── Token expired → silent refresh + retry ─────────────────────────
+  if (response.status === 401 && data?.message === 'Access token expired') {
+    try {
+      let newToken: string;
+
+      if (isRefreshing) {
+        // Another request is already refreshing — wait for it
+        newToken = await new Promise<string>(resolve => refreshQueue.push(resolve));
+      } else {
+        isRefreshing = true;
+        newToken = await silentRefresh();
+        notifyQueue(newToken);
+        isRefreshing = false;
+      }
+
+      // Retry the original request with the fresh token
+      const retried = await fetch(url, {
+        ...options,
+        credentials: 'include',
+        headers: buildHeaders(newToken),
+      });
+
+      if (retried.status === 204) return { success: true, data: null as any };
+      return retried.json() as Promise<ApiResponse<T>>;
+
+    } catch {
+      isRefreshing = false;
+      // Refresh failed — clear session and redirect to login
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('plano_token');
+        localStorage.removeItem('plano_user');
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired. Please log in again.');
     }
+  }
+
+  // ── Other 401 (invalid token, not expired) ─────────────────────────
+  if (response.status === 401 && typeof window !== 'undefined') {
+    localStorage.removeItem('plano_token');
+    localStorage.removeItem('plano_user');
+  }
+
+  if (!response.ok) {
     throw new Error(data.message || 'Something went wrong');
   }
-  
+
   return data as ApiResponse<T>;
 }
+
 
 export const api = {
   // ─── Auth ──────────────────────────────────────────────────
@@ -216,11 +283,11 @@ export const api = {
   // ─── Reports ───────────────────────────────────────────────
   reports: {
     getDashboardStats: () => request<KPIStats>('/reports/dashboard-stats'),
-    getRevenueReport: (params: any) => {
+    getRevenueReport: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
       return request<any>(`/reports/revenue${q}`);
     },
-    getSubscriptionReport: (params: any) => {
+    getSubscriptionReport: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
       return request<any>(`/reports/subscriptions${q}`);
     },

@@ -2,6 +2,11 @@ import * as reportService from './report.service.js';
 import { ApiResponse } from '../../utils/ApiResponse.js';
 import catchAsync from '../../utils/catchAsync.js';
 
+export const dashboardStats = catchAsync(async (req, res) => {
+  const data = await reportService.dashboardStats();
+  new ApiResponse(200, data, 'Dashboard stats').send(res);
+});
+
 /**
  * @swagger
  * /reports/revenue:

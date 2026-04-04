@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   AreaChart, 
   Area, 
@@ -10,78 +10,98 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-
-const data = [
-  { name: 'Jan', value: 4000 },
-  { name: 'Feb', value: 3000 },
-  { name: 'Mar', value: 2000 },
-  { name: 'Apr', value: 2780 },
-  { name: 'May', value: 1890 },
-  { name: 'Jun', value: 2390 },
-  { name: 'Jul', value: 3490 },
-  { name: 'Aug', value: 3490 },
-  { name: 'Sep', value: 4000 },
-  { name: 'Oct', value: 3000 },
-  { name: 'Nov', value: 2000 },
-  { name: 'Dec', value: 2780 },
-];
+import { api } from '@/lib/api';
 
 export default function RevenueChart() {
+  const [data, setData] = useState<any[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await api.reports.getRevenueReport({ period: '12m' });
+        if (res.success && res.data) {
+          // Normalize backend data format (assuming _id is the date key)
+          const formatted = (res.data.revenue || []).map((item: any) => ({
+             name: item._id,
+             revenue: item.totalRevenue
+          }));
+          setData(formatted);
+        } else {
+          setData([]);
+        }
+      } catch (err) {
+        console.error('Revenue fetch error:', err);
+        setData([]);
+      } finally {
+        setIsLoaded(true);
+      }
+    }
+    fetchData();
+  }, []);
+
+  // Avoid rendering chart with 0 height/width initially which causes Recharts warnings
+  if (!isLoaded) return <div className="h-72 w-full bg-gray-50/50 animate-pulse rounded-xl" />;
+
   return (
-    <div className="bg-bg-surface p-6 rounded-card border border-border shadow-sm">
+    <div className="bg-bg-surface p-6 rounded-card border border-border shadow-sm group hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-xl font-serif font-bold text-text-primary">Revenue Growth</h3>
-          <p className="text-xs text-text-secondary">MRR over last 12 months</p>
+          <h3 className="text-xl font-serif font-bold text-text-primary">Revenue Inflow</h3>
+          <p className="text-[10px] uppercase tracking-widest text-text-tertiary font-bold">MRR History • Real-time Data</p>
         </div>
-        <select className="text-xs font-semibold px-2 py-1 rounded border border-border bg-gray-50 focus:outline-none">
-          <option>Last 12 Months</option>
-          <option>Last 6 Months</option>
-          <option>Last 30 Days</option>
-        </select>
+        <div className="flex items-center gap-2">
+           <span className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></span>
+           <span className="text-[10px] font-bold text-success-600 uppercase tracking-widest">Live Feed</span>
+        </div>
       </div>
 
-      <div className="h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-72 w-full min-h-[18rem] overflow-hidden">
+        <ResponsiveContainer width="100%" height="100%" debounce={50}>
           <AreaChart
             data={data}
             margin={{ top: 10, right: 0, left: -20, bottom: 0 }}
           >
             <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#714b67" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="#714b67" stopOpacity={0}/>
               </linearGradient>
             </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0ede9" className="dark:stroke-gray-800" />
             <XAxis 
               dataKey="name" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 10, fill: '#857f78' }} 
+              tick={{ fontSize: 10, fill: '#a97096', fontWeight: 600 }} 
               dy={10}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 10, fill: '#857f78' }} 
-              tickFormatter={(value) => `₹${value/1000}k`}
+              tick={{ fontSize: 10, fill: '#a97096', fontWeight: 600 }} 
+              tickFormatter={(value) => `₹${value.toLocaleString()}`}
             />
             <Tooltip 
               contentStyle={{ 
-                borderRadius: '12px', 
-                border: '1px solid #e4e0db', 
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                borderRadius: '16px', 
+                border: 'none', 
+                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
                 fontSize: '12px',
-                fontWeight: '600'
+                fontWeight: '700',
+                backgroundColor: 'var(--color-sidebar-bg)',
+                color: 'white'
               }} 
+              itemStyle={{ color: '#f0e3ec' }}
+              cursor={{ stroke: '#cba3bc', strokeWidth: 2, strokeDasharray: '4 4' }}
             />
             <Area 
               type="monotone" 
-              dataKey="value" 
-              stroke="#2563eb" 
-              strokeWidth={2}
+              dataKey="revenue" 
+              stroke="#714b67" 
+              strokeWidth={4}
               fillOpacity={1} 
-              fill="url(#colorValue)" 
+              fill="url(#colorRevenue)" 
             />
           </AreaChart>
         </ResponsiveContainer>

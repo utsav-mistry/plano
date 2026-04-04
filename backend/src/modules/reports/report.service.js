@@ -98,15 +98,32 @@ export const churnReport = async ({ from, to }) => {
  * Subscription overview report
  */
 export const subscriptionReport = async () => {
+  const now = new Date();
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
   const statusBreakdown = await Subscription.aggregate([
     { $group: { _id: '$status', count: { $sum: 1 } } },
   ]);
 
-  const newThisMonth = await Subscription.countDocuments({
-    createdAt: { $gte: new Date(new Date().setDate(1)) },
+  const activeSubs = statusBreakdown.find(s => s._id === SUBSCRIPTION_STATUS.ACTIVE)?.count || 0;
+
+  const expiringThisMonth = await Subscription.countDocuments({
+    status: SUBSCRIPTION_STATUS.ACTIVE,
+    endDate: { $gte: startOfThisMonth, $lte: endOfThisMonth }
   });
 
-  return { statusBreakdown, newThisMonth };
+  const overdueInvoices = await Invoice.aggregate([
+    { $match: { status: INVOICE_STATUS.SENT, dueDate: { $lt: now } } },
+    { $group: { _id: null, total: { $sum: '$grandTotal' } } }
+  ]);
+
+  return { 
+    activeSubscriptions: activeSubs, 
+    expiringThisMonth, 
+    overdueRevenue: overdueInvoices[0]?.total || 0,
+    statusBreakdown 
+  };
 };
 
 /**
@@ -167,3 +184,80 @@ export const userGrowthReport = async ({ from, to }) => {
 
   return { growth, byRole, total: await User.countDocuments() };
 };
+
+/**
+ * Dashboard KPI stats — all metrics the dashboard needs in one call.
+ * Returns current values + month-over-month trend percentages.
+ */
+export const dashboardStats = async () => {
+  const CYCLE_MULTIPLIERS = { monthly: 1, quarterly: 1 / 3, semi_annual: 1 / 6, annual: 1 / 12 };
+
+  const now = new Date();
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const thirtyDaysAgo   = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const sixtyDaysAgo    = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+  const [
+    activeSubs,
+    activeSubsLastMonth,
+    allActiveSubs,
+    overdueInvoices,
+    overdueInvoicesLastMonth,
+    newSubs30d,
+    newSubs30dPrev,
+  ] = await Promise.all([
+    // Active subscriptions — this month snapshot
+    Subscription.countDocuments({ status: SUBSCRIPTION_STATUS.ACTIVE }),
+    // Active subscriptions — last month snapshot (created before this month)
+    Subscription.countDocuments({
+      status: SUBSCRIPTION_STATUS.ACTIVE,
+      createdAt: { $lt: startOfThisMonth },
+    }),
+    // All active subs for MRR calculation
+    Subscription.find({ status: SUBSCRIPTION_STATUS.ACTIVE }).populate('planId', 'billingCycle'),
+    // Overdue invoices now
+    Invoice.countDocuments({ status: INVOICE_STATUS.SENT, dueDate: { $lt: now } }),
+    // Overdue invoices at start of this month (prev snapshot)
+    Invoice.countDocuments({ status: INVOICE_STATUS.SENT, dueDate: { $lt: startOfThisMonth } }),
+    // New subs in the last 30 days
+    Subscription.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
+    // New subs in the 30 days before that (for trend)
+    Subscription.countDocuments({ createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
+  ]);
+
+  // Compute MRR (current)
+  let mrr = 0;
+  for (const sub of allActiveSubs) {
+    const multiplier = CYCLE_MULTIPLIERS[sub.planId?.billingCycle] ?? 1;
+    mrr += (sub.grandTotal || 0) * multiplier;
+  }
+
+  // Compute last-month MRR using same active subs (approximation — subs created before this month)
+  let mrrLastMonth = 0;
+  for (const sub of allActiveSubs) {
+    if (sub.createdAt < startOfThisMonth) {
+      const multiplier = CYCLE_MULTIPLIERS[sub.planId?.billingCycle] ?? 1;
+      mrrLastMonth += (sub.grandTotal || 0) * multiplier;
+    }
+  }
+
+  // Helper: percentage trend (positive = growth, negative = decline)
+  const trend = (current, previous) => {
+    if (!previous) return current > 0 ? 100 : 0;
+    return +((((current - previous) / previous) * 100).toFixed(1));
+  };
+
+  return {
+    activeSubscriptions:       activeSubs,
+    activeSubscriptionsTrend:  trend(activeSubs, activeSubsLastMonth),
+    mrr:                       +mrr.toFixed(2),
+    arr:                       +(mrr * 12).toFixed(2),
+    mrrTrend:                  trend(mrr, mrrLastMonth),
+    overdueInvoices:           overdueInvoices,
+    overdueInvoicesTrend:      trend(overdueInvoices, overdueInvoicesLastMonth),
+    newSubscriptions30d:       newSubs30d,
+    newSubscriptions30dTrend:  trend(newSubs30d, newSubs30dPrev),
+  };
+};
+

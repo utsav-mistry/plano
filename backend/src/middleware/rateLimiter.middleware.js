@@ -45,10 +45,18 @@ export const paymentLimiter = createLimiter({
   prefix: 'payment',
 });
 
-/** Reports: 10 per hour (heavy queries) */
+/** Reports: 100 per hour (heavy aggregation queries) */
 export const reportLimiter = createLimiter({
   windowMs: 60 * 60 * 1000,
-  max: 10,
+  max: 100,
   message: 'Report generation limit exceeded. Try again later.',
   prefix: 'report',
+});
+
+/** Dashboard stats: 300 per 15 min — called on every dashboard page load */
+export const dashboardLimiter = createLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  message: 'Too many requests. Please slow down.',
+  prefix: 'dashboard',
 });

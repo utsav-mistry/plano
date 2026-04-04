@@ -82,7 +82,12 @@ const subscriptionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: { 
+      virtuals: true, 
+      versionKey: false,
+      transform: (doc, ret) => { ret.id = ret._id; return ret; }
+    },
+    toObject: { virtuals: true }
   }
 );
 

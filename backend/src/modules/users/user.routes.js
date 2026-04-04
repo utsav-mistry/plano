@@ -10,6 +10,7 @@ router.use(authenticate);
 router.get('/', authorize(ROLES.ADMIN), userController.getAll);
 router.get('/:id', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER), userController.getById);
 router.put('/:id', authorize(ROLES.ADMIN), userController.update);
+router.post('/:id/toggle-status', authorize(ROLES.ADMIN), userController.toggleStatus);
 router.delete('/:id', authorize(ROLES.ADMIN), userController.deactivate);
 
 export default router;

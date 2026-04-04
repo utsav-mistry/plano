@@ -34,3 +34,11 @@ export const deactivate = async (id) => {
   if (!user) throw ApiError.notFound('User not found');
   return user;
 };
+
+export const toggleStatus = async (id) => {
+  const user = await User.findById(id);
+  if (!user) throw ApiError.notFound('User not found');
+  user.isActive = !user.isActive;
+  await user.save();
+  return user;
+};

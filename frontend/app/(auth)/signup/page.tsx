@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight, Loader2, Check, X } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
+import { useToast } from '@/components/ui/Toast';
 
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
@@ -47,19 +48,18 @@ function PasswordStrength({ password }: { password: string }) {
 
 export default function SignupPage() {
   const { register } = useAuth();
+  const { error: toastError } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
     try {
       await register(form);
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      toastError('Registration failed', err.message || 'Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -86,19 +86,15 @@ export default function SignupPage() {
         </p>
       </div>
 
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-xs font-bold border border-red-100 animate-in fade-in slide-in-from-top-1">
-          {error}
-        </div>
-      )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" suppressHydrationWarning>
         <div className="flex flex-col gap-1.5">
           <label className="text-[11px] uppercase font-bold tracking-widest" style={{ color: '#714b67' }}>
             Full Name
           </label>
           <input
+            suppressHydrationWarning
             type="text"
             required
             placeholder="Ravi Mistry"
@@ -116,6 +112,7 @@ export default function SignupPage() {
             Work Email
           </label>
           <input
+            suppressHydrationWarning
             type="email"
             required
             placeholder="you@company.com"
@@ -134,6 +131,7 @@ export default function SignupPage() {
           </label>
           <div className="relative">
             <input
+              suppressHydrationWarning
               type={showPassword ? 'text' : 'password'}
               required
               placeholder="Min. 8 characters"
@@ -145,6 +143,7 @@ export default function SignupPage() {
               onBlur={e => e.target.style.borderColor = '#e1c8d9'}
             />
             <button
+              suppressHydrationWarning
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
@@ -157,6 +156,7 @@ export default function SignupPage() {
         </div>
 
         <button
+          suppressHydrationWarning
           type="submit"
           disabled={isLoading}
           className="flex items-center justify-center gap-2 h-12 rounded-lg text-white font-bold text-sm uppercase tracking-widest transition-all shadow-lg mt-2"

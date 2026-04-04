@@ -58,7 +58,15 @@ const invoiceSchema = new mongoose.Schema(
       ref: 'User',
     },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { 
+      virtuals: true, 
+      versionKey: false,
+      transform: (doc, ret) => { ret.id = ret._id; return ret; }
+    },
+    toObject: { virtuals: true }
+  }
 );
 
 invoiceSchema.index({ status: 1, dueDate: 1 });

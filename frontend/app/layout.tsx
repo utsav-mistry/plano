@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Caveat, JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -39,7 +40,9 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <AuthProvider>
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>
