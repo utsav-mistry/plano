@@ -3,14 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
+import { defaultRouteForRole } from '@/lib/role-routing';
 
 export default function LoginPage() {
   const { login, user, isLoading: authLoading } = useAuth();
   const { error: toastError } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get('next') || undefined;
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
@@ -18,7 +21,7 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!authLoading && user) {
-      router.push('/dashboard');
+      router.push(defaultRouteForRole(user?.role));
     }
   }, [user, authLoading, router]);
 
@@ -28,7 +31,7 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(form);
+      await login(form, nextPath);
       // Redirect handled inside AuthContext
     } catch (error: unknown) {
       toastError('Login failed', getErrorMessage(error));
