@@ -2,7 +2,14 @@ import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import LoginForm from './LoginForm';
 
-export default function LoginPage() {
+type LoginPageProps = {
+    searchParams?: Promise<{ next?: string }> | { next?: string };
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+    const resolvedSearchParams = await Promise.resolve(searchParams);
+    const nextPath = resolvedSearchParams?.next;
+
     return (
         <Suspense
             fallback={
@@ -12,7 +19,7 @@ export default function LoginPage() {
                 </div>
             }
         >
-            <LoginForm />
+            <LoginForm nextPath={nextPath} />
         </Suspense>
     );
 }

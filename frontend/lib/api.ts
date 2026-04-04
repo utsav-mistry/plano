@@ -12,7 +12,7 @@ import {
   Quotation
 } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.planoo.tech/api/v1';
 
 // ─── Token Refresh Mutex ──────────────────────────────────────────────
 // Prevents multiple parallel requests from each triggering a refresh.

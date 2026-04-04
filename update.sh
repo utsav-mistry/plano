@@ -14,6 +14,7 @@ export PM2_HOME=/home/app/.pm2
 APP_DIR=/home/app
 LOG_DIR=$APP_DIR/logs
 LOG_FILE=$LOG_DIR/deploy.log
+export NEXT_PUBLIC_API_URL=https://api.planoo.tech/api/v1
 
 # Ensure log directory exists
 mkdir -p $LOG_DIR

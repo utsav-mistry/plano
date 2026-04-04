@@ -3,17 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 import { defaultRouteForRole } from '@/lib/role-routing';
 
-function LoginFormContent() {
+type LoginFormProps = {
+    nextPath?: string;
+};
+
+function LoginFormContent({ nextPath }: LoginFormProps) {
     const { login, user, isLoading: authLoading } = useAuth();
     const { error: toastError } = useToast();
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const nextPath = searchParams.get('next') || undefined;
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [form, setForm] = useState({ email: '', password: '' });
@@ -164,6 +166,6 @@ function LoginFormContent() {
     );
 }
 
-export default function LoginForm() {
-    return <LoginFormContent />;
+export default function LoginForm({ nextPath }: LoginFormProps) {
+    return <LoginFormContent nextPath={nextPath} />;
 }
