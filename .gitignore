@@ -25,3 +25,4 @@ backend/storage/
 .idea/
 *.swp
 *.swo
+*-audit.json
