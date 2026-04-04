@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* ── Brand: Odoo Purple ─────────────────────── */
+  --color-plano-50:  #f8f2f6;
+  --color-plano-100: #f0e3ec;
+  --color-plano-200: #e1c8d9;
+  --color-plano-300: #cba3bc;
+  --color-plano-400: #a97096;
+  --color-plano-500: #8f5580;
+  --color-plano-600: #714b67;
+  --color-plano-700: #5a3c53;
+  --color-plano-800: #3d2738;
+  --color-plano-900: #2a1a27;
+
+  /* ── Neutrals (warm) ───────────────────────── */
+  --color-gray-25:  #fdfcfb;
+  --color-gray-50:  #f9f7f5;
+  --color-gray-100: #f0ede9;
+  --color-gray-200: #e4e0db;
+  --color-gray-300: #ccc8c2;
+  --color-gray-400: #a8a39c;
+  --color-gray-500: #857f78;
+  --color-gray-600: #635d57;
+  --color-gray-700: #453f3a;
+  --color-gray-800: #2d2925;
+  --color-gray-900: #1a1714;
+
+  /* ── Semantic ───────────────────────────────── */
+  --color-success-50:  #f0fdf4;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-warning-50:  #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-danger-50:   #fef2f2;
+  --color-danger-500:  #ef4444;
+  --color-danger-600:  #dc2626;
+  --color-danger-700:  #b91c1c;
+  --color-info-50:     #eff6ff;
+  --color-info-500:    #3b82f6;
+  --color-info-700:    #1d4ed8;
+
+  /* ── Surfaces ───────────────────────────────── */
+  --color-bg-page:    #f8f2f6;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated:#ffffff;
+  --color-border:     #e1c8d9;
+  --color-border-strong: #cba3bc;
+
+  /* ── Text ───────────────────────────────────── */
+  --color-text-primary:   #2a1a27;
+  --color-text-secondary: #5a3c53;
+  --color-text-tertiary:  #a97096;
+  --color-text-inverse:   #ffffff;
+
+  /* ── Sidebar ────────────────────────────────── */
+  --color-sidebar-bg:     #2a1a27;
+  --color-sidebar-text:   #f0e3ec;
+  --color-sidebar-muted:  #a97096;
+  --color-sidebar-hover:  #3d2738;
+  --color-sidebar-active: #714b67;
+
+  /* ── Radii ──────────────────────────────────── */
+  --radius-card:  12px;
+  --radius-btn:   8px;
+  --radius-input: 8px;
+
+  /* ── Shadows ────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(113,75,103,0.06);
+  --shadow-sm: 0 1px 3px rgba(113,75,103,0.09), 0 1px 2px rgba(113,75,103,0.05);
+  --shadow-md: 0 4px 6px rgba(113,75,103,0.07), 0 2px 4px rgba(113,75,103,0.05);
+  --shadow-lg: 0 10px 15px rgba(113,75,103,0.09), 0 4px 6px rgba(113,75,103,0.05);
+  --shadow-xl: 0 20px 25px rgba(113,75,103,0.1), 0 8px 10px rgba(113,75,103,0.05);
+
+  /* ── Font Families — wired to next/font/google variables ── */
+  --font-serif: var(--font-display), "Caveat", cursive;
+  --font-sans:  var(--font-body), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono:  var(--font-mono), "JetBrains Mono", monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  body {
+    background:  var(--color-bg-page);
+    color:       var(--color-text-primary);
+    font-family: var(--font-sans);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Force Caveat on ALL heading elements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif) !important;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /* Utility class for explicit Caveat usage */
+  .font-caveat {
+    font-family: var(--font-serif) !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Dark mode overrides */
+.dark {
+  --color-bg-page:    #1a0f17;
+  --color-bg-surface: #2a1a27;
+  --color-bg-elevated:#3d2738;
+  --color-border:     #3d2738;
+  --color-border-strong: #5a3c53;
+  --color-text-primary:   #f8f2f6;
+  --color-text-secondary: #cba3bc;
+  --color-text-tertiary:  #8f5580;
+  --color-sidebar-bg:     #1a0f17;
+  --color-sidebar-hover:  #2a1a27;
 }
