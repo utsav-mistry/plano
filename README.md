@@ -74,50 +74,104 @@ plano/
 - Redis running locally
 
 ```bash
-# 1. Clone and navigate
-git clone https://github.com/your-org/plano.git
-cd plano
+# Clone
+git clone <repo_url> plano && cd plano
 
-# 2. Install backend dependencies
-cd backend && npm install
+# Install dependencies
+npm install --prefix backend
+npm install --prefix status
 
-# 3. Set up environment
-cp .env.example .env
-# Edit .env with your values
+# Set up environment
+cp backend/.env.example backend/.env
+# Edit backend/.env with your values
 
-# 4. Start backend (dev)
-npm run dev
+# Start backend (dev)
+cd backend && npm run dev
 
-# 5. In another terminal — start status board
-cd ../status && npm install && node server.js
-
-# 6. Frontend (Next.js)
-cd ../frontend && npm install && npm run dev
+# Start status board (separate terminal)
+cd status && node server.js
 ```
 
 **API:** `http://localhost:5000/api/v1`  
 **Swagger:** `http://localhost:5000/api-docs`  
-**Status:** `http://localhost:5050/status`
+**Status:** `http://localhost:4000/status`
 
 ---
 
 ## Production Deployment
 
-```bash
-# On a fresh Ubuntu/Debian server:
-git clone https://github.com/your-org/plano.git /var/www/plano
-cd /var/www/plano
-sudo chmod +x setup.sh && sudo ./setup.sh
+### One-Time Setup (run on fresh server as sudo)
 
-# Update .env files with production values, then:
-pm2 reload all --env production
+```bash
+# Place and run setup script
+chmod +x setup.sh
+sudo ./setup.sh
+```
+
+What `setup.sh` does:
+1. Creates `/home/app/logs/{app,error}/` + `deploy.log`
+2. Clones the repo
+3. `npm install` for backend + status
+4. Copies `.env.example` → `.env` _(edit before starting!)_
+5. Sets `PM2_HOME=/home/app/.pm2` in `/etc/environment`
+6. `pm2 start ecosystem.config.js && pm2 save`
+7. Fixes `.pm2` permissions for team access
+8. Drops Nginx config and reloads
+
+### Nginx — Subdomain Layout
+
+```
+sudo nano /etc/nginx/sites-available/plano
+```
+
+| Subdomain | Proxies to |
+|---|---|
+| `domain.tld` | `localhost:3000` (Next.js) |
+| `api.domain.tld` | `localhost:5000` (Express) |
+| `status.domain.tld` | `localhost:4000` (BullMQ Board) |
+
+### PM2 — Initialize
+
+```bash
+# Set shared PM2 home (run once)
+echo "export PM2_HOME=/home/app/.pm2" | sudo tee -a /etc/environment
+source /etc/environment
+
+pm2 start ecosystem.config.js
+pm2 save
+
+# Fix team permissions
+sudo chown -R :team /home/app/.pm2
+sudo chmod -R 775   /home/app/.pm2
 ```
 
 ### Zero-Downtime Updates
 
 ```bash
-cd /var/www/plano
 ./update.sh
+```
+
+`update.sh` flow:
+1. `git fetch origin main` — check for new commits
+2. Logs diff to `logs/deploy.log`
+3. If changes exist: `git pull` → `npm install` → `pm2 reload all`
+4. If no changes: logs "No changes to deploy" and exits
+
+### Log Lifecycle
+
+```
+logs/
+├── app/        Winston app + http logs (app-YYYY-MM-DD.log)
+├── error/      Winston error logs (error-YYYY-MM-DD.log)
+└── deploy.log  Deployment audit trail
+```
+
+Schedule `logs-cleanup.sh` via cron:
+
+```bash
+# Compress logs older than 5 days, delete archives after 30 days
+crontab -e
+# Add: 0 2 * * * /home/app/logs-cleanup.sh
 ```
 
 ---
