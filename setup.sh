@@ -75,6 +75,12 @@ ln -sf /etc/nginx/sites-available/plano /etc/nginx/sites-enabled/plano
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 
+# ── Build frontend before starting PM2 ────────────────────────
+if [ -f "frontend/package.json" ]; then
+  echo "Rebuilding frontend..." | tee -a $LOG_DIR/deploy.log
+  cd frontend && npm run build && cd ..
+fi
+
 # ── Start PM2 ─────────────────────────────────────────────────
 cd $APP_DIR
 pm2 start ecosystem.config.js

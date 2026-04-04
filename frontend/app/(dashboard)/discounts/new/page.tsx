@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Plus, 
-  ArrowLeft, 
-  Save, 
-  Info, 
-  Ticket, 
-  IndianRupee, 
+import {
+  Plus,
+  ArrowLeft,
+  Save,
+  Info,
+  Ticket,
+  IndianRupee,
   Check,
   Loader2,
   ChevronDown,
@@ -35,7 +34,6 @@ const DISCOUNT_ENTITY_TARGETS = [
 ];
 
 export default function NewDiscountPage() {
-  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,7 +68,7 @@ export default function NewDiscountPage() {
       });
       if (res.success) {
         success('Coupon published!', 'The discount code is now active for users.');
-        router.push('/discounts');
+        window.location.href = '/admin/discounts';
       }
     } catch (err: any) {
       toastError('Setup interrupted', err.message);
@@ -102,10 +100,10 @@ export default function NewDiscountPage() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content Area */}
         <div className="lg:col-span-2 flex flex-col gap-8">
-          
+
           <section className="bg-bg-surface p-8 rounded-card border border-border shadow-sm flex flex-col gap-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8">
-               <Ticket size={80} className="text-gray-50 opacity-20 -rotate-12" />
+              <Ticket size={80} className="text-gray-50 opacity-20 -rotate-12" />
             </div>
 
             <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover relative">
@@ -135,13 +133,13 @@ export default function NewDiscountPage() {
               </div>
               <div className="flex flex-col">
                 <label className={labelStyle}>Campaign Name *</label>
-                <input 
+                <input
                   suppressHydrationWarning
                   required
-                  type="text" 
+                  type="text"
                   placeholder="e.g. 2025 Summer Sprint"
                   value={form.name}
-                  onChange={(e) => setForm({...form, name: e.target.value})}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className={inputStyle}
                 />
               </div>
@@ -152,10 +150,10 @@ export default function NewDiscountPage() {
                 <label className={labelStyle}>Discount Type & Value *</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {DISCOUNT_TYPES.map((type) => (
-                    <button 
+                    <button
                       key={type.value}
                       type="button"
-                      onClick={() => setForm({...form, type: type.value as 'percentage'|'fixed'})}
+                      onClick={() => setForm({ ...form, type: type.value as 'percentage' | 'fixed' })}
                       className={cn(
                         "flex items-center gap-4 p-5 rounded-xl border-2 transition-all duration-300 relative",
                         form.type === type.value 
@@ -170,8 +168,8 @@ export default function NewDiscountPage() {
                         {type.icon}
                       </div>
                       <div className="flex flex-col text-left">
-                         <span className="text-xs font-bold uppercase tracking-widest">{type.label}</span>
-                         <span className="text-[10px] opacity-60 font-medium">Billed as per {type.value}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest">{type.label}</span>
+                        <span className="text-[10px] opacity-60 font-medium">Billed as per {type.value}</span>
                       </div>
                       {form.type === type.value && (
                         <div className="absolute top-2 right-2 w-5 h-5 bg-plano-600 rounded-full flex items-center justify-center text-white">
@@ -216,11 +214,11 @@ export default function NewDiscountPage() {
                 <label className={labelStyle}>Valid From</label>
                 <div className="relative">
                   <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
-                  <input 
+                  <input
                     suppressHydrationWarning
-                    type="date" 
+                    type="date"
                     value={form.validFrom}
-                    onChange={(e) => setForm({...form, validFrom: e.target.value})}
+                    onChange={(e) => setForm({ ...form, validFrom: e.target.value })}
                     className={cn(inputStyle, "pl-11 pr-4")}
                   />
                 </div>
@@ -229,11 +227,11 @@ export default function NewDiscountPage() {
                 <label className={labelStyle}>Expires After (Optional)</label>
                 <div className="relative">
                   <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
-                  <input 
+                  <input
                     suppressHydrationWarning
-                    type="date" 
+                    type="date"
                     value={form.validTo}
-                    onChange={(e) => setForm({...form, validTo: e.target.value})}
+                    onChange={(e) => setForm({ ...form, validTo: e.target.value })}
                     className={cn(inputStyle, "pl-11 pr-4")}
                   />
                 </div>
@@ -243,15 +241,15 @@ export default function NewDiscountPage() {
             <div className="flex flex-col">
               <label className={labelStyle}>Total Usage Limit (0 = Unlimited)</label>
               <div className="relative">
-                 <Zap size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
-                 <input 
-                   suppressHydrationWarning
-                   type="number" 
-                   placeholder="e.g. 500 redemptions"
-                   value={form.usageLimit}
-                   onChange={(e) => setForm({...form, usageLimit: e.target.value})}
-                   className={cn(inputStyle, "pl-11")}
-                 />
+                <Zap size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
+                <input
+                  suppressHydrationWarning
+                  type="number"
+                  placeholder="e.g. 500 redemptions"
+                  value={form.usageLimit}
+                  onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
+                  className={cn(inputStyle, "pl-11")}
+                />
               </div>
             </div>
           </section>
@@ -341,7 +339,7 @@ export default function NewDiscountPage() {
                  <div className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></div>
                  <span className="text-[10px] font-bold text-success-700 dark:text-success-400 uppercase tracking-widest">Valid across catalog</span>
               </div>
-           </div>
+            </div>
         </div>
       </form>
     </div>

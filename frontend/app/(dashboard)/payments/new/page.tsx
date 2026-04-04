@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, ChevronDown, Check, Info, Banknote, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -18,7 +17,6 @@ const PAYMENT_METHODS = [
 const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
 
 export default function RecordPaymentPage() {
-  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -82,7 +80,7 @@ export default function RecordPaymentPage() {
       });
       if (res.success) {
         success('Payment recorded!', 'Transaction successfully logged and reconciled.');
-        router.push('/payments');
+        window.location.href = '/admin/payments';
       }
     } catch (err: any) {
       toastError('Submission failed', err.message);
@@ -98,7 +96,7 @@ export default function RecordPaymentPage() {
     <div className="flex flex-col gap-8 pb-12 max-w-2xl">
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <Link 
+        <Link
           href="/payments"
           className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit"
         >
@@ -143,7 +141,7 @@ export default function RecordPaymentPage() {
             <label className={label}>Payment Amount *</label>
             <div className="relative">
               <Banknote size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
-              <input 
+              <input
                 suppressHydrationWarning
                 required
                 type="number"
@@ -188,7 +186,7 @@ export default function RecordPaymentPage() {
             <label className={label}>Payment Date</label>
             <div className="relative">
               <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
-              <input 
+              <input
                 suppressHydrationWarning
                 type="date"
                 value={form.paymentDate}
@@ -202,7 +200,7 @@ export default function RecordPaymentPage() {
         {/* Transaction ID */}
         <div className="flex flex-col">
           <label className={label}>Transaction ID / Reference #</label>
-          <input 
+          <input
             suppressHydrationWarning
             type="text"
             placeholder="e.g. TXN-9981-A2"
@@ -219,7 +217,7 @@ export default function RecordPaymentPage() {
         {/* Notes */}
         <div className="flex flex-col">
           <label className={label}>Internal Notes</label>
-          <textarea 
+          <textarea
             rows={3}
             placeholder="Any internal context for this payment..."
             value={form.notes}
@@ -239,7 +237,7 @@ export default function RecordPaymentPage() {
             {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
             {isSubmitting ? 'Recording Entry...' : 'Record Payment'}
           </button>
-          <Link 
+          <Link
             href="/payments"
             className="px-8 h-12 rounded-xl border border-border dark:border-sidebar-hover bg-bg-surface text-sm font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
           >

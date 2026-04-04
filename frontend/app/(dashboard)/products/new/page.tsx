@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Plus, 
-  ArrowLeft, 
-  Save, 
-  Info, 
-  Layers, 
-  IndianRupee, 
+import {
+  Plus,
+  ArrowLeft,
+  Save,
+  Info,
+  Layers,
+  IndianRupee,
   PackageCheck,
   Check,
   Loader2,
@@ -28,7 +27,6 @@ const PRODUCT_TYPES = [
 const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
 
 export default function NewProductPage() {
-  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,7 +54,7 @@ export default function NewProductPage() {
       });
       if (res.success) {
         success('Product published!', 'The product is now live in your catalog.');
-        router.push('/products');
+        window.location.href = '/admin/products';
       }
     } catch (err: any) {
       toastError('Failed to create product', err.message);
@@ -100,24 +98,24 @@ export default function NewProductPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex flex-col">
                 <label className={labelStyle}>Product Name *</label>
-                <input 
+                <input
                   suppressHydrationWarning
                   required
-                  type="text" 
+                  type="text"
                   placeholder="e.g. Enterprise CRM Suite"
                   value={form.name}
-                  onChange={(e) => setForm({...form, name: e.target.value})}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className={inputStyle}
                 />
               </div>
               <div className="flex flex-col">
                 <label className={labelStyle}>SKU / Identifier</label>
-                <input 
+                <input
                   suppressHydrationWarning
-                  type="text" 
+                  type="text"
                   placeholder="e.g. CRM-ENT-001"
                   value={form.sku}
-                  onChange={(e) => setForm({...form, sku: e.target.value.toUpperCase()})}
+                  onChange={(e) => setForm({ ...form, sku: e.target.value.toUpperCase() })}
                   className={cn(inputStyle, "uppercase font-mono")}
                 />
               </div>
@@ -127,10 +125,10 @@ export default function NewProductPage() {
               <label className={labelStyle}>Product Type *</label>
               <div className="grid grid-cols-3 gap-4">
                 {PRODUCT_TYPES.map((type) => (
-                  <button 
+                  <button
                     key={type.value}
                     type="button"
-                    onClick={() => setForm({...form, type: type.value})}
+                    onClick={() => setForm({ ...form, type: type.value })}
                     className={cn(
                       "flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 transition-all duration-300 relative overflow-hidden group",
                       form.type === type.value 
@@ -157,11 +155,11 @@ export default function NewProductPage() {
 
             <div className="flex flex-col">
               <label className={labelStyle}>Description</label>
-              <textarea 
+              <textarea
                 rows={5}
                 placeholder="What does this product do? Highlight key features..."
                 value={form.description}
-                onChange={(e) => setForm({...form, description: e.target.value})}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
                 className={cn(inputStyle, "h-32 py-4 resize-none")}
               />
             </div>
@@ -182,13 +180,13 @@ export default function NewProductPage() {
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-border dark:border-sidebar-hover pr-3 mr-3">
                     {form.currency === 'INR' ? '₹' : '$'}
                   </div>
-                  <input 
+                  <input
                     suppressHydrationWarning
                     required
-                    type="number" 
+                    type="number"
                     placeholder="0.00"
                     value={form.basePrice}
-                    onChange={(e) => setForm({...form, basePrice: e.target.value})}
+                    onChange={(e) => setForm({ ...form, basePrice: e.target.value })}
                     className={cn(inputStyle, "pl-14 font-mono font-bold text-lg")}
                   />
                 </div>
@@ -198,7 +196,7 @@ export default function NewProductPage() {
                 <div className="relative">
                   <select
                     value={form.currency}
-                    onChange={(e) => setForm({...form, currency: e.target.value})}
+                    onChange={(e) => setForm({ ...form, currency: e.target.value })}
                     className={cn(inputStyle, "appearance-none pr-10 cursor-pointer")}
                     suppressHydrationWarning
                   >
@@ -279,14 +277,14 @@ export default function NewProductPage() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex flex-col gap-4 text-center px-4">
-                <p className="text-xs text-text-secondary font-medium leading-relaxed">
-                  Published products are immediately available to be added to plans or quotations.
-                </p>
-              </div>
-           </div>
-        </div>
+            <div className="flex flex-col gap-4 text-center px-4">
+              <p className="text-xs text-text-secondary font-medium leading-relaxed">
+                Published products are immediately available to be added to plans or quotations.
+              </p>
+            </div>
+          </div>
       </form>
     </div>
   );

@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  Plus, 
-  ArrowLeft, 
-  Save, 
-  Info, 
-  FileText, 
-  IndianRupee, 
+import {
+  Plus,
+  ArrowLeft,
+  Save,
+  Info,
+  FileText,
+  IndianRupee,
   Check,
   Loader2,
   ChevronDown,
@@ -18,7 +17,6 @@ import {
   UserCircle,
   FileCheck,
   ShieldCheck,
-  Eye,
   Trash2
 } from 'lucide-react';
 import Link from 'next/link';
@@ -29,7 +27,6 @@ import { useToast } from '@/components/ui/Toast';
 const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
 
 export default function NewQuotationPage() {
-  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
@@ -84,9 +81,9 @@ export default function NewQuotationPage() {
     const prod = products.find(p => p._id === currentItem.productId);
     setForm(p => ({
       ...p,
-      items: [...p.items, { 
-        productId: currentItem.productId, 
-        quantity: Number(currentItem.quantity), 
+      items: [...p.items, {
+        productId: currentItem.productId,
+        quantity: Number(currentItem.quantity),
         unitPrice: Number(currentItem.unitPrice),
         name: prod?.name
       }]
@@ -115,7 +112,7 @@ export default function NewQuotationPage() {
       });
       if (res.success) {
         success('Quote issued!', 'Quotation generated and sent to customer directory.');
-        router.push('/quotations');
+        window.location.href = '/admin/quotations';
       }
     } catch (err: any) {
       toastError('Generation failed', err.message);
@@ -129,8 +126,8 @@ export default function NewQuotationPage() {
 
   return (
     <div className="flex flex-col gap-8 pb-20 max-w-5xl">
-       {/* Header */}
-       <div className="flex flex-col gap-3">
+      {/* Header */}
+      <div className="flex flex-col gap-3">
         <Link href="/quotations" className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit">
           <ArrowLeft size={14} /> Back to Quotes
         </Link>
@@ -147,7 +144,7 @@ export default function NewQuotationPage() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Main Content: Quote Details */}
         <div className="lg:col-span-8 flex flex-col gap-8">
-          
+
           {/* Section 1: Parties involved */}
           <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8 relative overflow-hidden">
              <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover relative">
@@ -181,19 +178,19 @@ export default function NewQuotationPage() {
                   </div>
                 </div>
                 <div className="flex flex-col">
-                  <label className={labelStyle}>Validity Period *</label>
-                  <div className="relative">
+                    <label className={labelStyle}>Validity Period *</label>
+                    <div className="relative">
                     <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input 
-                      suppressHydrationWarning
-                      type="date" 
-                      value={form.validUntil}
-                      onChange={(e) => setForm({...form, validUntil: e.target.value})}
-                      className={cn(inputStyle, "pl-11 pr-4 font-mono")}
+                    <input
+                        suppressHydrationWarning
+                        type="date"
+                        value={form.validUntil}
+                        onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
+                        className={cn(inputStyle, "pl-11 pr-4 font-mono")}
                     />
-                  </div>
+                    </div>
                 </div>
-             </div>
+              </div>
           </section>
 
           {/* Section 2: Items Configuration */}
@@ -246,14 +243,14 @@ export default function NewQuotationPage() {
                       </div>
                    </div>
                 </div>
-                <button 
-                  type="button"
-                  onClick={addItem}
-                  className="h-12 w-full rounded-lg bg-plano-900 text-white text-xs font-bold uppercase tracking-widest hover:bg-black transition-all shadow-md flex items-center justify-center gap-2"
+                <button
+                    type="button"
+                    onClick={addItem}
+                    className="h-12 w-full rounded-xl bg-plano-900 text-white text-xs font-bold uppercase tracking-widest hover:bg-black transition-all shadow-md flex items-center justify-center gap-2"
                 >
-                   <Plus size={16} /> Add to Quote
+                    <Plus size={16} /> Add to Quote
                 </button>
-             </div>
+              </div>
 
              {/* Items Table */}
              <div className="overflow-x-auto mt-4">
@@ -317,70 +314,67 @@ export default function NewQuotationPage() {
 
         {/* Right Sidebar: Totals & Preview */}
         <div className="lg:col-span-4 flex flex-col gap-8">
-           {/* Summary Card */}
-           <div className="bg-plano-900 p-8 rounded-card border border-plano-800 shadow-2xl flex flex-col gap-8 text-white relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-all">
-                 <FileCheck size={120} className="-rotate-12" />
+          {/* Summary Card */}
+          <div className="bg-plano-900 p-8 rounded-card border border-plano-800 shadow-2xl flex flex-col gap-8 text-white relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-all">
+              <FileCheck size={120} className="-rotate-12" />
+            </div>
+
+            <div className="flex flex-col gap-1 relative">
+              <span className="text-[10px] font-bold text-plano-400 uppercase tracking-widest border border-plano-800 rounded-full px-3 py-1 w-fit bg-plano-950">Draft Quote</span>
+              <h3 className="text-3xl font-serif font-bold text-white mt-4">Fiscal Summary</h3>
+            </div>
+
+            <div className="flex flex-col gap-5 border-t border-plano-800/50 pt-8 relative">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-plano-400 font-bold uppercase tracking-widest text-[10px]">Gross Subtotal</span>
+                <span className="font-mono font-bold text-lg">{formatCurrency(subtotal, form.currency)}</span>
               </div>
-              
-              <div className="flex flex-col gap-1 relative">
-                 <span className="text-[10px] font-bold text-plano-400 uppercase tracking-widest border border-plano-800 rounded-full px-3 py-1 w-fit bg-plano-950">Draft Quote</span>
-                 <h3 className="text-3xl font-serif font-bold text-white mt-4">Fiscal Summary</h3>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-plano-400 font-bold uppercase tracking-widest text-[10px]">Taxes & Levies</span>
+                <span className="font-mono font-bold text-lg">{formatCurrency(0, form.currency)}</span>
               </div>
 
-              <div className="flex flex-col gap-5 border-t border-plano-800/50 pt-8 relative">
-                 <div className="flex items-center justify-between text-sm">
-                    <span className="text-plano-400 font-bold uppercase tracking-widest text-[10px]">Gross Subtotal</span>
-                    <span className="font-mono font-bold text-lg">{formatCurrency(subtotal, form.currency)}</span>
-                 </div>
-                 <div className="flex items-center justify-between text-sm">
-                    <span className="text-plano-400 font-bold uppercase tracking-widest text-[10px]">Taxes & Levies</span>
-                    <span className="font-mono font-bold text-lg">{formatCurrency(0, form.currency)}</span>
-                 </div>
-                 
-                 <div className="bg-plano-800/40 p-5 rounded-xl border border-plano-700/50 mt-4">
-                    <div className="flex items-center justify-between">
-                       <div className="flex flex-col gap-1">
-                          <span className="text-xs font-bold uppercase text-white shadow-none">Total Value</span>
-                          <span className="text-[10px] text-plano-400 font-medium">Billed to customer</span>
-                       </div>
-                       <span className="text-3xl font-serif font-bold text-white">
-                         {formatCurrency(subtotal, form.currency).split('.')[0]}
-                       </span>
-                    </div>
-                 </div>
+              <div className="bg-plano-800/40 p-5 rounded-xl border border-plano-700/50 mt-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-bold uppercase text-white shadow-none">Total Value</span>
+                    <span className="text-[10px] text-plano-400 font-medium">Billed to customer</span>
+                  </div>
+                  <span className="text-3xl font-serif font-bold text-white">
+                    {formatCurrency(subtotal, form.currency).split('.')[0]}
+                  </span>
+                </div>
               </div>
+            </div>
 
-              <div className="flex flex-col gap-4 relative">
-                 <button 
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="h-14 w-full rounded-xl bg-plano-400 hover:bg-plano-300 text-plano-950 font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-60 border-2 border-white/20"
-                  >
-                     {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
-                     {isSubmitting ? 'Issuing Quote...' : 'Issue Performance Quote'}
-                  </button>
-                 <button type="button" className="text-[10px] font-bold text-plano-400 uppercase tracking-widest hover:text-white transition-colors text-center">
-                    Preview Full PDF Document
-                 </button>
-              </div>
-           </div>
+            <div className="flex flex-col gap-4 relative">
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-14 w-full rounded-xl bg-plano-400 hover:bg-plano-300 text-plano-950 font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-60 border-2 border-white/20"
+                >
+                    {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
+                    {isSubmitting ? 'Issuing Quote...' : 'Issue Performance Quote'}
+                </button>
+            </div>
+          </div>
 
-           {/* Logistics Info Box */}
-           <div className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover flex flex-col gap-4">
-              <div className="flex items-start gap-4">
-                 <div className="w-10 h-10 rounded-full bg-info-50 dark:bg-info-900/20 flex items-center justify-center text-info-600 shrink-0">
-                    <Info size={20} />
-                 </div>
-                 <div className="flex flex-col gap-1">
-                    <h5 className="text-xs font-bold text-text-primary uppercase tracking-tight">Financial Policy</h5>
-                    <p className="text-[10px] text-text-secondary leading-relaxed font-medium">
-                       Quotations are legally binding documents once accepted by the customer. 
-                       Ensure line items matched agreed-upon negotiations.
-                    </p>
-                 </div>
-              </div>
-           </div>
+          {/* Logistics Info Box */}
+          <div className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover flex flex-col gap-4">
+            <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-info-50 dark:bg-info-900/20 flex items-center justify-center text-info-600 shrink-0">
+                  <Info size={20} />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <h5 className="text-xs font-bold text-text-primary uppercase tracking-tight">Financial Policy</h5>
+                  <p className="text-[10px] text-text-secondary leading-relaxed font-medium">
+                      Quotations are legally binding documents once accepted by the customer. 
+                      Ensure line items matched agreed-upon negotiations.
+                  </p>
+                </div>
+            </div>
+          </div>
         </div>
       </form>
     </div>
