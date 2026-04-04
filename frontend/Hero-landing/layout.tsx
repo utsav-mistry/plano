@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Caveat, JetBrains_Mono } from "next/font/google";
-import { AuthProvider } from "./context/AuthContext";
-import { ToastProvider } from "@/components/ui/Toast";
+import { Plus_Jakarta_Sans, Caveat, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-body",
   display: "swap",
 });
@@ -26,25 +24,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Plano — Recurring revenue, simplified.",
+  title: "Planoo - Recurring revenue, simplified.",
   description: "Subscription Management System for modern businesses.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${caveat.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${caveat.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </AuthProvider>
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

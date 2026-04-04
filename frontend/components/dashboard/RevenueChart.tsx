@@ -47,7 +47,7 @@ export default function RevenueChart() {
     <div className="bg-bg-surface p-6 rounded-card border border-border shadow-sm group hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-xl font-serif font-bold text-text-primary">Revenue Inflow</h3>
+          <h3 className="text-xl font-sans font-bold text-text-primary">Revenue Inflow</h3>
           <p className="text-[10px] uppercase tracking-widest text-text-tertiary font-bold">MRR History • Real-time Data</p>
         </div>
         <div className="flex items-center gap-2">

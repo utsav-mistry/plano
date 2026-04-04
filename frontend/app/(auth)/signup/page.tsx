@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight, Loader2, Check, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 
@@ -47,11 +48,19 @@ function PasswordStrength({ password }: { password: string }) {
 }
 
 export default function SignupPage() {
-  const { register } = useAuth();
+  const { register, user, isLoading: authLoading } = useAuth();
   const { error: toastError } = useToast();
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

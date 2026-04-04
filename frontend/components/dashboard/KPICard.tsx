@@ -29,7 +29,7 @@ export default function KPICard({ label, value, trend, icon, iconColorClass }: K
 
       <div className="flex flex-col gap-1">
         <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">{label}</span>
-        <h3 className="text-3xl font-serif font-bold text-text-primary tracking-tight">{value}</h3>
+        <h3 className="text-3xl font-sans font-bold text-text-primary tracking-tight">{value}</h3>
       </div>
 
       <div className="mt-4 flex items-center gap-1.5">

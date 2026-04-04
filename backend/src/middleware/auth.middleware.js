@@ -33,6 +33,7 @@ export const authenticate = catchAsync(async (req, res, next) => {
   const user = await User.findById(decoded.id).select('-password');
   if (!user) throw ApiError.unauthorized('User no longer exists');
   if (!user.isActive) throw ApiError.forbidden('Account is deactivated');
+  if (!user.emailVerified) throw ApiError.forbidden('Please verify your email address');
 
   req.user = user;
   next();

@@ -50,13 +50,13 @@ export default function StatusDonut() {
   return (
     <div className="bg-bg-surface p-6 rounded-card border border-border shadow-sm h-full flex flex-col hover:shadow-md transition-all">
        <div className="mb-8">
-          <h3 className="text-xl font-serif font-bold text-text-primary">Subscription Health</h3>
+          <h3 className="text-xl font-sans font-bold text-text-primary">Subscription Health</h3>
           <p className="text-[10px] uppercase tracking-widest text-text-tertiary font-bold">Status Segments • System Audit</p>
        </div>
 
        <div className="flex-1 min-h-[16rem] relative">
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-             <span className="text-4xl font-serif font-bold text-text-primary leading-none">{total}</span>
+             <span className="text-4xl font-sans font-bold text-text-primary leading-none">{total}</span>
              <span className="text-[10px] uppercase font-bold text-text-tertiary tracking-[0.2em] mt-1">units</span>
           </div>
           <ResponsiveContainer width="100%" height="100%" debounce={50}>

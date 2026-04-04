@@ -24,7 +24,7 @@ let scheduledJobsInitialized = false;
 const queueEvents = new Map();
 
 /** Register scheduled (cron) jobs — called once on server start */
-export const initScheduledJobs = async () => {
+export const initScheduledJobs = async () => {  
   if (scheduledJobsInitialized) return;
 
   // Daily at midnight — auto-renew subscriptions
