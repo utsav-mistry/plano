@@ -33,6 +33,37 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerifiedAt: {
+      type: Date,
+    },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+    },
+    emailOtpToken: {
+      type: String,
+      select: false,
+    },
+    emailOtpExpires: {
+      type: Date,
+    },
+    emailOtpPurpose: {
+      type: String,
+    },
+    emailOtpAttempts: {
+      type: Number,
+      default: 0,
+    },
+    emailOtpSentAt: {
+      type: Date,
+    },
     lastLogin: {
       type: Date,
     },
@@ -50,8 +81,8 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { 
-      virtuals: true, 
+    toJSON: {
+      virtuals: true,
       versionKey: false,
       transform: (doc, ret) => { ret.id = ret._id; return ret; }
     },

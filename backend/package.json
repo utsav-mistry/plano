@@ -5,7 +5,10 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
+    "dev": "node scripts/dev.js",
+    "dev:server": "nodemon server.js",
+    "dev:workers": "nodemon src/workers/index.js",
+    "smtp:check": "node scripts/check-smtp.js",
     "start": "node server.js",
     "lint": "eslint src/",
     "test": "jest --runInBand"

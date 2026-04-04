@@ -1,13 +1,13 @@
-import { 
-  ApiResponse, 
-  User, 
-  Product, 
-  Plan, 
-  Subscription, 
-  Invoice, 
-  Payment, 
-  Tax, 
-  Discount, 
+import {
+  ApiResponse,
+  User,
+  Product,
+  Plan,
+  Subscription,
+  Invoice,
+  Payment,
+  Tax,
+  Discount,
   KPIStats,
   Quotation
 } from '@/types';
@@ -122,22 +122,32 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
 export const api = {
   // ─── Auth ──────────────────────────────────────────────────
   auth: {
-    login: (credentials: any) => 
+    login: (credentials: any) =>
       request<{ user: User, token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
-    register: (data: any) => 
+    register: (data: any) =>
       request<{ user: User, token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
-    logout: () => 
+    inviteCustomer: (data: { name: string; email: string }) =>
+      request<{ user: User }>('/auth/invite-customer', { method: 'POST', body: JSON.stringify(data) }),
+    sendVerificationEmail: (data: { email: string }) =>
+      request<null>('/auth/send-verification-email', { method: 'POST', body: JSON.stringify(data) }),
+    verifyEmail: (data: { token: string }) =>
+      request<{ user: User }>('/auth/verify-email', { method: 'POST', body: JSON.stringify(data) }),
+    sendOtp: (data: { email: string; purpose?: 'verify_email' | 'login' }) =>
+      request<null>('/auth/send-otp', { method: 'POST', body: JSON.stringify(data) }),
+    verifyOtp: (data: { email: string; otp: string; purpose?: 'verify_email' | 'login' }) =>
+      request<{ user: User }>('/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
+    logout: () =>
       request<null>('/auth/logout', { method: 'POST' }),
-    me: () => 
+    me: () =>
       request<User>('/auth/me'),
     forgotPassword: (data: any) =>
       request<null>('/auth/forgot-password', { method: 'POST', body: JSON.stringify(data) }),
     resetPassword: (token: string, data: any) =>
       request<null>(`/auth/reset-password/${token}`, { method: 'POST', body: JSON.stringify(data) }),
-    refresh: () => 
+    refresh: () =>
       request<{ token: string }>('/auth/refresh-token', { method: 'POST' }),
   },
-  
+
   // ─── Users ─────────────────────────────────────────────────
   users: {
     getAll: (params?: any) => {
@@ -145,10 +155,12 @@ export const api = {
       return request<User[]>(`/users${q}`);
     },
     getById: (id: string) => request<User>(`/users/${id}`),
-    update: (id: string, data: any) => 
+    update: (id: string, data: any) =>
       request<User>(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    toggleStatus: (id: string) => 
+    toggleStatus: (id: string) =>
       request<User>(`/users/${id}/toggle-status`, { method: 'POST' }),
+    delete: (id: string) =>
+      request<null>(`/users/${id}`, { method: 'DELETE' }),
   },
 
   // ─── Products ──────────────────────────────────────────────
@@ -158,11 +170,11 @@ export const api = {
       return request<Product[]>(`/products${q}`);
     },
     getById: (id: string) => request<Product>(`/products/${id}`),
-    create: (data: any) => 
+    create: (data: any) =>
       request<Product>('/products', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: any) => 
+    update: (id: string, data: any) =>
       request<Product>(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id: string) => 
+    delete: (id: string) =>
       request<null>(`/products/${id}`, { method: 'DELETE' }),
   },
 
@@ -173,11 +185,11 @@ export const api = {
       return request<Plan[]>(`/plans${q}`);
     },
     getById: (id: string) => request<Plan>(`/plans/${id}`),
-    create: (data: any) => 
+    create: (data: any) =>
       request<Plan>('/plans', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: any) => 
+    update: (id: string, data: any) =>
       request<Plan>(`/plans/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id: string) => 
+    delete: (id: string) =>
       request<null>(`/plans/${id}`, { method: 'DELETE' }),
   },
 
@@ -188,19 +200,19 @@ export const api = {
       return request<Subscription[]>(`/subscriptions${q}`);
     },
     getById: (id: string) => request<Subscription>(`/subscriptions/${id}`),
-    create: (data: any) => 
+    create: (data: any) =>
       request<Subscription>('/subscriptions', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: any) => 
+    update: (id: string, data: any) =>
       request<Subscription>(`/subscriptions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-    confirm: (id: string) => 
+    confirm: (id: string) =>
       request<Subscription>(`/subscriptions/${id}/confirm`, { method: 'POST' }),
-    activate: (id: string) => 
+    activate: (id: string) =>
       request<Subscription>(`/subscriptions/${id}/activate`, { method: 'POST' }),
-    cancel: (id: string, reason: string) => 
+    cancel: (id: string, reason: string) =>
       request<Subscription>(`/subscriptions/${id}/cancel`, { method: 'POST', body: JSON.stringify({ reason }) }),
-    pause: (id: string) => 
+    pause: (id: string) =>
       request<Subscription>(`/subscriptions/${id}/pause`, { method: 'POST' }),
-    resume: (id: string) => 
+    resume: (id: string) =>
       request<Subscription>(`/subscriptions/${id}/resume`, { method: 'POST' }),
   },
 
@@ -211,9 +223,9 @@ export const api = {
       return request<Quotation[]>(`/quotations${q}`);
     },
     getById: (id: string) => request<Quotation>(`/quotations/${id}`),
-    create: (data: any) => 
+    create: (data: any) =>
       request<Quotation>('/quotations', { method: 'POST', body: JSON.stringify(data) }),
-    send: (id: string) => 
+    send: (id: string) =>
       request<Quotation>(`/quotations/${id}/send`, { method: 'POST' }),
   },
 
@@ -223,12 +235,14 @@ export const api = {
       const q = params ? `?${new URLSearchParams(params)}` : '';
       return request<Invoice[]>(`/invoices${q}`);
     },
+    create: (data: any) =>
+      request<Invoice>('/invoices', { method: 'POST', body: JSON.stringify(data) }),
     getById: (id: string) => request<Invoice>(`/invoices/${id}`),
-    confirm: (id: string) => 
+    confirm: (id: string) =>
       request<Invoice>(`/invoices/${id}/confirm`, { method: 'POST' }),
-    send: (id: string) => 
+    send: (id: string) =>
       request<Invoice>(`/invoices/${id}/send`, { method: 'POST' }),
-    cancel: (id: string) => 
+    cancel: (id: string) =>
       request<Invoice>(`/invoices/${id}/cancel`, { method: 'POST' }),
     downloadPdf: async (id: string) => {
       const url = `${API_BASE_URL}/invoices/${id}/download`;
@@ -243,9 +257,9 @@ export const api = {
       return request<Payment[]>(`/payments${q}`);
     },
     getById: (id: string) => request<Payment>(`/payments/${id}`),
-    record: (data: any) => 
+    record: (data: any) =>
       request<Payment>('/payments', { method: 'POST', body: JSON.stringify(data) }),
-    refund: (id: string) => 
+    refund: (id: string) =>
       request<Payment>(`/payments/${id}/refund`, { method: 'POST' }),
   },
 
@@ -256,13 +270,13 @@ export const api = {
       return request<Discount[]>(`/discounts${q}`);
     },
     getById: (id: string) => request<Discount>(`/discounts/${id}`),
-    create: (data: any) => 
+    create: (data: any) =>
       request<Discount>('/discounts', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: any) => 
+    update: (id: string, data: any) =>
       request<Discount>(`/discounts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    toggle: (id: string) => 
+    toggle: (id: string) =>
       request<Discount>(`/discounts/${id}/toggle`, { method: 'POST' }),
-    delete: (id: string) => 
+    delete: (id: string) =>
       request<null>(`/discounts/${id}`, { method: 'DELETE' }),
   },
 
@@ -272,11 +286,11 @@ export const api = {
       const q = params ? `?${new URLSearchParams(params)}` : '';
       return request<Tax[]>(`/taxes${q}`);
     },
-    create: (data: any) => 
+    create: (data: any) =>
       request<Tax>('/taxes', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: string, data: any) => 
+    update: (id: string, data: any) =>
       request<Tax>(`/taxes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id: string) => 
+    delete: (id: string) =>
       request<null>(`/taxes/${id}`, { method: 'DELETE' }),
   },
 

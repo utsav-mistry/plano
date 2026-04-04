@@ -17,9 +17,9 @@ export const update = catchAsync(async (req, res) => {
   new ApiResponse(200, { user }, 'User updated').send(res);
 });
 
-export const deactivate = catchAsync(async (req, res) => {
-  await userService.deactivate(req.params.id);
-  new ApiResponse(200, null, 'User deactivated').send(res);
+export const remove = catchAsync(async (req, res) => {
+  await userService.deleteUser(req.params.id, req.user._id);
+  new ApiResponse(200, null, 'User deleted').send(res);
 });
 
 export const toggleStatus = catchAsync(async (req, res) => {

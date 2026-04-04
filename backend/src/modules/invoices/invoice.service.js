@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Invoice from './invoice.model.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { INVOICE_STATUS } from '../../constants/statuses.js';
@@ -41,6 +42,10 @@ export const getAll = async ({ page = 1, limit = 20, status, userId }) => {
 };
 
 export const getById = async (id) => {
+  if (!mongoose.isValidObjectId(id)) {
+    throw ApiError.badRequest('Invalid invoice id');
+  }
+
   const invoice = await Invoice.findById(id)
     .populate('userId', 'name email')
     .populate('subscriptionId')

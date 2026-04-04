@@ -13,14 +13,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
 
+  const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : 'Please check your credentials and try again.';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       await login(form);
       // Redirect handled inside AuthContext
-    } catch (err: any) {
-      toastError('Login failed', err.message || 'Please check your credentials and try again.');
+    } catch (error: unknown) {
+      toastError('Login failed', getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -129,6 +131,21 @@ export default function LoginPage() {
           )}
         </button>
       </form>
+
+      <div className="rounded-2xl border border-[#e1c8d9] bg-[#f8f2f6] px-4 py-3 text-xs text-center text-gray-600 font-medium">
+        Need account access help?{' '}
+        <Link href="/verify-email" className="font-bold underline" style={{ color: '#714b67' }}>
+          Verify email
+        </Link>{' '}
+        ·{' '}
+        <Link href="/verify-otp" className="font-bold underline" style={{ color: '#714b67' }}>
+          OTP / 2FA
+        </Link>{' '}
+        ·{' '}
+        <Link href="/forgot-password" className="font-bold underline" style={{ color: '#714b67' }}>
+          Reset password
+        </Link>
+      </div>
 
       {/* Divider */}
       <div className="flex items-center gap-3">

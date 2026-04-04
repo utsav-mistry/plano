@@ -88,6 +88,9 @@ cp backend/.env.example backend/.env
 # Start backend (dev)
 cd backend && npm run dev
 
+# Dev mode now starts both the API and BullMQ workers
+# The workers process is required for OTP, verification, reset, invoice and other queued emails
+
 # Start status board (separate terminal)
 cd status && node server.js
 ```
@@ -95,6 +98,17 @@ cd status && node server.js
 **API:** `http://localhost:5000/api/v1`  
 **Swagger:** `http://localhost:5000/api-docs`  
 **Status:** `http://localhost:4000/status`
+
+### SMTP Sender Aliases
+
+For Zoho SMTP, the backend supports these sender key-value pairs in `backend/.env`:
+
+- `SMTP_FROM_EMAIL=no-reply@planoo.tech`
+- `SMTP_FROM_NAME=Noreply@Utsav6`
+- `SMTP_SUPPORT_EMAIL=support@planoo.tech`
+- `SMTP_SUPPORT_NAME=Support@Utsav6`
+
+The mail worker sends transactional mail from the no-reply identity and sets the support identity as `replyTo`.
 
 ---
 

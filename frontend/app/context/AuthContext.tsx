@@ -17,14 +17,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser]       = useState<User | null>(null);
-  const [token, setToken]     = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const storedToken = localStorage.getItem('plano_token');
-    const storedUser  = localStorage.getItem('plano_user');
+    const storedUser = localStorage.getItem('plano_user');
 
     if (storedToken && storedUser) {
       setToken(storedToken);
@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** 
@@ -87,13 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const response = await api.auth.register(data);
       if (response.success && response.data) {
-        // Backend returns { user, token }
-        const { user, token } = response.data as any;
-        setUser(user);
-        setToken(token);
-        localStorage.setItem('plano_token', token);
-        localStorage.setItem('plano_user', JSON.stringify(user));
-        router.push('/dashboard');
+        router.push(`/verify-email?email=${encodeURIComponent(data.email)}&registered=1`);
       }
     } catch (err: any) {
       throw new Error(err.message || 'Registration failed');

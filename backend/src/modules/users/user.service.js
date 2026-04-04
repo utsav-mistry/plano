@@ -29,8 +29,12 @@ export const update = async (id, data) => {
   return user;
 };
 
-export const deactivate = async (id) => {
-  const user = await User.findByIdAndUpdate(id, { isActive: false }, { new: true });
+export const deleteUser = async (id, actorId) => {
+  if (actorId && id.toString() === actorId.toString()) {
+    throw ApiError.badRequest('You cannot delete your own account');
+  }
+
+  const user = await User.findByIdAndDelete(id);
   if (!user) throw ApiError.notFound('User not found');
   return user;
 };

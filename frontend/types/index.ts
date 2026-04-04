@@ -6,6 +6,8 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  emailVerified?: boolean;
+  emailVerifiedAt?: string;
   avatar?: string;
   isActive: boolean;
   createdAt: string;

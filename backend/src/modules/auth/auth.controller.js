@@ -66,6 +66,31 @@ export const login = catchAsync(async (req, res) => {
   new ApiResponse(200, { user, token: accessToken }, 'Login successful').send(res);
 });
 
+export const inviteCustomer = catchAsync(async (req, res) => {
+  const user = await authService.inviteCustomer(req.body, req.user._id);
+  new ApiResponse(201, { user }, 'Customer invited successfully').send(res);
+});
+
+export const sendVerificationEmail = catchAsync(async (req, res) => {
+  await authService.sendVerificationEmail(req.body.email);
+  new ApiResponse(200, null, 'Verification email queued').send(res);
+});
+
+export const verifyEmail = catchAsync(async (req, res) => {
+  const user = await authService.verifyEmail(req.body.token);
+  new ApiResponse(200, { user }, 'Email verified successfully').send(res);
+});
+
+export const sendOtp = catchAsync(async (req, res) => {
+  await authService.sendOtp(req.body.email, req.body.purpose);
+  new ApiResponse(200, null, 'OTP email queued').send(res);
+});
+
+export const verifyOtp = catchAsync(async (req, res) => {
+  const user = await authService.verifyOtp(req.body.email, req.body.otp, req.body.purpose);
+  new ApiResponse(200, { user }, 'OTP verified successfully').send(res);
+});
+
 export const logout = catchAsync(async (req, res) => {
   await authService.logout(req.user._id);
   res.clearCookie('refreshToken');

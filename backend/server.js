@@ -2,7 +2,7 @@ import 'dotenv/config';
 import app from './src/app.js';
 import connectDB from './src/config/db.js';
 import redis from './src/config/redis.js';
-import { initScheduledJobs } from './src/config/bullmq.js';
+import { closeBullMQResources, initQueueEventListeners, initScheduledJobs } from './src/config/bullmq.js';
 import logger from './src/utils/logger.js';
 
 const PORT = process.env.PORT || 5000;
@@ -14,6 +14,7 @@ const startServer = async () => {
 
     // Initialize BullMQ scheduled jobs
     await initScheduledJobs();
+    await initQueueEventListeners();
 
     const server = app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);
@@ -27,6 +28,7 @@ const startServer = async () => {
     const shutdown = async (signal) => {
       logger.warn(`${signal} received. Shutting down gracefully...`);
       server.close(async () => {
+        await closeBullMQResources();
         await redis.quit();
         logger.info('Redis disconnected');
         process.exit(0);
