@@ -37,6 +37,15 @@ export default function LoginPage() {
     }
   };
 
+  if (authLoading || user) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader2 size={32} className="animate-spin text-[#714b67]" />
+        <p className="text-xs text-gray-400 mt-4 font-medium uppercase tracking-widest">Checking session...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Heading */}
