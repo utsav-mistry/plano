@@ -3,20 +3,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Package, 
-  CalendarClock, 
-  FileText, 
-  FileSignature, 
-  Receipt, 
-  CreditCard, 
-  TicketPercent, 
-  Percent, 
-  Users, 
+import {
+  LayoutDashboard,
+  Package,
+  CalendarClock,
+  FileText,
+  FileSignature,
+  Receipt,
+  CreditCard,
+  TicketPercent,
+  Percent,
+  Users,
   BarChart3,
-  Settings,
-  LogOut,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -65,9 +63,10 @@ const navGroups = [
 export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boolean; toggleCollapsed: () => void }) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const routePrefix = pathname.startsWith('/admin') ? '/admin' : '';
 
   return (
-    <aside 
+    <aside
       className={cn(
         "bg-sidebar-bg text-sidebar-text flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300",
         collapsed ? "w-16" : "w-60"
@@ -96,15 +95,16 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
             )}
             <div className="space-y-0.5">
               {group.items.map((item) => {
-                const isActive = pathname === item.href;
+                const scopedHref = `${routePrefix}${item.href}`;
+                const isActive = pathname === scopedHref || pathname.startsWith(`${scopedHref}/`);
                 return (
                   <Link
                     key={item.name}
-                    href={item.href}
+                    href={scopedHref}
                     className={cn(
                       "flex items-center gap-3 px-3 py-1.5 rounded-btn font-sans text-sm transition-colors",
-                      isActive 
-                        ? "bg-plano-600 text-white" 
+                      isActive
+                        ? "bg-plano-600 text-white"
                         : "text-sidebar-text hover:bg-sidebar-hover"
                     )}
                   >
@@ -122,14 +122,14 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
       <div className="p-4 border-t border-sidebar-hover">
         {collapsed ? (
           <div className="flex flex-col items-center gap-4">
-             <div className="w-8 h-8 rounded-full bg-plano-500 flex items-center justify-center text-xs font-bold uppercase">{user?.name?.charAt(0) || 'U'}</div>
-             <button onClick={toggleCollapsed} className="p-1 hover:bg-sidebar-hover rounded"><ChevronRight size={16} /></button>
+            <div className="w-8 h-8 rounded-full bg-plano-500 flex items-center justify-center text-xs font-bold uppercase">{user?.name?.charAt(0) || 'U'}</div>
+            <button onClick={toggleCollapsed} className="p-1 hover:bg-sidebar-hover rounded"><ChevronRight size={16} /></button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-plano-500 flex items-center justify-center text-xs font-bold border border-white/20 uppercase">
-                 {user?.name?.charAt(0) || 'U'}
+                {user?.name?.charAt(0) || 'U'}
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-medium truncate max-w-[100px]">{user?.name || 'Authorized User'}</span>

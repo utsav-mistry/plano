@@ -57,7 +57,7 @@ fi
 [ ! -f status/.env  ] && cp status/.env.example  status/.env
 
 echo ""
-echo "⚠️  Edit $APP_DIR/backend/.env and $APP_DIR/status/.env before starting!"
+echo "Edit $APP_DIR/backend/.env and $APP_DIR/status/.env before starting!"
 echo ""
 
 # ── Create PDF storage dir ────────────────────────────────────

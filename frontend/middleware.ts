@@ -5,8 +5,14 @@ export function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const isAdminPath = pathname.startsWith('/admin');
     const isPortalPath = pathname.startsWith('/portal');
+    const isPortalRoot = pathname === '/portal';
 
     if (!isAdminPath && !isPortalPath) {
+        return NextResponse.next();
+    }
+
+    // Keep /portal publicly accessible as a temporary placeholder page.
+    if (isPortalRoot) {
         return NextResponse.next();
     }
 

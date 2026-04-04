@@ -8,7 +8,7 @@ export const isAdminRole = (role?: string | null) => {
 export const isPortalRole = (role?: string | null) => normalizeRole(role) === 'portal_user';
 
 export const defaultRouteForRole = (role?: string | null) => {
-    if (isAdminRole(role)) return '/admin';
+    if (isAdminRole(role)) return '/admin/dashboard';
     if (isPortalRole(role)) return '/portal';
     return '/login';
 };
