@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 
-export default function VerifyOtpPage() {
+function VerifyOtpForm() {
     const searchParams = useSearchParams();
     const initialEmail = searchParams.get('email') || '';
     const initialPurpose = (searchParams.get('purpose') as 'verify_email' | 'login' | null) || 'verify_email';
@@ -152,3 +152,11 @@ export default function VerifyOtpPage() {
         </div>
     );
 }
+
+export default function VerifyOtpPage() {
+    return (
+        <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-plano-600" /></div>}>
+            <VerifyOtpForm />
+        </Suspense>
+    );
+}

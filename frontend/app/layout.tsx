@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Caveat, JetBrains_Mono } from "next/font/google";
+import { Inter, Caveat, JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-body",
   display: "swap",
 });
@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${jakarta.variable} ${caveat.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${caveat.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <AuthProvider>

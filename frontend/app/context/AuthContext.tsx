@@ -4,12 +4,13 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { User } from '@/types';
+import { defaultRouteForRole } from '@/lib/role-routing';
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (credentials: any) => Promise<void>;
+  login: (credentials: any, redirectTo?: string) => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => void;
 }
@@ -62,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (credentials: any) => {
+  const login = async (credentials: any, redirectTo?: string) => {
     try {
       setIsLoading(true);
       const response = await api.auth.login(credentials);
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(token);
         localStorage.setItem('plano_token', token);
         localStorage.setItem('plano_user', JSON.stringify(user));
-        router.push('/dashboard');
+        router.push(redirectTo || defaultRouteForRole(user?.role));
       }
     } catch (err: any) {
       throw new Error(err.message || 'Login failed');

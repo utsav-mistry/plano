@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff, ArrowRight, Loader2, Check, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 
@@ -47,11 +48,19 @@ function PasswordStrength({ password }: { password: string }) {
 }
 
 export default function SignupPage() {
-  const { register } = useAuth();
+  const { register, user, isLoading: authLoading } = useAuth();
   const { error: toastError } = useToast();
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '' });
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +73,15 @@ export default function SignupPage() {
       setIsLoading(false);
     }
   };
+
+  if (authLoading || user) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader2 size={32} className="animate-spin text-plano-600" />
+        <p className="text-xs text-gray-400 mt-4 font-medium uppercase tracking-widest">Checking session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">

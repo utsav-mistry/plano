@@ -1,0 +1,216 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Brand: Plano Plum ──────────────────────── */
+  --color-plano-50:  #f5f0f4;
+  --color-plano-100: #ebe0e8;
+  --color-plano-200: #d6c2d2;
+  --color-plano-300: #b894ae;
+  --color-plano-400: #946985;
+  --color-plano-500: #604058;  /* PRIMARY: #604058 */
+  --color-plano-600: #4e3347;
+  --color-plano-700: #3d2738;
+  --color-plano-800: #2a1a27;
+  --color-plano-900: #1a0f17;
+
+  /* ── Neutrals (warm) ───────────────────────── */
+  --color-gray-25:  #fdfcfb;
+  --color-gray-50:  #f9f7f5;
+  --color-gray-100: #f0ede9;
+  --color-gray-200: #e4e0db;
+  --color-gray-300: #ccc8c2;
+  --color-gray-400: #a8a39c;
+  --color-gray-500: #857f78;
+  --color-gray-600: #635d57;
+  --color-gray-700: #453f3a;
+  --color-gray-800: #2d2925;
+  --color-gray-900: #1a1714;
+
+  /* ── Semantic ───────────────────────────────── */
+  --color-success-50:  #f0fdf4;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-warning-50:  #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-danger-50:   #fef2f2;
+  --color-danger-500:  #ef4444;
+  --color-danger-600:  #dc2626;
+  --color-danger-700:  #b91c1c;
+  --color-info-50:     #eff6ff;
+  --color-info-500:    #3b82f6;
+  --color-info-700:    #1d4ed8;
+
+  /* ── Surfaces ───────────────────────────────── */
+  --color-bg-page:    #f5f0f4;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated:#ffffff;
+  --color-border:     #d6c2d2;
+  --color-border-strong: #b894ae;
+
+  /* ── Text ───────────────────────────────────── */
+  --color-text-primary:   #2a1a27;
+  --color-text-secondary: #4e3347;
+  --color-text-tertiary:  #946985;
+  --color-text-inverse:   #ffffff;
+
+  /* ── Sidebar ────────────────────────────────── */
+  --color-sidebar-bg:     #2a1a27;
+  --color-sidebar-text:   #ebe0e8;
+  --color-sidebar-muted:  #946985;
+  --color-sidebar-hover:  #3d2738;
+  --color-sidebar-active: #4e3347;
+
+  /* ── Radii ──────────────────────────────────── */
+  --radius-card:  12px;
+  --radius-btn:   8px;
+  --radius-input: 8px;
+
+  /* ── Shadows ────────────────────────────────── */
+  --shadow-xs: 0 1px 2px rgba(113,75,103,0.06);
+  --shadow-sm: 0 1px 3px rgba(113,75,103,0.09), 0 1px 2px rgba(113,75,103,0.05);
+  --shadow-md: 0 4px 6px rgba(113,75,103,0.07), 0 2px 4px rgba(113,75,103,0.05);
+  --shadow-lg: 0 10px 15px rgba(113,75,103,0.09), 0 4px 6px rgba(113,75,103,0.05);
+  --shadow-xl: 0 20px 25px rgba(113,75,103,0.1), 0 8px 10px rgba(113,75,103,0.05);
+
+  /* ── Font Families — wired to next/font/google variables ── */
+  --font-serif: var(--font-display), "Caveat", cursive;
+  --font-sans:  var(--font-body), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono:  var(--font-mono), "JetBrains Mono", monospace;
+}
+
+@layer base {
+  body {
+    background:  var(--color-bg-page);
+    color:       var(--color-text-primary);
+    font-family: var(--font-sans);
+  }
+
+  /* Force Caveat on ALL heading elements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif) !important;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  /* Utility class for explicit Caveat usage */
+  .font-caveat {
+    font-family: var(--font-serif) !important;
+  }
+
+  /* Hero highlight wrapper */
+  .highlight-wrap {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .highlight-wrap .highlight-svg {
+    position: absolute;
+    left: -4%;
+    bottom: -18%;
+    width: 108%;
+    height: auto;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .highlight-wrap .highlight-text {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Dark mode overrides */
+.dark {
+  --color-bg-page:    #1a0f17;
+  --color-bg-surface: #2a1a27;
+  --color-bg-elevated:#3d2738;
+  --color-border:     #3d2738;
+  --color-border-strong: #5a3c53;
+  --color-text-primary:   #f8f2f6;
+  --color-text-secondary: #cba3bc;
+  --color-text-tertiary:  #8f5580;
+  --color-sidebar-bg:     #1a0f17;
+  --color-sidebar-hover:  #2a1a27;
+}
+
+/* ── Button utilities ───────────────────────────── */
+.btn-primary {
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  center;
+  background:       #604058;
+  color:            #ffffff;
+  border:           none;
+  border-radius:    8px;
+  padding:          12px 24px;
+  font-family:      var(--font-sans);
+  font-weight:      600;
+  font-size:        15px;
+  letter-spacing:   0.01em;
+  cursor:           pointer;
+  transition:       background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  text-decoration:  none;
+}
+.btn-primary:hover {
+  background:       #4e3347;
+  transform:        scale(1.02);
+  box-shadow:       0 4px 20px rgba(96,64,88,0.35);
+}
+.btn-primary:active  { background: #3d2738; transform: scale(0.99); }
+.btn-primary:disabled { background: #b894ae; color: rgba(255,255,255,0.6); cursor: not-allowed; }
+.btn-primary:focus-visible { outline: 2px solid #FBB130; outline-offset: 3px; }
+
+.btn-ghost {
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  center;
+  background:       transparent;
+  color:            #2a1a27;
+  border:           1.5px solid #2a1a27;
+  border-radius:    8px;
+  padding:          12px 24px;
+  font-family:      var(--font-sans);
+  font-weight:      600;
+  font-size:        15px;
+  cursor:           pointer;
+  transition:       background 200ms ease, color 200ms ease;
+  text-decoration:  none;
+}
+.btn-ghost:hover  { background: #2a1a27; color: #ffffff; }
+.btn-ghost:focus-visible { outline: 2px solid #FBB130; outline-offset: 3px; }
+
+/* ── Marquee animation ──────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display:    flex !important;
+  width:      max-content !important;
+  animation:  marquee 28s linear infinite !important;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused !important;
+}
+
+/* ── Scroll reveal animations ───────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@layer utilities {
+  /* ... */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

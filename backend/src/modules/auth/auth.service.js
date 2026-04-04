@@ -22,7 +22,7 @@ const cookieOptions = {
   sameSite: 'strict',
 };
 
-const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+const VERIFICATION_TOKEN_TTL_MS = 5 * 60 * 1000;
 const OTP_TTL_MS = 10 * 60 * 1000;
 
 const hashValue = (value) => crypto.createHash('sha256').update(value).digest('hex');
@@ -137,6 +137,7 @@ export const login = async (email, password) => {
     throw ApiError.unauthorized('Invalid email or password');
   }
   if (!user.isActive) throw ApiError.forbidden('Account deactivated. Contact support.');
+  if (!user.emailVerified) throw ApiError.forbidden('Please verify your email before logging in.');
 
   const { accessToken, refreshToken } = generateTokens(user._id);
   user.refreshToken = refreshToken;
@@ -290,6 +291,8 @@ export const resetPassword = async (token, newPassword) => {
   if (!user) throw ApiError.badRequest('Invalid or expired reset token');
 
   user.password = newPassword;
+  user.emailVerified = true;
+  user.emailVerifiedAt = new Date();
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
   user.passwordChangedAt = new Date();

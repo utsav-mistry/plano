@@ -77,7 +77,7 @@
 
   /* ── Font Families — wired to next/font/google variables ── */
   --font-serif: var(--font-display), "Caveat", cursive;
-  --font-sans:  var(--font-body), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans:  var(--font-body), "Inter", "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono:  var(--font-mono), "JetBrains Mono", monospace;
 }
 
@@ -86,11 +86,12 @@
     background:  var(--color-bg-page);
     color:       var(--color-text-primary);
     font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Force Caveat on ALL heading elements */
+  /* Headings default to sans-serif (Inter) unless specified */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif) !important;
+    font-family: var(--font-sans);
     font-weight: 700;
     letter-spacing: -0.01em;
   }
@@ -99,6 +100,94 @@
   .font-caveat {
     font-family: var(--font-serif) !important;
   }
+
+  /* Hero highlight wrapper */
+  .highlight-wrap {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .highlight-wrap .highlight-svg {
+    position: absolute;
+    left: -4%;
+    bottom: -18%;
+    width: 108%;
+    height: auto;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .highlight-wrap .highlight-text {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* ── Button utilities ───────────────────────────── */
+.btn-primary {
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  center;
+  background:       #604058;
+  color:            #ffffff;
+  border:           none;
+  border-radius:    8px;
+  padding:          12px 24px;
+  font-family:      var(--font-sans);
+  font-weight:      600;
+  font-size:        15px;
+  letter-spacing:   0.01em;
+  cursor:           pointer;
+  transition:       background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  text-decoration:  none;
+}
+.btn-primary:hover {
+  background:       #4e3347;
+  transform:        scale(1.02);
+  box-shadow:       0 4px 20px rgba(96,64,88,0.35);
+}
+.btn-primary:active  { background: #3d2738; transform: scale(0.99); }
+.btn-primary:disabled { background: #b894ae; color: rgba(255,255,255,0.6); cursor: not-allowed; }
+.btn-primary:focus-visible { outline: 2px solid #FBB130; outline-offset: 3px; }
+
+.btn-ghost {
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  center;
+  background:       transparent;
+  color:            #2a1a27;
+  border:           1.5px solid #2a1a27;
+  border-radius:    8px;
+  padding:          12px 24px;
+  font-family:      var(--font-sans);
+  font-weight:      600;
+  font-size:        15px;
+  cursor:           pointer;
+  transition:       background 200ms ease, color 200ms ease;
+  text-decoration:  none;
+}
+.btn-ghost:hover  { background: #2a1a27; color: #ffffff; }
+.btn-ghost:focus-visible { outline: 2px solid #FBB130; outline-offset: 3px; }
+
+/* ── Marquee animation ──────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display:    flex !important;
+  width:      max-content !important;
+  animation:  marquee 28s linear infinite !important;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused !important;
+}
+
+/* ── Scroll reveal animations ───────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Dark mode overrides */
@@ -122,5 +211,13 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
