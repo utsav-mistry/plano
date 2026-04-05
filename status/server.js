@@ -271,8 +271,24 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`\n🟢  Plano Status  →  http://localhost:${PORT}`);
-  console.log(`    No npm packages — pure Node.js built-ins only`);
-  USE_MOCK && console.log('    ⚡  MOCK mode — simulated checks\n');
-});
+function startServer(port) {
+  const s = server.listen(port, () => {
+    console.log(`\n🟢  Plano Status → http://localhost:${port}`);
+    console.log(`   No npm packages — pure Node.js built-ins only`);
+    USE_MOCK && console.log('   ⚡ MOCK mode — simulated checks\n');
+  });
+
+  s.on('error', err => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${port} is already in use! Trying fallback port 8000...`);
+      if (port !== 8000) return startServer(8000);
+      console.error('❌ Fallback port 8000 is also in use. Exiting.');
+      process.exit(1);
+    } else {
+      console.error('Server error:', err);
+      process.exit(1);
+    }
+  });
+}
+
+startServer(PORT);

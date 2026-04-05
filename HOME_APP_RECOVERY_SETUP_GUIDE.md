@@ -114,6 +114,13 @@ Run the command printed by PM2 (it includes sudo), then:
 pm2 save
 ```
 
+If you are running as a normal linux user instead:
+
+```bash
+export PM2_HOME=/home/app/.pm2
+pm2 startup systemd -u $USER --hp /home/$USER
+```
+
 If you run app processes as user app instead of your current user, use:
 
 ```bash
@@ -124,7 +131,7 @@ pm2 startup systemd -u app --hp /home/app
 
 ```bash
 curl -fsS http://127.0.0.1:5000/health
-curl -fsS http://127.0.0.1:4000/api/health
+curl -fsS http://127.0.0.1:8000/api/health
 curl -I http://127.0.0.1:3000
 pm2 logs --lines 100
 ```
@@ -180,3 +187,29 @@ For 2 vCPU / 4 GB RAM, if memory pressure appears:
 4. Redis/Mongo connection failures:
 - Re-check backend .env host/port/password/TLS
 - Confirm network/firewall rules on managed services
+
+5. Status process keeps restarting (pm2 list shows pid 0 / high restart count):
+- Check crash reason first:
+
+```bash
+pm2 logs status --lines 200
+tail -n 200 /home/app/logs/error/status.log
+```
+
+- Check for port collision on 8000:
+
+```bash
+sudo ss -ltnp | grep ':8000'
+```
+
+- If another process is using 8000, stop it and restart PM2 status:
+
+```bash
+pm2 restart status
+```
+
+- Validate directly:
+
+```bash
+curl -fsS http://127.0.0.1:8000/api/health
+```

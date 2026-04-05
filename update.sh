@@ -48,7 +48,7 @@ verify_runtime() {
     exit 1
   }
 
-  curl -fsS http://127.0.0.1:4000/api/health >/dev/null || {
+  curl -fsS http://127.0.0.1:8000/api/health >/dev/null || {
     echo "Status service health check failed" | tee -a $LOG_FILE
     exit 1
   }

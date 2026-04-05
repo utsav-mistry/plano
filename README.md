@@ -26,7 +26,7 @@ Production-ready MERN + Next.js subscription management platform.
 plano/
 ├── backend/          Express API (port 5000)
 ├── frontend/         Next.js app (port 3000)
-├── status/           BullMQ board (port 4000)
+├── status/           BullMQ board (port 8000)
 ├── nginx/            Nginx config
 ├── logs/
 │   ├── app/          app-YYYY-MM-DD.log
@@ -99,7 +99,7 @@ cd status && node server.js
 
 **API:** `http://localhost:5000/api/v1`  
 **Swagger:** `http://localhost:5000/api-docs`  
-**Status:** `http://localhost:4000/status`
+**Status:** `http://localhost:8000/status`
 
 ### SMTP Sender Aliases
 
@@ -149,7 +149,7 @@ sudo nano /etc/nginx/sites-available/plano
 |---|---|
 | `planoo.tech` | `localhost:3000` (Next.js) |
 | `api.planoo.tech` | `localhost:5000` (Express) |
-| `status.planoo.tech` | `localhost:4000` (BullMQ Board) |
+| `status.planoo.tech` | `localhost:8000` (BullMQ Board) |
 
 ### PM2 — Initialize
 
@@ -177,7 +177,7 @@ sudo chmod -R 775   /home/app/.pm2
 2. Logs diff to `logs/deploy.log`
 3. If changes exist: `git pull` → install dependencies → frontend build
 4. `pm2 startOrReload ecosystem.config.js --update-env`
-5. Health checks: frontend (3000), backend (5000), status (4000)
+5. Health checks: frontend (3000), backend (5000), status (8000)
 6. If no changes: logs "No changes to deploy" and exits
 
 ### Log Lifecycle
