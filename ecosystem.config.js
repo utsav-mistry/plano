@@ -9,53 +9,92 @@ module.exports = {
     // ── Next.js Frontend ───────────────────────────────────────
     {
       name: "frontend",
-      script: "frontend/node_modules/next/dist/bin/next",
-      args: "start -p 3000",
+      cwd: "./frontend",
+      script: "npm",
+      args: "run start -- -p 3000",
+      interpreter: "none",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
+      min_uptime: "10s",
+      max_restarts: 10,
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 100,
       max_memory_restart: "500M",
-      out_file: "/dev/null",
-      error_file: "/dev/null",
+      kill_timeout: 5000,
+      out_file: "../logs/app/frontend.log",
+      error_file: "../logs/error/frontend.log",
+      merge_logs: true,
+      time: true,
       env: {
-        NODE_ENV: "production"
+        NODE_ENV: "production",
+        PORT: 3000,
+        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://api.planoo.tech/api/v1"
       }
     },
 
     // ── Express API ────────────────────────────────────────────
     {
       name: "backend",
-      script: "backend/server.js",
+      cwd: "./backend",
+      script: "server.js",
       instances: "max",               // One per CPU core
       exec_mode: "cluster",
       autorestart: true,
+      min_uptime: "10s",
+      max_restarts: 10,
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 100,
       max_memory_restart: "500M",
-      out_file: "/dev/null",          // Winston handles all logging
-      error_file: "/dev/null"
+      kill_timeout: 5000,
+      out_file: "../logs/app/backend.log",
+      error_file: "../logs/error/backend.log",
+      merge_logs: true,
+      time: true
     },
 
     // ── BullMQ Background Workers ──────────────────────────────
     {
       name: "workers",
-      script: "backend/src/workers/index.js",
+      cwd: "./backend",
+      script: "src/workers/index.js",
       instances: 2,
       exec_mode: "cluster",
       autorestart: true,
+      min_uptime: "10s",
+      max_restarts: 10,
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 100,
       max_memory_restart: "300M",
-      out_file: "/dev/null",
-      error_file: "/dev/null"
+      kill_timeout: 5000,
+      out_file: "../logs/app/workers.log",
+      error_file: "../logs/error/workers.log",
+      merge_logs: true,
+      time: true
     },
 
     // ── BullMQ Status Board ────────────────────────────────────
     {
       name: "status",
-      script: "status/server.js",
+      cwd: "./status",
+      script: "server.js",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
+      min_uptime: "10s",
+      max_restarts: 10,
+      restart_delay: 5000,
+      exp_backoff_restart_delay: 100,
       max_memory_restart: "200M",
-      out_file: "/dev/null",
-      error_file: "/dev/null"
+      kill_timeout: 5000,
+      out_file: "../logs/app/status.log",
+      error_file: "../logs/error/status.log",
+      merge_logs: true,
+      time: true,
+      env: {
+        NODE_ENV: "production",
+        PORT: 4000
+      }
     }
   ]
 };

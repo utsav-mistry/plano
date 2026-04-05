@@ -1,6 +1,9 @@
 # ── Global ───────────────────────────────────────────────────
 node_modules/
 .env
+backend/.env
+frontend/.env
+status/.env
 *.log
 .DS_Store
 Thumbs.db

@@ -22,6 +22,11 @@ export const update = catchAsync(async (req, res) => {
   new ApiResponse(200, { discount: d }, 'Discount updated').send(res);
 });
 
+export const toggle = catchAsync(async (req, res) => {
+  const d = await discountService.toggle(req.params.id);
+  new ApiResponse(200, { discount: d }, 'Discount status toggled').send(res);
+});
+
 export const remove = catchAsync(async (req, res) => {
   await discountService.remove(req.params.id);
   new ApiResponse(200, null, 'Discount deactivated').send(res);

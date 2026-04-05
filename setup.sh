@@ -1,5 +1,7 @@
 #!/bin/bash
 # =============================================================================
+
+set -euo pipefail
 #  Plano — One-Time Server Setup Script
 #  Run this ONCE on a fresh server after placing it in /home/app/.
 #
@@ -16,6 +18,7 @@ export PM2_HOME=/home/app/.pm2
 APP_DIR=/home/app
 LOG_DIR=$APP_DIR/logs
 REPO_URL="https://github.com/utsav-mistry/plano.git"   # <-- change this
+export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-https://api.planoo.tech/api/v1}"
 
 # ── Create directory structure ────────────────────────────────
 mkdir -p $LOG_DIR/app
@@ -55,9 +58,15 @@ fi
 # ── Set up environment files ──────────────────────────────────
 [ ! -f backend/.env ] && cp backend/.env.example backend/.env
 [ ! -f status/.env  ] && cp status/.env.example  status/.env
+if [ -f frontend/.env.example ] && [ ! -f frontend/.env ]; then
+  cp frontend/.env.example frontend/.env
+fi
 
 echo ""
 echo "Edit $APP_DIR/backend/.env and $APP_DIR/status/.env before starting!"
+if [ -f "$APP_DIR/frontend/.env" ]; then
+  echo "Frontend env detected: $APP_DIR/frontend/.env"
+fi
 echo ""
 
 # ── Create PDF storage dir ────────────────────────────────────

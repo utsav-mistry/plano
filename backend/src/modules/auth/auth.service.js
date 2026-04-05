@@ -116,9 +116,10 @@ export const register = async (body) => {
   const existing = await User.findOne({ email: body.email });
   if (existing) throw ApiError.conflict('Email already registered');
 
-  // First registered user automatically becomes admin (bootstrap)
+  // First registered user automatically becomes admin (bootstrap).
+  // All subsequent public registrations are forced to portal_user.
   const userCount = await User.countDocuments();
-  const role = userCount === 0 ? 'admin' : (body.role || 'portal_user');
+  const role = userCount === 0 ? 'admin' : 'portal_user';
 
   const user = await User.create({ ...body, role });
   const { accessToken, refreshToken } = generateTokens(user._id);

@@ -48,10 +48,10 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { 
+  {
     timestamps: true,
-    toJSON: { 
-      virtuals: true, 
+    toJSON: {
+      virtuals: true,
       versionKey: false,
       transform: (doc, ret) => { ret.id = ret._id; return ret; }
     },
@@ -60,7 +60,6 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ isActive: 1, type: 1 });
-productSchema.index({ sku: 1 });
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;

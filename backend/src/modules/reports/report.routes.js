@@ -7,8 +7,8 @@ import { ROLES } from '../../constants/roles.js';
 const router = Router();
 router.use(authenticate);
 
-// ── Dashboard KPIs — lenient limit (called on every page load) ────────
-router.get('/dashboard-stats', dashboardLimiter, reportController.dashboardStats);
+// FIX [C4]: Dashboard KPIs restricted to admin/internal_user — prevents leaking to portal_user
+router.get('/dashboard-stats', dashboardLimiter, authorize(ROLES.ADMIN, ROLES.INTERNAL_USER), reportController.dashboardStats);
 
 // Admin-only — heavy aggregation queries, strict 10/hour limit
 router.get('/revenue',       reportLimiter, authorize(ROLES.ADMIN), reportController.revenue);

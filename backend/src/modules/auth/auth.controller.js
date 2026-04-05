@@ -5,9 +5,23 @@ import catchAsync from '../../utils/catchAsync.js';
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  // 'strict' blocks the cookie on cross-origin requests (localhost:3000 → localhost:5000).
-  // Use 'lax' in development so the refresh token cookie is sent during token rotation.
   sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+  domain: process.env.COOKIE_DOMAIN || undefined,
+};
+
+// Token expiry durations
+const ACCESS_TOKEN_EXPIRY = 15 * 60 * 1000; // 15 mins
+const REFRESH_TOKEN_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+const setAuthCookies = (res, accessToken, refreshToken) => {
+  res.cookie('accessToken', accessToken, {
+    ...cookieOptions,
+    maxAge: ACCESS_TOKEN_EXPIRY
+  });
+  res.cookie('refreshToken', refreshToken, {
+    ...cookieOptions,
+    maxAge: REFRESH_TOKEN_EXPIRY
+  });
 };
 
 /**
@@ -34,7 +48,7 @@ const cookieOptions = {
  */
 export const register = catchAsync(async (req, res) => {
   const { user, accessToken, refreshToken } = await authService.register(req.body);
-  res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+  setAuthCookies(res, accessToken, refreshToken);
   new ApiResponse(201, { user, token: accessToken }, 'Registration successful').send(res);
 });
 
@@ -62,7 +76,7 @@ export const register = catchAsync(async (req, res) => {
 export const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const { user, accessToken, refreshToken } = await authService.login(email, password);
-  res.cookie('refreshToken', refreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+  setAuthCookies(res, accessToken, refreshToken);
   new ApiResponse(200, { user, token: accessToken }, 'Login successful').send(res);
 });
 
@@ -93,14 +107,15 @@ export const verifyOtp = catchAsync(async (req, res) => {
 
 export const logout = catchAsync(async (req, res) => {
   await authService.logout(req.user._id);
-  res.clearCookie('refreshToken');
+  res.clearCookie('accessToken', cookieOptions);
+  res.clearCookie('refreshToken', cookieOptions);
   new ApiResponse(200, null, 'Logged out successfully').send(res);
 });
 
 export const refreshToken = catchAsync(async (req, res) => {
-  const token = req.cookies?.refreshToken || req.body?.refreshToken;
+  const token = req.cookies?.refreshToken;
   const { accessToken, refreshToken: newRefresh } = await authService.refreshTokens(token);
-  res.cookie('refreshToken', newRefresh, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+  setAuthCookies(res, accessToken, newRefresh);
   new ApiResponse(200, { token: accessToken }, 'Token refreshed').send(res);
 });
 

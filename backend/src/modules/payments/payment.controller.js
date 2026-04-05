@@ -5,6 +5,10 @@ import catchAsync from '../../utils/catchAsync.js';
 import { ROLES } from '../../constants/roles.js';
 
 export const create = catchAsync(async (req, res) => {
+  // FIX [C3]: Portal users can only create payments for their own invoices
+  if (req.user.role === ROLES.PORTAL_USER) {
+    req.body.userId = req.user._id; // Force portal_user to use their own ID
+  }
   const payment = await paymentService.create({ ...req.body, userId: req.body.userId || req.user._id });
   new ApiResponse(201, { payment }, 'Payment recorded').send(res);
 });

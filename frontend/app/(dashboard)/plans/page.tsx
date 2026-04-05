@@ -2,18 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
+import {
   CalendarClock, Plus, Search, MoreVertical, Copy, Trash2,
   Edit2, Clock, CheckCircle2, AlertCircle, Loader2, FileText
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
+import { Plan } from '@/types';
 
 export default function PlansPage() {
-  const [plans, setPlans]       = useState<any[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError]       = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { error: toastError, success } = useToast();
 
   useEffect(() => { fetchPlans(); }, []);
@@ -23,11 +24,11 @@ export default function PlansPage() {
     try {
       const res = await api.plans.getAll();
       if (res.success) {
-        const d = res.data as any;
-        setPlans(d.plans ?? d ?? []);
+        const d = res.data as { plans?: Plan[] } | Plan[];
+        setPlans(Array.isArray(d) ? d : (d.plans ?? []));
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load plans');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load plans');
     } finally { setIsLoading(false); }
   }
 
@@ -36,7 +37,7 @@ export default function PlansPage() {
       await api.plans.delete(id);
       success('Plan deactivated');
       fetchPlans();
-    } catch (err: any) { toastError('Failed', err.message); }
+    } catch (err: unknown) { toastError('Failed', err instanceof Error ? err.message : 'Failed'); }
   }
 
   return (
@@ -87,8 +88,8 @@ export default function PlansPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan: any) => (
-            <div key={plan._id}
+          {plans.map((plan) => (
+            <div key={plan.id}
               className="bg-bg-surface border border-sidebar-hover rounded-card p-6 flex flex-col gap-6 hover:shadow-md hover:-translate-y-1 transition-all group">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -142,12 +143,12 @@ export default function PlansPage() {
               )}
 
               <div className="flex items-center justify-between">
-                <Link href={`/plans/${plan._id}/edit`}
+                <Link href={`/plans/${plan.id}/edit`}
                   className="text-[11px] uppercase font-bold text-text-secondary hover:text-plano-400 transition-all flex items-center gap-1 tracking-widest">
                   <Edit2 size={14} /> Edit
                 </Link>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handleDelete(plan._id)}
+                  <button onClick={() => handleDelete(plan.id)}
                     className="p-2 rounded-btn border border-border dark:border-sidebar-hover bg-bg-surface text-gray-400 hover:text-danger-600 transition-all">
                     <Trash2 size={16} />
                   </button>

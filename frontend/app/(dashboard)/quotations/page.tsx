@@ -9,11 +9,12 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
+import { Quotation } from '@/types';
 
 export default function QuotationsPage() {
-  const [quotations, setQuotations] = useState<any[]>([]);
-  const [isLoading, setIsLoading]   = useState(true);
-  const [error, setError]           = useState<string | null>(null);
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { error: toastError, success } = useToast();
 
   useEffect(() => { fetchQuotations(); }, []);
@@ -23,10 +24,10 @@ export default function QuotationsPage() {
     try {
       const res = await api.quotations.getAll();
       if (res.success) {
-        const d = res.data as any;
-        setQuotations(d.quotations ?? d ?? []);
+        const d = res.data as { quotations?: Quotation[] } | Quotation[];
+        setQuotations(Array.isArray(d) ? d : (d.quotations ?? []));
       }
-    } catch (err: any) { setError(err.message || 'Failed to load quotations'); }
+    } catch (err: unknown) { setError(err instanceof Error ? err.message : 'Failed to load quotations'); }
     finally { setIsLoading(false); }
   }
 
@@ -35,7 +36,7 @@ export default function QuotationsPage() {
       await api.quotations.send(id);
       success('Quotation sent to customer');
       fetchQuotations();
-    } catch (err: any) { toastError('Failed to send', err.message); }
+    } catch (err: unknown) { toastError('Failed to send', err instanceof Error ? err.message : 'Failed to send'); }
   }
 
   return (
@@ -86,8 +87,8 @@ export default function QuotationsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {quotations.map((q: any) => (
-            <div key={q._id}
+          {quotations.map((q) => (
+            <div key={q.id}
               className="bg-bg-surface border border-border dark:border-sidebar-hover rounded-card p-6 flex flex-col gap-5 hover:shadow-md hover:-translate-y-1 transition-all group">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -96,19 +97,18 @@ export default function QuotationsPage() {
                   </div>
                   <div className="flex flex-col">
                     <h3 className="text-base font-sans font-bold text-text-primary group-hover:text-plano-600 transition-colors line-clamp-1">
-                      {q.title || `QUO-${q._id?.slice(-6).toUpperCase()}`}
+                      {q.quotationNumber || `QUO-${q.id?.slice(-6).toUpperCase()}`}
                     </h3>
                     <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-gray-400 tracking-widest">
                       <Clock size={10} className="text-warning-500" />
-                      Valid {q.validFor ?? 30} days
+                      Valid until {q.expiryDate ? new Date(q.expiryDate).toLocaleDateString() : '30 days'}
                     </div>
                   </div>
                 </div>
-                <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${
-                  q.status === 'accepted' ? 'bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-500 border-success-200 dark:border-success-800'
-                    : q.status === 'sent' ? 'bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-500 border-info-200 dark:border-info-800'
+                <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${q.status === 'accepted' ? 'bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-500 border-success-200 dark:border-success-800'
+                  : q.status === 'sent' ? 'bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-500 border-info-200 dark:border-info-800'
                     : q.status === 'expired' ? 'bg-danger-50 dark:bg-danger-900/20 text-danger-700 dark:text-danger-500 border-danger-200 dark:border-danger-800'
-                    : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10'}`}>
+                      : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10'}`}>
                   {q.status ?? 'draft'}
                 </span>
               </div>
@@ -131,19 +131,19 @@ export default function QuotationsPage() {
               <div className="flex flex-col gap-0.5">
                 <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Total</span>
                 <span className="text-2xl font-serif font-bold text-text-primary">
-                  {formatCurrency(q.grandTotal || q.totalAmount || 0, q.currency || 'INR')}
+                  {formatCurrency(q.totalAmount || 0, q.currency || 'INR')}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
                 {q.status === 'draft' && (
-                  <button onClick={() => handleSend(q._id)}
+                  <button onClick={() => handleSend(q.id)}
                     className="px-4 py-2 bg-plano-600/10 text-plano-600 rounded-btn text-[11px] font-bold uppercase tracking-widest hover:bg-plano-600 hover:text-white transition-all">
                     Send to Customer
                   </button>
                 )}
                 <div className="flex items-center gap-2 ml-auto">
-                  <Link href={`/quotations/${q._id}`}
+                  <Link href={`/quotations/${q.id}`}
                     className="p-2 rounded-btn border border-border dark:border-sidebar-hover bg-bg-surface text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 hover:bg-plano-50 dark:hover:bg-white/10 transition-all">
                     <ExternalLink size={16} />
                   </Link>

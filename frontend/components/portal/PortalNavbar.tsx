@@ -13,8 +13,8 @@ import CommandPalette from '@/components/portal/CommandPalette';
 export default function PortalNavbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const { user, logout } = useAuth();
-  const cartItems = useCartStore(s => s.items);
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartItems = useCartStore((s: { items: { quantity: number }[] }) => s.items);
+  const cartCount = cartItems.reduce((acc: number, item: { quantity: number }) => acc + item.quantity, 0);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -126,7 +126,8 @@ export default function PortalNavbar() {
 
                       <div className="p-2">
                         {profileLinks.map((item) => {
-                          if (item.adminOnly && user.role !== 'ADMIN') return null;
+                          // FIX [AUDIT-C1]: Backend roles are lowercase — compare against 'admin'
+                          if (item.adminOnly && user.role !== 'admin') return null;
                           return (
                             <Link 
                               key={item.label} 

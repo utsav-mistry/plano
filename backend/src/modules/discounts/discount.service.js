@@ -26,6 +26,15 @@ export const update = async (id, data) => {
   return d;
 };
 
+export const toggle = async (id) => {
+  const d = await Discount.findById(id);
+  if (!d) throw ApiError.notFound('Discount not found');
+
+  d.isActive = !d.isActive;
+  await d.save();
+  return d;
+};
+
 export const remove = async (id) => {
   const d = await Discount.findByIdAndUpdate(id, { isActive: false }, { new: true });
   if (!d) throw ApiError.notFound('Discount not found');

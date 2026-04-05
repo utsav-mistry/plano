@@ -8,7 +8,6 @@ import { defaultRouteForRole } from '@/lib/role-routing';
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
   login: (credentials: any, redirectTo?: string) => Promise<void>;
   register: (data: any) => Promise<void>;
@@ -19,22 +18,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('plano_token');
     const storedUser = localStorage.getItem('plano_user');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
+    if (storedUser) {
       setUser(JSON.parse(storedUser));
-      verifyAuth();           // Validate token is still alive
+      verifyAuth();           // Validate session is still alive
     } else {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** 
@@ -52,10 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error('Session verification failed', err);
-      // Token is stale/invalid — clear and redirect to login
+      // Session is stale/invalid — clear and redirect to login
       setUser(null);
-      setToken(null);
-      localStorage.removeItem('plano_token');
       localStorage.removeItem('plano_user');
       router.push('/login');
     } finally {
@@ -69,10 +62,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await api.auth.login(credentials);
       if (response.success && response.data) {
         // Backend returns { user, token }
-        const { user, token } = response.data as any;
+        const { user } = response.data as any;
         setUser(user);
-        setToken(token);
-        localStorage.setItem('plano_token', token);
         localStorage.setItem('plano_user', JSON.stringify(user));
         router.push(redirectTo || defaultRouteForRole(user?.role));
       }
@@ -97,16 +88,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  // FIX [C7]: Call backend to invalidate refresh token before clearing local state
+  const logout = async () => {
+    try {
+      await api.auth.logout();
+    } catch {
+      // Best-effort — clear local state even if backend call fails
+    }
     setUser(null);
-    setToken(null);
-    localStorage.removeItem('plano_token');
     localStorage.removeItem('plano_user');
     router.push('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

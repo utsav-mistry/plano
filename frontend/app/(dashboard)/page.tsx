@@ -1,8 +1,10 @@
-// This file previously served the dashboard at /.
-// The dashboard has been moved to /dashboard to avoid a route conflict
-// with app/page.tsx (which Next.js requires to exist at the root).
+// FIX [AUDIT-C2]: This page previously hard-redirected to /dashboard.
+// Now it redirects admin/internal users to /admin/dashboard
+// and is unreachable by portal users (the layout blocks them).
 import { redirect } from 'next/navigation';
 
 export default function OldDashboardRoot() {
-  redirect('/dashboard');
+  // The (dashboard) layout already guards that only admin/internal_user can reach here.
+  // Redirect to the canonical admin dashboard path.
+  redirect('/admin/dashboard');
 }

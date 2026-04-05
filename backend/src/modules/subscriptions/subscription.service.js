@@ -10,10 +10,10 @@ import { invoiceQueue } from '../../config/bullmq.js';
 const calcNextBillingDate = (fromDate, billingCycle) => {
   const date = new Date(fromDate);
   switch (billingCycle) {
-    case BILLING_CYCLE.MONTHLY:      date.setMonth(date.getMonth() + 1); break;
-    case BILLING_CYCLE.QUARTERLY:    date.setMonth(date.getMonth() + 3); break;
-    case BILLING_CYCLE.SEMI_ANNUAL:  date.setMonth(date.getMonth() + 6); break;
-    case BILLING_CYCLE.ANNUAL:       date.setFullYear(date.getFullYear() + 1); break;
+    case BILLING_CYCLE.MONTHLY: date.setMonth(date.getMonth() + 1); break;
+    case BILLING_CYCLE.QUARTERLY: date.setMonth(date.getMonth() + 3); break;
+    case BILLING_CYCLE.SEMI_ANNUAL: date.setMonth(date.getMonth() + 6); break;
+    case BILLING_CYCLE.ANNUAL: date.setFullYear(date.getFullYear() + 1); break;
     default: throw ApiError.badRequest(`Unknown billing cycle: ${billingCycle}`);
   }
   return date;
@@ -117,6 +117,50 @@ export const getById = async (id) => {
     .populate('planId')
     .populate('productId');
   if (!sub) throw ApiError.notFound('Subscription not found');
+  return sub;
+};
+
+export const update = async (id, data) => {
+  const allowedFields = ['autoRenew', 'quantity', 'nextBillingDate', 'endDate'];
+  const patch = Object.fromEntries(
+    Object.entries(data || {}).filter(([key]) => allowedFields.includes(key))
+  );
+
+  const sub = await Subscription.findByIdAndUpdate(id, patch, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!sub) throw ApiError.notFound('Subscription not found');
+  return sub;
+};
+
+export const activate = async (id) => {
+  const sub = await Subscription.findById(id);
+  if (!sub) throw ApiError.notFound('Subscription not found');
+
+  if ([SUBSCRIPTION_STATUS.CANCELLED, SUBSCRIPTION_STATUS.EXPIRED].includes(sub.status)) {
+    throw ApiError.badRequest('Cannot activate a cancelled or expired subscription');
+  }
+
+  const wasActive = sub.status === SUBSCRIPTION_STATUS.ACTIVE;
+  sub.status = SUBSCRIPTION_STATUS.ACTIVE;
+  sub.resumedAt = new Date();
+
+  if (!sub.nextBillingDate) {
+    sub.nextBillingDate = sub.endDate || calcNextBillingDate(new Date(), BILLING_CYCLE.MONTHLY);
+  }
+
+  await sub.save();
+
+  // If activation changed state, queue an invoice generation request.
+  if (!wasActive) {
+    await invoiceQueue.add('generate-invoice', {
+      subscriptionId: sub._id.toString(),
+      userId: sub.userId.toString(),
+    });
+  }
+
   return sub;
 };
 

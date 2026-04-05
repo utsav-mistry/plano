@@ -31,7 +31,31 @@ export const getById = catchAsync(async (req, res) => {
   new ApiResponse(200, { subscription }, 'Subscription fetched').send(res);
 });
 
+export const update = catchAsync(async (req, res) => {
+  const subscription = await subscriptionService.update(req.params.id, req.body);
+  new ApiResponse(200, { subscription }, 'Subscription updated').send(res);
+});
+
+export const confirm = catchAsync(async (req, res) => {
+  // Compatibility route for frontend flow: confirm maps to activation behavior.
+  const subscription = await subscriptionService.activate(req.params.id);
+  new ApiResponse(200, { subscription }, 'Subscription confirmed').send(res);
+});
+
+export const activate = catchAsync(async (req, res) => {
+  const subscription = await subscriptionService.activate(req.params.id);
+  new ApiResponse(200, { subscription }, 'Subscription activated').send(res);
+});
+
 export const cancel = catchAsync(async (req, res) => {
+  // FIX [C1]: Portal users can only cancel their own subscriptions
+  if (req.user.role === ROLES.PORTAL_USER) {
+    const sub = await subscriptionService.getById(req.params.id);
+    const ownerId = sub.userId?._id?.toString() || sub.userId?.toString();
+    if (ownerId !== req.user._id.toString()) {
+      throw ApiError.forbidden('You can only cancel your own subscriptions');
+    }
+  }
   const subscription = await subscriptionService.cancel(req.params.id, req.body.reason, req.user._id);
   new ApiResponse(200, { subscription }, 'Subscription cancelled').send(res);
 });

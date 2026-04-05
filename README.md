@@ -26,12 +26,12 @@ Production-ready MERN + Next.js subscription management platform.
 plano/
 ├── backend/          Express API (port 5000)
 ├── frontend/         Next.js app (port 3000)
-├── status/           BullMQ board (port 5050)
+├── status/           BullMQ board (port 4000)
 ├── nginx/            Nginx config
 ├── logs/
 │   ├── app/          app-YYYY-MM-DD.log
 │   └── error/        error-YYYY-MM-DD.log
-├── ecosystem.config.cjs   PM2 process config
+├── ecosystem.config.js    PM2 process config
 ├── setup.sh          One-shot server setup
 └── update.sh         Zero-downtime deploy
 ```
@@ -79,10 +79,12 @@ git clone <repo_url> plano && cd plano
 
 # Install dependencies
 npm install --prefix backend
+npm install --prefix frontend
 npm install --prefix status
 
 # Set up environment
 cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 # Edit backend/.env with your values
 
 # Start backend (dev)
@@ -125,12 +127,17 @@ sudo ./setup.sh
 What `setup.sh` does:
 1. Creates `/home/app/logs/{app,error}/` + `deploy.log`
 2. Clones the repo
-3. `npm install` for backend + status
-4. Copies `.env.example` → `.env` _(edit before starting!)_
-5. Sets `PM2_HOME=/home/app/.pm2` in `/etc/environment`
-6. `pm2 start ecosystem.config.js && pm2 save`
-7. Fixes `.pm2` permissions for team access
-8. Drops Nginx config and reloads
+3. `npm install` for backend + frontend + status
+4. Builds frontend with production env
+5. Copies `.env.example` → `.env` _(edit before starting!)_
+6. Sets `PM2_HOME=/home/app/.pm2` in `/etc/environment`
+7. `pm2 start ecosystem.config.js && pm2 save`
+8. Fixes `.pm2` permissions for team access
+9. Drops Nginx config and reloads
+
+Recommended backend production env values:
+- `COOKIE_DOMAIN=.planoo.tech`
+- `CORS_ORIGINS=https://planoo.tech,https://www.planoo.tech`
 
 ### Nginx — Subdomain Layout
 
@@ -168,8 +175,10 @@ sudo chmod -R 775   /home/app/.pm2
 `update.sh` flow:
 1. `git fetch origin main` — check for new commits
 2. Logs diff to `logs/deploy.log`
-3. If changes exist: `git pull` → `npm install` → `pm2 reload all`
-4. If no changes: logs "No changes to deploy" and exits
+3. If changes exist: `git pull` → install dependencies → frontend build
+4. `pm2 startOrReload ecosystem.config.js --update-env`
+5. Health checks: frontend (3000), backend (5000), status (4000)
+6. If no changes: logs "No changes to deploy" and exits
 
 ### Log Lifecycle
 

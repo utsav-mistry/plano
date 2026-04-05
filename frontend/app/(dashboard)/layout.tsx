@@ -7,6 +7,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/app/context/AuthContext';
+import { isAdminRole, defaultRouteForRole } from '@/lib/role-routing';
 
 export default function DashboardLayout({
   children,
@@ -18,14 +19,22 @@ export default function DashboardLayout({
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    // Once auth state is resolved, redirect unauthenticated users to login
-    if (!isLoading && !user) {
+    if (isLoading) return;
+
+    // FIX [M7]: Redirect unauthenticated users to login
+    if (!user) {
       router.replace('/login');
+      return;
+    }
+
+    // FIX [M7]: Portal users should not access admin dashboard — redirect to portal
+    if (!isAdminRole(user.role)) {
+      router.replace(defaultRouteForRole(user.role));
     }
   }, [user, isLoading, router]);
 
-  // Show full-page spinner while auth state is being resolved
-  if (isLoading || !user) {
+  // Show full-page spinner while auth state is being resolved or user is not admin
+  if (isLoading || !user || !isAdminRole(user.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-page">
         <Loader2 size={32} className="animate-spin text-[#714b67]" />

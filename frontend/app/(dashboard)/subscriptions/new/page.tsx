@@ -5,13 +5,14 @@ import { ArrowLeft, Loader2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
+import { Plan, User } from '@/types';
 
 export default function NewSubscriptionPage() {
   const { success, error: toastError } = useToast();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [plans, setPlans] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loadingDeps, setLoadingDeps] = useState(true);
 
   const [form, setForm] = useState({
@@ -30,12 +31,12 @@ export default function NewSubscriptionPage() {
           api.users.getAll(),
         ]);
         if (plansRes.success) {
-          const d = plansRes.data as any;
-          setPlans(d.plans ?? d ?? []);
+          const d = plansRes.data as { plans?: Plan[] } | Plan[];
+          setPlans(Array.isArray(d) ? d : (d.plans ?? []));
         }
         if (usersRes.success) {
-          const d = usersRes.data as any;
-          setUsers(d.users ?? d ?? []);
+          const d = usersRes.data as { users?: User[] } | User[];
+          setUsers(Array.isArray(d) ? d : (d.users ?? []));
         }
       } catch {
         toastError('Failed to load form data', 'Could not fetch plans and users.');
@@ -61,10 +62,10 @@ export default function NewSubscriptionPage() {
       });
       if (res.success) {
         success('Subscription created!', 'The subscription is now in Draft status.');
-        window.location.href = '/admin/subscriptions';
+        window.location.href = '/subscriptions';
       }
-    } catch (err: any) {
-      toastError('Failed to create subscription', err.message);
+    } catch (err: unknown) {
+      toastError('Failed to create subscription', err instanceof Error ? err.message : 'Failed to create subscription');
     } finally {
       setIsSubmitting(false);
     }
@@ -78,7 +79,7 @@ export default function NewSubscriptionPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <Link
-          href="/admin/subscriptions"
+          href="/subscriptions"
           className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit"
         >
           <ArrowLeft size={14} /> Back to Subscriptions
@@ -109,8 +110,8 @@ export default function NewSubscriptionPage() {
                 suppressHydrationWarning
               >
                 <option value="">Select a customer...</option>
-                {users.map((u: any) => (
-                  <option key={u._id} value={u._id}>
+                {users.map((u) => (
+                  <option key={u._id || u.id} value={u._id || u.id}>
                     {u.name} ({u.email})
                   </option>
                 ))}
@@ -131,9 +132,9 @@ export default function NewSubscriptionPage() {
                 suppressHydrationWarning
               >
                 <option value="">Select a plan...</option>
-                {plans.map((plan: any) => (
-                  <option key={plan._id} value={plan._id}>
-                    {plan.name} — ₹{plan.basePrice?.toLocaleString('en-IN')} / {plan.billingCycle}
+                {plans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name} — ₹{plan.price?.toLocaleString('en-IN')} / {plan.billingCycle}
                   </option>
                 ))}
               </select>
@@ -177,7 +178,7 @@ export default function NewSubscriptionPage() {
               {isSubmitting ? 'Creating...' : 'Create Subscription'}
             </button>
             <Link
-              href="/admin/subscriptions"
+              href="/subscriptions"
               className="px-6 py-2.5 rounded-btn border border-border text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all"
             >
               Cancel

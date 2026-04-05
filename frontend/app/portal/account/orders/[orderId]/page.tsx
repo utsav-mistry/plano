@@ -101,7 +101,7 @@ export default function OrderDetailPage() {
       const res = await api.subscriptions.cancel(order.id, 'Customer requested closure via portal');
       if (res.success) {
         toastSuccess('Cancelled', 'Your subscription is now pending closure.');
-        setOrder(prev => prev ? { ...prev, status: 'closed' } : null);
+        setOrder(prev => prev ? { ...prev, status: 'cancelled' as const } : null);
       }
     } catch (err: any) {
        toastError('Cancellation Failed', err.message || 'Unable to cancel subscription.');
@@ -158,7 +158,7 @@ export default function OrderDetailPage() {
             {(order.planId as any)?.isRenewable !== false && (
               <button 
                  onClick={handleRenew}
-                 disabled={isRenewing || order.status === 'closed'}
+                 disabled={isRenewing || order.status === 'cancelled'}
                  className="h-14 px-8 rounded-2xl bg-plano-600 text-white text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-plano-900 shadow-xl shadow-plano-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed group active:scale-95"
               >
                  {isRenewing ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} className="group-hover:rotate-180 transition-transform duration-500" />}
@@ -188,7 +188,7 @@ export default function OrderDetailPage() {
             )}
 
             {/* Close/Cancel Logic */}
-            {(order.planId as any)?.isClosable !== false && order.status !== 'closed' && (
+            {(order.planId as any)?.isClosable !== false && order.status !== 'cancelled' && (
               <button 
                  onClick={handleClose}
                  disabled={isClosing}

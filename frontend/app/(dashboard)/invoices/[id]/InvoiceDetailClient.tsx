@@ -24,6 +24,7 @@ export default function InvoiceDetailClient() {
     const id = Array.isArray(params.id) ? params.id[0] : (params.id as string);
     const [invoice, setInvoice] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isActionLoading, setIsActionLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -31,7 +32,8 @@ export default function InvoiceDetailClient() {
             try {
                 const res = await api.invoices.getById(id);
                 if (res.success) {
-                    setInvoice(res.data);
+                    const payload = res.data as any;
+                    setInvoice(payload?.invoice ?? payload);
                 }
             } catch (err: any) {
                 setError(err.message || 'Failed to load invoice');
@@ -44,6 +46,43 @@ export default function InvoiceDetailClient() {
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const handleSend = async () => {
+        setIsActionLoading(true);
+        try {
+            const res = await api.invoices.send(id);
+            if (res.success) {
+                const payload = res.data as any;
+                setInvoice(payload?.invoice ?? payload);
+            }
+        } catch (err: any) {
+            setError(err.message || 'Failed to send invoice');
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
+
+    const handleDownload = async () => {
+        setIsActionLoading(true);
+        try {
+            const response = await api.invoices.downloadPdf(id);
+            if (!response.ok) throw new Error('Failed to download invoice PDF');
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = `${invoice?.invoiceNumber || `invoice-${id}`}.pdf`;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err: any) {
+            setError(err.message || 'Failed to download invoice');
+        } finally {
+            setIsActionLoading(false);
+        }
     };
 
     const issueDate = invoice?.issueDate || invoice?.createdAt;
@@ -90,12 +129,20 @@ export default function InvoiceDetailClient() {
                     <button onClick={handlePrint} className="p-2.5 rounded-btn bg-white border border-border text-gray-500 hover:bg-gray-50 transition-all shadow-sm">
                         <Printer size={18} />
                     </button>
-                    <button className="p-2.5 rounded-btn bg-white border border-border text-gray-500 hover:bg-gray-50 transition-all shadow-sm">
+                    <button
+                        onClick={handleDownload}
+                        disabled={isActionLoading}
+                        className="p-2.5 rounded-btn bg-white border border-border text-gray-500 hover:bg-gray-50 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
                         <Download size={18} />
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm group">
+                    <button
+                        onClick={handleSend}
+                        disabled={isActionLoading}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm group disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
                         <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        Send to Customer
+                        {isActionLoading ? 'Processing...' : 'Send to Customer'}
                     </button>
                 </div>
             </div>

@@ -13,7 +13,13 @@ export default function Topbar({ collapsed }: { collapsed: boolean }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const routePrefix = pathname.startsWith('/admin') ? '/admin' : '';
-  const [darkMode, setDarkMode] = React.useState(false);
+  // FIX [AUDIT-M3]: Initialize dark mode from localStorage to persist preference across refreshes
+  const [darkMode, setDarkMode] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('plano-dark-mode') === 'true';
+    }
+    return false;
+  });
   const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const [platformKey, setPlatformKey] = React.useState('Ctrl');
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -74,10 +80,21 @@ export default function Topbar({ collapsed }: { collapsed: boolean }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // FIX [AUDIT-M3]: Persist dark mode preference to localStorage
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
+    const next = !darkMode;
+    setDarkMode(next);
+    document.documentElement.classList.toggle('dark', next);
+    localStorage.setItem('plano-dark-mode', String(next));
   };
+
+  // FIX [AUDIT-M3]: Restore dark mode class on mount from localStorage
+  React.useEffect(() => {
+    const stored = localStorage.getItem('plano-dark-mode') === 'true';
+    if (stored) {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
 
   return (
     <header

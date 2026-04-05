@@ -35,6 +35,11 @@ export const authenticate = catchAsync(async (req, res, next) => {
   if (!user.isActive) throw ApiError.forbidden('Account is deactivated');
   if (!user.emailVerified) throw ApiError.forbidden('Please verify your email address');
 
+  // FIX [AUDIT-L6]: Invalidate JWTs issued before a password change
+  if (user.changedPasswordAfter(decoded.iat)) {
+    throw ApiError.unauthorized('Password was recently changed. Please log in again.');
+  }
+
   req.user = user;
   next();
 });

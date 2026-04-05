@@ -17,14 +17,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/a
 // ─── Token Refresh Mutex ──────────────────────────────────────────────
 // Prevents multiple parallel requests from each triggering a refresh.
 let isRefreshing = false;
-let refreshQueue: Array<(token: string) => void> = [];
+let refreshQueue: Array<() => void> = [];
 
-function notifyQueue(newToken: string) {
-  refreshQueue.forEach(cb => cb(newToken));
+function notifyQueue() {
+  refreshQueue.forEach(cb => cb());
   refreshQueue = [];
 }
 
-async function silentRefresh(): Promise<string> {
+async function silentRefresh(): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
     method: 'POST',
     credentials: 'include',          // sends the httpOnly refreshToken cookie
@@ -32,62 +32,50 @@ async function silentRefresh(): Promise<string> {
   });
 
   if (!res.ok) throw new Error('Refresh failed');
-
-  const body = await res.json();
-  const newToken: string = body?.data?.token;
-  if (!newToken) throw new Error('No token in refresh response');
-
-  localStorage.setItem('plano_token', newToken);
-  return newToken;
+  
+  // refreshToken endpoint now sets both accessToken & refreshToken cookies.
+  // We no longer need to manually extract or store any token in localStorage.
 }
 
 // ─── Core Request ─────────────────────────────────────────────────────
 async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const url = `${API_BASE_URL}${path}`;
 
-  const getToken = () =>
-    typeof window !== 'undefined' ? localStorage.getItem('plano_token') : null;
-
-  const buildHeaders = (token: string | null): Record<string, string> => ({
+  const buildHeaders = (): Record<string, string> => ({
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   });
 
   // ── First attempt ──────────────────────────────────────────────────
   const response = await fetch(url, {
     ...options,
-    credentials: 'include',           // send cookies (refresh token) on every request
-    headers: buildHeaders(getToken()),
+    credentials: 'include',           // send both accessToken & refreshToken cookies
+    headers: buildHeaders(),
   });
 
-  // 204 No Content
-  if (response.status === 204) {
-    return { success: true, data: null as any };
-  }
+  if (response.status === 204) return { success: true, data: null as any };
 
   const data = await response.json();
 
   // ── Token expired → silent refresh + retry ─────────────────────────
   if (response.status === 401 && data?.message === 'Access token expired') {
     try {
-      let newToken: string;
-
       if (isRefreshing) {
-        // Another request is already refreshing — wait for it
-        newToken = await new Promise<string>(resolve => refreshQueue.push(resolve));
+        // Wait for current refresh to complete
+        await new Promise<void>(resolve => refreshQueue.push(resolve));
       } else {
         isRefreshing = true;
-        newToken = await silentRefresh();
-        notifyQueue(newToken);
+        await silentRefresh();
+        notifyQueue();
         isRefreshing = false;
       }
 
-      // Retry the original request with the fresh token
+      // Retry original request
+      // Browser automatically sends updated cookies received in silentRefresh()
       const retried = await fetch(url, {
         ...options,
         credentials: 'include',
-        headers: buildHeaders(newToken),
+        headers: buildHeaders(),
       });
 
       if (retried.status === 204) return { success: true, data: null as any };
@@ -95,9 +83,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
 
     } catch {
       isRefreshing = false;
-      // Refresh failed — clear session and redirect to login
+      // Refresh failed — clear session and redirect
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('plano_token');
         localStorage.removeItem('plano_user');
         window.location.href = '/login';
       }
@@ -105,10 +92,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
     }
   }
 
-  // ── Other 401 (invalid token, not expired) ─────────────────────────
+  // ── Other 401 (invalid session, not expired) ─────────────────────────
   if (response.status === 401 && typeof window !== 'undefined') {
-    localStorage.removeItem('plano_token');
     localStorage.removeItem('plano_user');
+    window.location.href = '/login';
   }
 
   if (!response.ok) {
@@ -123,9 +110,9 @@ export const api = {
   // ─── Auth ──────────────────────────────────────────────────
   auth: {
     login: (credentials: any) =>
-      request<{ user: User, token: string }>('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+      request<{ user: User }>('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
     register: (data: any) =>
-      request<{ user: User, token: string }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
+      request<{ user: User }>('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
     inviteCustomer: (data: { name: string; email: string }) =>
       request<{ user: User }>('/auth/invite-customer', { method: 'POST', body: JSON.stringify(data) }),
     sendVerificationEmail: (data: { email: string }) =>
@@ -145,7 +132,7 @@ export const api = {
     resetPassword: (token: string, data: any) =>
       request<null>(`/auth/reset-password/${token}`, { method: 'POST', body: JSON.stringify(data) }),
     refresh: () =>
-      request<{ token: string }>('/auth/refresh-token', { method: 'POST' }),
+      request<null>('/auth/refresh-token', { method: 'POST' }),
   },
 
   // ─── Users ─────────────────────────────────────────────────
@@ -225,8 +212,12 @@ export const api = {
     getById: (id: string) => request<Quotation>(`/quotations/${id}`),
     create: (data: any) =>
       request<Quotation>('/quotations', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: string, data: any) =>
+      request<Quotation>(`/quotations/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     send: (id: string) =>
       request<Quotation>(`/quotations/${id}/send`, { method: 'POST' }),
+    convert: (id: string) =>
+      request<Quotation>(`/quotations/${id}/convert`, { method: 'POST' }),
   },
 
   // ─── Invoices ──────────────────────────────────────────────
@@ -244,9 +235,14 @@ export const api = {
       request<Invoice>(`/invoices/${id}/send`, { method: 'POST' }),
     cancel: (id: string) =>
       request<Invoice>(`/invoices/${id}/cancel`, { method: 'POST' }),
+    voidInvoice: (id: string, reason?: string) =>
+      request<Invoice>(`/invoices/${id}/void`, { method: 'POST', body: JSON.stringify({ reason }) }),
     downloadPdf: async (id: string) => {
       const url = `${API_BASE_URL}/invoices/${id}/download`;
-      return fetch(url);
+      return fetch(url, {
+        credentials: 'include',
+        headers: {},
+      });
     },
   },
 
@@ -286,6 +282,7 @@ export const api = {
       const q = params ? `?${new URLSearchParams(params)}` : '';
       return request<Tax[]>(`/taxes${q}`);
     },
+    getById: (id: string) => request<Tax>(`/taxes/${id}`),
     create: (data: any) =>
       request<Tax>('/taxes', { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: any) =>
@@ -305,7 +302,18 @@ export const api = {
       const q = params ? `?${new URLSearchParams(params)}` : '';
       return request<any>(`/reports/subscriptions${q}`);
     },
+    getMrrReport: () => request<any>('/reports/mrr'),
+    getChurnReport: (params?: any) => {
+      const q = params ? `?${new URLSearchParams(params)}` : '';
+      return request<any>(`/reports/churn${q}`);
+    },
+    getUserGrowthReport: (params?: any) => {
+      const q = params ? `?${new URLSearchParams(params)}` : '';
+      return request<any>(`/reports/users${q}`);
+    },
+    getInvoiceReport: (params?: any) => {
+      const q = params ? `?${new URLSearchParams(params)}` : '';
+      return request<any>(`/reports/invoices${q}`);
+    },
   }
 };
-
-

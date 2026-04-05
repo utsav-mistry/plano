@@ -1,4 +1,5 @@
-export type UserRole = 'ADMIN' | 'INTERNAL_USER' | 'CUSTOMER';
+// FIX [C6]: Aligned with backend constants/roles.js — lowercase, correct portal_user name
+export type UserRole = 'admin' | 'internal_user' | 'portal_user';
 
 export interface User {
   id: string;
@@ -73,15 +74,13 @@ export interface Plan {
   updatedAt: string;
 }
 
+// FIX [M9]: Aligned with backend constants/statuses.js SUBSCRIPTION_STATUS
 export type SubscriptionStatus =
-  | 'draft'
-  | 'quotation'
-  | 'confirmed'
+  | 'trial'
   | 'active'
   | 'paused'
   | 'cancelled'
-  | 'expired'
-  | 'closed';
+  | 'expired';
 
 export interface Subscription {
   id: string;
@@ -110,7 +109,8 @@ export interface Subscription {
   updatedAt: string;
 }
 
-export type InvoiceStatus = 'draft' | 'confirmed' | 'paid' | 'overdue' | 'cancelled';
+// FIX [M10]: Aligned with backend constants/statuses.js INVOICE_STATUS
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'void' | 'refunded';
 
 export interface Invoice {
   id: string;

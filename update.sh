@@ -1,5 +1,7 @@
 #!/bin/bash
 # =============================================================================
+
+set -euo pipefail
 #  Plano — Zero-Downtime Update Script
 #  Run on every deployment to pull latest changes and reload processes.
 #
@@ -14,7 +16,7 @@ export PM2_HOME=/home/app/.pm2
 APP_DIR=/home/app
 LOG_DIR=$APP_DIR/logs
 LOG_FILE=$LOG_DIR/deploy.log
-export NEXT_PUBLIC_API_URL=https://api.planoo.tech/api/v1
+export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-https://api.planoo.tech/api/v1}"
 
 # Ensure log directory exists
 mkdir -p $LOG_DIR
@@ -23,6 +25,39 @@ cd $APP_DIR || exit 1
 
 # ─────────────────────────────────────────────────────────────
 echo "===== $(date) =====" | tee -a $LOG_FILE
+
+verify_runtime() {
+  # ── Reload/start using shared PM2 instance (zero-downtime) ─
+  pm2 startOrReload ecosystem.config.js --update-env
+
+  # ── Runtime verification ────────────────────────────────────
+  sleep 2
+  PM2_STATE_JSON="$(pm2 jlist)"
+  echo "$PM2_STATE_JSON" | grep -q '"status":"online"' || {
+    echo "No PM2 process is online" | tee -a $LOG_FILE
+    exit 1
+  }
+
+  if echo "$PM2_STATE_JSON" | grep -Eq '"status":"(stopped|errored|stopping|launching)"'; then
+    echo "One or more PM2 processes are not healthy" | tee -a $LOG_FILE
+    exit 1
+  fi
+
+  curl -fsS http://127.0.0.1:5000/health >/dev/null || {
+    echo "Backend health check failed" | tee -a $LOG_FILE
+    exit 1
+  }
+
+  curl -fsS http://127.0.0.1:4000/api/health >/dev/null || {
+    echo "Status service health check failed" | tee -a $LOG_FILE
+    exit 1
+  }
+
+  curl -fsS http://127.0.0.1:3000 >/dev/null || {
+    echo "Frontend health check failed" | tee -a $LOG_FILE
+    exit 1
+  }
+}
 
 # Fetch latest changes from origin
 git fetch origin main
@@ -51,13 +86,11 @@ if [ -n "$(git log HEAD..origin/main --oneline)" ]; then
     cd ..
   fi
 
-  # ── Reload using shared PM2 instance (zero-downtime) ───────
-  pm2 reload frontend
-  pm2 reload backend
-  pm2 reload workers
-  pm2 reload status    
+  verify_runtime
 
   echo "Deployment successful" | tee -a $LOG_FILE
 else
-  echo "No changes to deploy" | tee -a $LOG_FILE
+  echo "No changes to deploy; verifying running services" | tee -a $LOG_FILE
+  verify_runtime
+  echo "Services verified" | tee -a $LOG_FILE
 fi

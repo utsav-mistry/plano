@@ -1,10 +1,17 @@
 import Joi from 'joi';
 
+const strongPassword = Joi.string()
+  .min(9)
+  .pattern(/[A-Z]/, 'uppercase letter')
+  .pattern(/[a-z]/, 'lowercase letter')
+  .pattern(/[^A-Za-z0-9]/, 'special character');
+
 export const registerSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(8).required(),
-  role: Joi.string().valid('admin', 'internal_user', 'portal_user').default('portal_user'),
+  password: strongPassword.required(),
+  // Public signup can only create portal users.
+  role: Joi.string().valid('portal_user').default('portal_user'),
 });
 
 export const loginSchema = Joi.object({
@@ -41,7 +48,7 @@ export const verifyOtpSchema = Joi.object({
 });
 
 export const resetPasswordSchema = Joi.object({
-  password: Joi.string().min(8).required(),
+  password: strongPassword.required(),
   confirmPassword: Joi.string().valid(Joi.ref('password')).required()
     .messages({ 'any.only': 'Passwords do not match' }),
 });

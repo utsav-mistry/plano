@@ -69,8 +69,8 @@ export default function ReportsPage() {
   const distribution = useMemo(() => {
     const total = subscriptions.length || 1;
     const active = (subscriptions.filter(s => s.status === 'active').length / total) * 100;
-    const quote = (subscriptions.filter(s => s.status === 'quotation').length / total) * 100;
-    const cancelled = (subscriptions.filter(s => ['cancelled', 'closed'].includes(s.status)).length / total) * 100;
+    const quote = (subscriptions.filter(s => s.status === 'trial').length / total) * 100;
+    const cancelled = (subscriptions.filter(s => (['cancelled', 'expired'] as string[]).includes(s.status)).length / total) * 100;
     return { active, quote, cancelled };
   }, [subscriptions]);
 
@@ -165,15 +165,15 @@ export default function ReportsPage() {
                          <div className="w-3 h-3 rounded-full bg-plano-300" />
                          <span className="text-[10px] font-bold text-plano-900 uppercase">Pending Quotes</span>
                       </div>
-                      <p className="text-2xl font-bold text-plano-900">{subscriptions.filter(s => s.status === 'quotation').length} <span className="text-xs text-gray-400 font-medium">REVIEWS</span></p>
-                      <p className="text-[9px] text-gray-400 font-medium leading-relaxed">Orders awaiting sales team verification & approval.</p>
+                      <p className="text-2xl font-bold text-plano-900">{subscriptions.filter(s => s.status === 'trial').length} <span className="text-xs text-gray-400 font-medium">TRIALS</span></p>
+                      <p className="text-[9px] text-gray-400 font-medium leading-relaxed">Subscriptions currently in their trial period.</p>
                    </div>
                    <div className="space-y-2 border-l border-plano-50 pl-8">
                       <div className="flex items-center gap-2">
                          <div className="w-3 h-3 rounded-full bg-gray-200" />
                          <span className="text-[10px] font-bold text-plano-900 uppercase">Settled/Closed</span>
                       </div>
-                      <p className="text-2xl font-bold text-plano-900">{subscriptions.filter(s => ['cancelled', 'closed'].includes(s.status)).length} <span className="text-xs text-gray-400 font-medium">HISTORIC</span></p>
+                      <p className="text-2xl font-bold text-plano-900">{subscriptions.filter(s => (['cancelled', 'expired'] as string[]).includes(s.status)).length} <span className="text-xs text-gray-400 font-medium">HISTORIC</span></p>
                       <p className="text-[9px] text-gray-400 font-medium leading-relaxed">Subscriptions that have already reached end-of-life.</p>
                    </div>
                 </div>
