@@ -8,12 +8,12 @@ const router = Router();
 router.use(authenticate);
 
 router.get('/', invoiceController.getAll);
-router.get('/:id', invoiceController.getById);
 router.post('/', idempotency, authorize(ROLES.ADMIN, ROLES.INTERNAL_USER), invoiceController.create);
 router.get('/:id/download', invoiceController.downloadPdf);
 router.post('/:id/confirm', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER), invoiceController.confirm);
 router.post('/:id/send', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER), invoiceController.send);
 router.post('/:id/cancel', authorize(ROLES.ADMIN), invoiceController.cancel);
 router.post('/:id/void', authorize(ROLES.ADMIN), invoiceController.voidInvoice);
+router.get('/:id', invoiceController.getById);
 
 export default router;

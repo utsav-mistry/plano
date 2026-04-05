@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import {
    Search,
-   Filter,
-   Mail,
    Trash2,
    UserPlus,
    Loader2,
@@ -177,9 +175,6 @@ export default function UsersManagementPage() {
                      className="w-full h-10 pl-10 pr-4 rounded-input border border-border dark:border-sidebar-hover bg-gray-25 dark:bg-bg-page focus:border-plano-500 dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans text-text-primary"
                   />
                </div>
-               <button className="p-2.5 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-gray-400 hover:text-text-primary transition-colors">
-                  <Filter size={18} />
-               </button>
             </div>
          </div>
 
@@ -271,9 +266,6 @@ export default function UsersManagementPage() {
                               </td>
                               <td className="py-4 px-6 text-right">
                                  <div className="flex items-center justify-end gap-2">
-                                    <button className="p-2 rounded-btn text-gray-400 hover:text-plano-600 hover:bg-plano-50 dark:hover:bg-white/10 transition-all">
-                                       <Mail size={16} />
-                                    </button>
                                     {user.role === 'portal_user' ? (
                                        <button
                                           type="button"

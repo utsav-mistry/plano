@@ -8,8 +8,6 @@ import {
    Plus,
    Search,
    Download,
-   MoreVertical,
-   ArrowUpRight,
    Banknote,
    Smartphone,
    Loader2,
@@ -55,6 +53,11 @@ export default function PaymentsPage() {
    const getPaymentDate = (pay: Payment) => (pay as any)?.paymentDate || (pay as any)?.processedAt || pay.createdAt;
    const getReference = (pay: Payment) => (pay as any)?.gatewayTransactionId || (pay as any)?.transactionId || '-';
    const getDisplayStatus = (pay: Payment) => (pay.status === 'success' ? 'completed' : pay.status);
+   const getEntityId = (value: unknown) => {
+      if (!value || typeof value !== 'object') return String(value || '');
+      const record = value as { id?: string; _id?: string; invoiceNumber?: string };
+      return String(record.id || record._id || '');
+   };
 
    const filteredPayments = payments.filter(p =>
       getReference(p).toLowerCase().includes(search.toLowerCase()) ||
@@ -167,7 +170,6 @@ export default function PaymentsPage() {
                            <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap">Method</th>
                            <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-right">Amount</th>
                            <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-center">Status</th>
-                           <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest whitespace-nowrap text-right">Actions</th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-border dark:divide-sidebar-hover">
@@ -181,7 +183,7 @@ export default function PaymentsPage() {
                               </td>
                               <td className="py-4 px-6">
                                  {pay.invoiceId ? (
-                                    <Link href={toAdminPath(pathname, `/invoices/${typeof pay.invoiceId === 'object' ? (pay.invoiceId as any)?.id || (pay.invoiceId as any)?._id : pay.invoiceId}`)} className="flex items-center gap-1 text-xs font-mono font-bold text-plano-600 hover:underline">
+                                    <Link href={toAdminPath(pathname, `/invoices/${getEntityId(pay.invoiceId)}`)} className="flex items-center gap-1 text-xs font-mono font-bold text-plano-600 hover:underline">
                                        <Receipt size={12} />
                                        {typeof pay.invoiceId === 'object' ? ((pay.invoiceId as any)?.invoiceNumber || 'Invoice') : 'Invoice'}
                                     </Link>
@@ -214,16 +216,6 @@ export default function PaymentsPage() {
                                  )}>
                                     {getDisplayStatus(pay)}
                                  </span>
-                              </td>
-                              <td className="py-4 px-6 text-right">
-                                 <div className="flex items-center justify-end gap-2">
-                                    <button className="p-1.5 rounded-btn hover:bg-plano-50 dark:hover:bg-white/10 text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 transition-all">
-                                       <ArrowUpRight size={18} />
-                                    </button>
-                                    <button className="p-1.5 rounded-btn hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-text-primary transition-all">
-                                       <MoreVertical size={18} />
-                                    </button>
-                                 </div>
                               </td>
                            </tr>
                         ))}

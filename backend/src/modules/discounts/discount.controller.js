@@ -33,7 +33,6 @@ export const remove = catchAsync(async (req, res) => {
 });
 
 export const validateCode = catchAsync(async (req, res) => {
-  const { code, orderAmount } = req.body;
-  const discount = await discountService.validate(code, orderAmount);
+  const discount = await discountService.validate(req.body);
   new ApiResponse(200, { discount }, 'Discount code is valid').send(res);
 });

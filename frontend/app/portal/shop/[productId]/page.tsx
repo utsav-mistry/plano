@@ -150,7 +150,7 @@ export default function ProductDetailPage() {
         setIsPaying(false);
         setIsCheckoutOpen(false);
         toastSuccess('Payment Captured', `Transaction ID: ${response.razorpay_payment_id}`);
-        router.push(`/portal/order/confirmation?id=S100${Math.floor(Math.random() * 1000)}&ref=${response.razorpay_payment_id}`);
+        router.push(`/portal/order/confirmation?id=${response.razorpay_payment_id}&ref=${response.razorpay_payment_id}`);
       },
       modal: {
         ondismiss: () => setIsPaying(false),

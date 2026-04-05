@@ -1,7 +1,34 @@
 import Product from './product.model.js';
 import { ApiError } from '../../utils/ApiError.js';
 
-export const create = async (data) => Product.create(data);
+const normalizeSku = (value) => String(value || '').trim().toUpperCase();
+
+const withSkuConflictHandling = (error) => {
+  if (error?.code === 11000 && error?.keyPattern?.sku) {
+    throw ApiError.conflict('SKU already exists. Please use a unique SKU.');
+  }
+  throw error;
+};
+
+export const create = async (data) => {
+  const payload = { ...data };
+  if (payload.sku !== undefined) {
+    payload.sku = normalizeSku(payload.sku);
+  }
+
+  if (payload.sku) {
+    const existing = await Product.findOne({ sku: payload.sku }).select('_id');
+    if (existing) {
+      throw ApiError.conflict('SKU already exists. Please use a unique SKU.');
+    }
+  }
+
+  try {
+    return await Product.create(payload);
+  } catch (error) {
+    withSkuConflictHandling(error);
+  }
+};
 
 export const getAll = async ({ page = 1, limit = 20, type, isActive, search }) => {
   const filter = {};
@@ -23,9 +50,24 @@ export const getById = async (id) => {
 };
 
 export const update = async (id, data) => {
-  const product = await Product.findByIdAndUpdate(id, data, { new: true, runValidators: true });
-  if (!product) throw ApiError.notFound('Product not found');
-  return product;
+  const patch = { ...data };
+  if (patch.sku !== undefined) {
+    patch.sku = normalizeSku(patch.sku);
+    if (patch.sku) {
+      const existing = await Product.findOne({ sku: patch.sku, _id: { $ne: id } }).select('_id');
+      if (existing) {
+        throw ApiError.conflict('SKU already exists. Please use a unique SKU.');
+      }
+    }
+  }
+
+  try {
+    const product = await Product.findByIdAndUpdate(id, patch, { new: true, runValidators: true });
+    if (!product) throw ApiError.notFound('Product not found');
+    return product;
+  } catch (error) {
+    withSkuConflictHandling(error);
+  }
 };
 
 export const remove = async (id) => {

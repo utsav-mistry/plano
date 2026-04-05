@@ -8,7 +8,6 @@ import {
   Plus,
   Search,
   ArrowUpRight,
-  MoreVertical,
   Calendar,
   Download,
   AlertCircle,
@@ -46,7 +45,17 @@ export default function SubscriptionsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const params = activeTab !== 'ALL' ? { status: activeTab.toLowerCase() } : {};
+      const params: Record<string, string> = {};
+      if (['ACTIVE', 'PAUSED', 'CANCELLED', 'EXPIRED', 'TRIAL'].includes(activeTab)) {
+        params.status = activeTab.toLowerCase();
+      }
+      if (activeTab === 'RECURRING') {
+        params.autoRenew = 'true';
+      }
+      if (activeTab === 'NORMAL') {
+        params.autoRenew = 'false';
+      }
+
       const response = await api.subscriptions.getAll(params);
       if (response.success) {
         const data = response.data as any;
@@ -65,9 +74,11 @@ export default function SubscriptionsPage() {
 
   const tabs = [
     { label: 'All', value: 'ALL' },
-    { label: 'Draft', value: 'DRAFT' },
-    { label: 'Quotation', value: 'QUOTATION' },
+    { label: 'Recurring', value: 'RECURRING' },
+    { label: 'Normal', value: 'NORMAL' },
     { label: 'Active', value: 'ACTIVE' },
+    { label: 'Paused', value: 'PAUSED' },
+    { label: 'Cancelled', value: 'CANCELLED' },
     { label: 'Expired', value: 'EXPIRED' },
   ];
 
@@ -265,6 +276,7 @@ export default function SubscriptionsPage() {
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Sub Number</th>
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Customer</th>
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Status</th>
+                    <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Type</th>
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest">Plan Name</th>
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right">Grand Total</th>
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-400 tracking-widest text-right">Actions</th>
@@ -301,6 +313,16 @@ export default function SubscriptionsPage() {
                                 "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10"
                         )}>
                           {sub.status}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className={cn(
+                          'text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full border',
+                          sub.autoRenew
+                            ? 'bg-plano-50 text-plano-600 border-plano-100'
+                            : 'bg-gray-100 text-gray-600 border-gray-200'
+                        )}>
+                          {sub.autoRenew ? 'Recurring' : 'Normal'}
                         </span>
                       </td>
                       <td className="py-4 px-6">
@@ -348,9 +370,6 @@ export default function SubscriptionsPage() {
                           >
                             <ArrowUpRight size={18} />
                           </Link>
-                          <button className="p-1.5 rounded-btn hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-text-primary transition-all">
-                            <MoreVertical size={18} />
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -360,11 +379,6 @@ export default function SubscriptionsPage() {
             </div>
             <div className="px-6 py-4 bg-gray-50/50 dark:bg-white/5 border-t border-border dark:border-sidebar-hover flex items-center justify-between">
               <span className="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Showing {filteredSubscriptions.length} subscriptions</span>
-              <div className="flex items-center gap-1">
-                <button className="px-3 py-1 rounded border border-border dark:border-sidebar-hover bg-bg-surface dark:bg-bg-elevated text-[10px] font-bold text-gray-400" disabled>Previous</button>
-                <button className="px-3 py-1 rounded border border-plano-600 bg-plano-600 text-[10px] font-bold text-white">1</button>
-                <button className="px-3 py-1 rounded border border-border dark:border-sidebar-hover bg-bg-surface dark:bg-bg-elevated text-[10px] font-bold text-gray-600" disabled>Next</button>
-              </div>
             </div>
           </>
         )}

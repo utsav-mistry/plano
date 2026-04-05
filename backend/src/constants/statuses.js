@@ -28,6 +28,7 @@ export const QUOTATION_STATUS = {
   SENT: 'sent',
   ACCEPTED: 'accepted',
   REJECTED: 'rejected',
+  CLOSED: 'closed',
   EXPIRED: 'expired',
 };
 

@@ -146,6 +146,108 @@ function normalizeQuotationEntity(quotation: any) {
   };
 }
 
+function mapApplicableToAppliesTo(value: unknown) {
+  const normalized = String(value || '');
+  switch (normalized) {
+    case 'all':
+      return 'subscriptions';
+    case 'plan':
+      return 'plans';
+    case 'product':
+      return 'products';
+    default:
+      return value;
+  }
+}
+
+function mapAppliesToApplicableTo(value: unknown) {
+  const normalized = String(value || '');
+  switch (normalized) {
+    case 'subscriptions':
+    case 'both':
+    case 'all':
+      return 'all';
+    case 'plans':
+      return 'plan';
+    case 'products':
+    case 'invoices':
+      return 'product';
+    default:
+      return value;
+  }
+}
+
+function normalizeDiscountEntity(discount: unknown) {
+  if (!discount || typeof discount !== 'object') return discount;
+  const record = discount as Record<string, unknown>;
+  return {
+    ...record,
+    id: record.id || record._id,
+    code: record.code,
+    name: record.name,
+    type: record.type,
+    value: record.value,
+    appliesTo: record.appliesTo || mapApplicableToAppliesTo(record.applicableTo),
+    usageLimit: record.usageLimit ?? record.maxUsage ?? 0,
+    usageCount: record.usageCount ?? record.usedCount ?? 0,
+    validFrom: record.validFrom || '',
+    validTo: record.validTo || record.validUntil || '',
+  };
+}
+
+function normalizeDiscountsPayload(data: unknown) {
+  if (Array.isArray(data)) return data.map(normalizeDiscountEntity);
+  if (data && typeof data === 'object') {
+    const record = data as Record<string, unknown>;
+    if (Array.isArray(record.discounts)) {
+      return { ...record, discounts: record.discounts.map(normalizeDiscountEntity) };
+    }
+    if (record.discount && typeof record.discount === 'object') {
+      return normalizeDiscountEntity(record.discount);
+    }
+    if (record._id || record.id) return normalizeDiscountEntity(record);
+  }
+  return data;
+}
+
+function prepareDiscountPayload(data: unknown) {
+  const payload = { ...(data as Record<string, unknown>) };
+  const now = new Date();
+  const defaultValidUntil = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  if (payload.validUntil == null && payload.validTo) {
+    payload.validUntil = payload.validTo;
+  }
+  if (payload.validFrom == null || payload.validFrom === '') {
+    payload.validFrom = now.toISOString();
+  }
+  if (payload.validUntil == null || payload.validUntil === '') {
+    payload.validUntil = defaultValidUntil;
+  }
+  if (payload.maxUsage == null && payload.usageLimit !== undefined && payload.usageLimit !== '') {
+    payload.maxUsage = Number(payload.usageLimit);
+  }
+  if (payload.applicableTo == null && payload.appliesTo) {
+    payload.applicableTo = mapAppliesToApplicableTo(payload.appliesTo);
+  }
+  if (payload.minOrderAmount == null && payload.minPurchaseAmount !== undefined && payload.minPurchaseAmount !== '') {
+    payload.minOrderAmount = Number(payload.minPurchaseAmount);
+  }
+
+  return payload;
+}
+
+function normalizeDiscountValidationPayload(data: unknown) {
+  if (!data || typeof data !== 'object') return data;
+  const record = data as Record<string, unknown>;
+  return {
+    code: String(record.code || record.promo || '').trim(),
+    orderAmount: Number(record.orderAmount ?? record.amount ?? 0),
+    planIds: Array.isArray(record.planIds) ? record.planIds : [],
+    productIds: Array.isArray(record.productIds) ? record.productIds : [],
+  };
+}
+
 function normalizeQuotationsPayload(data: any) {
   if (Array.isArray(data)) return data.map(normalizeQuotationEntity);
   if (data && typeof data === 'object') {
@@ -475,6 +577,26 @@ export const api = {
         ...res,
         data: normalizeQuotationsPayload(res.data),
       })),
+    review: (id: string, data: { action: 'accept' | 'reject' | 'counter'; note?: string; counterAmount?: number }) =>
+      request<Quotation | { quotation?: Quotation }>(`/quotations/${id}/review`, { method: 'POST', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      })),
+    respond: (id: string, data: { action: 'accept' | 'reject' | 'counter'; note?: string; counterAmount?: number }) =>
+      request<Quotation | { quotation?: Quotation }>(`/quotations/${id}/respond`, { method: 'POST', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      })),
+    close: (id: string, data?: { reason?: string; note?: string }) =>
+      request<Quotation | { quotation?: Quotation }>(`/quotations/${id}/close`, { method: 'POST', body: JSON.stringify(data || {}) }).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      })),
+    upsell: (id: string, data?: { targetAmount?: number; increasePercent?: number; note?: string; validUntil?: string }) =>
+      request<Quotation | { quotation?: Quotation }>(`/quotations/${id}/upsell`, { method: 'POST', body: JSON.stringify(data || {}) }).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      })),
     convert: (id: string) =>
       request<Quotation | { quotation?: Quotation }>(`/quotations/${id}/convert`, { method: 'POST' }).then((res) => ({
         ...res,
@@ -581,15 +703,38 @@ export const api = {
   discounts: {
     getAll: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
-      return request<Discount[]>(`/discounts${q}`);
+      return request<Discount[]>(`/discounts${q}`).then((res) => ({
+        ...res,
+        data: normalizeDiscountsPayload(res.data),
+      }));
     },
-    getById: (id: string) => request<Discount>(`/discounts/${id}`),
+    getById: (id: string) => request<Discount>(`/discounts/${id}`).then((res) => ({
+      ...res,
+      data: normalizeDiscountsPayload(res.data),
+    })),
     create: (data: any) =>
-      request<Discount>('/discounts', { method: 'POST', body: JSON.stringify(data) }),
+      request<Discount>('/discounts', { method: 'POST', body: JSON.stringify(prepareDiscountPayload(data)) }).then((res) => ({
+        ...res,
+        data: normalizeDiscountsPayload(res.data),
+      })),
     update: (id: string, data: any) =>
-      request<Discount>(`/discounts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+      request<Discount>(`/discounts/${id}`, { method: 'PUT', body: JSON.stringify(prepareDiscountPayload(data)) }).then((res) => ({
+        ...res,
+        data: normalizeDiscountsPayload(res.data),
+      })),
+    validate: (data: { code: string; orderAmount: number; planIds?: string[]; productIds?: string[] }) =>
+      request<Discount>('/discounts/validate', {
+        method: 'POST',
+        body: JSON.stringify(normalizeDiscountValidationPayload(data)),
+      }).then((res) => ({
+        ...res,
+        data: normalizeDiscountsPayload(res.data),
+      })),
     toggle: (id: string) =>
-      request<Discount>(`/discounts/${id}/toggle`, { method: 'POST' }),
+      request<Discount>(`/discounts/${id}/toggle`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeDiscountsPayload(res.data),
+      })),
     delete: (id: string) =>
       request<null>(`/discounts/${id}`, { method: 'DELETE' }),
   },

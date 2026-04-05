@@ -138,7 +138,7 @@ export default function Pricing() {
               </ul>
 
               <a
-                href="#"
+                href={plan.name === "Enterprise" ? "mailto:support@planoo.tech" : "/signup"}
                 className={`block text-center py-3 rounded-xl text-[15px] font-semibold transition-all duration-180 focus-visible:outline-[2px] focus-visible:outline-[#a97096] focus-visible:outline-offset-2
                   ${plan.featured
                     ? "bg-[#604058] text-white hover:bg-[#4e3347] hover:scale-[1.02] shadow-[0_4px_16px_rgba(96,64,88,0.3)]"

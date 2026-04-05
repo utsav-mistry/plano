@@ -97,6 +97,9 @@ export default function MyOrdersPage() {
          .sort((a, b) => (b.grandTotal || 0) - (a.grandTotal || 0))
       : [];
 
+   const recurringSubscriptions = filtered.filter((sub) => sub.autoRenew);
+   const oneTimeSubscriptions = filtered.filter((sub) => !sub.autoRenew);
+
    const getStatusBadge = (status: string) => {
       switch (status.toLowerCase()) {
          case 'active':
@@ -151,119 +154,183 @@ export default function MyOrdersPage() {
          </div>
 
          {/* Orders Table-styled Cards */}
-         <div className="space-y-4">
-            <div className="hidden lg:grid grid-cols-12 gap-4 px-8 mb-4">
-               <div className="col-span-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Order Details</div>
-               <div className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pricing Model</div>
-               <div className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Status</div>
-               <div className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Duration</div>
-               <div className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right tabular-nums">Total Amount</div>
-               <div className="col-span-1" />
+         <div className="space-y-8">
+            <div className="space-y-4">
+               <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-plano-900 uppercase tracking-tight">Recurring Subscriptions</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{recurringSubscriptions.length} records</span>
+               </div>
+
+               <div className="hidden lg:grid grid-cols-12 gap-4 px-8 mb-4">
+                  <div className="col-span-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Order Details</div>
+                  <div className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pricing Model</div>
+                  <div className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Status</div>
+                  <div className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Duration</div>
+                  <div className="col-span-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right tabular-nums">Total Amount</div>
+                  <div className="col-span-1" />
+               </div>
+
+               <AnimatePresence mode="popLayout">
+                  {recurringSubscriptions.length > 0 ? recurringSubscriptions.map((sub, i) => (
+                     <motion.div
+                        key={sub.id}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.05 }}
+                     >
+                        <Link
+                           href={`/portal/account/orders/${sub.id}`}
+                           className="block bg-white rounded-[2rem] border border-plano-100 p-6 lg:p-4 hover:border-plano-600 hover:shadow-2xl hover:shadow-plano-600/5 hover:-translate-y-1 transition-all group"
+                        >
+                           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                              {/* Product Info */}
+                              <div className="col-span-12 lg:col-span-3 flex items-center gap-4">
+                                 <div className="w-14 h-14 rounded-2xl bg-plano-50 flex items-center justify-center text-plano-600 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                    <Sparkles size={24} strokeWidth={1.5} />
+                                 </div>
+                                 <div className="grid">
+                                    <span className="text-sm font-bold text-plano-900 truncate uppercase tracking-tight">{typeof sub.productId === 'object' ? sub.productId.name : 'Subscription Package'}</span>
+                                    <span className="text-[10px] font-bold text-gray-400 font-mono tracking-widest">{sub.id}</span>
+                                 </div>
+                              </div>
+
+                              {/* Pricing */}
+                              <div className="col-span-6 lg:col-span-2">
+                                 <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Plan Term</span>
+                                    <span className="text-xs font-bold text-plano-600 uppercase tracking-tight">{typeof sub.planId === 'object' ? sub.planId.name : 'Recurring Plan'}</span>
+                                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                       <span className="px-2 py-1 rounded-full bg-plano-50 border border-plano-100 text-[10px] font-bold uppercase tracking-widest text-plano-600">
+                                          {getCycleLabel(sub)} cycle
+                                       </span>
+                                       <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
+                                          {sub.autoRenew ? 'Auto-renew enabled' : 'Auto-renew off'}
+                                       </span>
+                                    </div>
+                                    <div className="mt-3 w-full max-w-[180px]">
+                                       <div className="flex items-center justify-between mb-2">
+                                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cycle Progress</span>
+                                          <span className="text-[10px] font-bold text-plano-600 tabular-nums">{getCycleProgress(sub.startDate, sub.endDate)}%</span>
+                                       </div>
+                                       <div className="h-2 rounded-full bg-plano-50 overflow-hidden">
+                                          <div
+                                             className={cn(
+                                                'h-full rounded-full bg-gradient-to-r from-plano-500 to-plano-600 transition-all',
+                                                sub.status === 'paused' ? 'from-warning-400 to-warning-500' : sub.status === 'cancelled' ? 'from-gray-300 to-gray-400' : ''
+                                             )}
+                                             style={{ width: `${getCycleProgress(sub.startDate, sub.endDate)}%` }}
+                                          />
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+
+                              {/* Status */}
+                              <div className="col-span-6 lg:col-span-2 flex justify-center">
+                                 {getStatusBadge(sub.status)}
+                              </div>
+
+                              {/* Period */}
+                              <div className="col-span-6 lg:col-span-2">
+                                 <div className="flex flex-col gap-1 text-gray-500 font-medium">
+                                    <div className="text-[10px] font-bold uppercase tracking-tight">
+                                       {format(new Date(sub.startDate), 'MMM dd')} — {format(new Date(sub.endDate), 'MMM dd, yyyy')}
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expires {format(new Date(sub.endDate), 'dd MMM yyyy')}</span>
+                                 </div>
+                              </div>
+
+                              {/* Amount */}
+                              <div className="col-span-6 lg:col-span-2 text-right">
+                                 <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Statement Total</span>
+                                    <span className="text-lg font-bold text-plano-900 tabular-nums">₹{sub.grandTotal.toLocaleString()}</span>
+                                 </div>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="col-span-12 lg:col-span-1 flex items-center justify-end gap-3">
+                                 <button
+                                    onClick={(e) => handleDownloadInvoice(sub.id, e)}
+                                    className="w-10 h-10 rounded-xl bg-plano-50 border border-plano-100 flex items-center justify-center text-plano-600 hover:bg-plano-600 hover:text-white transition-all shadow-sm group/btn"
+                                    title="Download PDF Invoice"
+                                 >
+                                    <Download size={18} className="group-hover/btn:-translate-y-0.5 transition-transform" />
+                                 </button>
+                                 <div className="w-10 h-10 rounded-full border border-plano-50 flex items-center justify-center text-gray-300 group-hover:text-plano-600 group-hover:border-plano-600 group-hover:bg-plano-50 transition-all">
+                                    <ChevronRight size={18} />
+                                 </div>
+                              </div>
+                           </div>
+                        </Link>
+                     </motion.div>
+                  )) : (
+                     <div className="py-12 text-center rounded-3xl bg-white border border-plano-50">
+                        <h3 className="text-sm font-bold text-plano-900 uppercase">No recurring subscriptions</h3>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mt-2">Auto-renew subscriptions will appear here.</p>
+                     </div>
+                  )}
+               </AnimatePresence>
             </div>
 
-            <AnimatePresence mode="popLayout">
-               {filtered.length > 0 ? filtered.map((sub, i) => (
-                  <motion.div
-                     key={sub.id}
-                     initial={{ opacity: 0, scale: 0.98 }}
-                     animate={{ opacity: 1, scale: 1 }}
-                     transition={{ delay: i * 0.05 }}
-                  >
-                     <Link
-                        href={`/portal/account/orders/${sub.id}`}
-                        className="block bg-white rounded-[2rem] border border-plano-100 p-6 lg:p-4 hover:border-plano-600 hover:shadow-2xl hover:shadow-plano-600/5 hover:-translate-y-1 transition-all group"
+            <div className="space-y-4">
+               <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-bold text-plano-900 uppercase tracking-tight">Normal Subscriptions</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{oneTimeSubscriptions.length} records</span>
+               </div>
+
+               <AnimatePresence mode="popLayout">
+                  {oneTimeSubscriptions.length > 0 ? oneTimeSubscriptions.map((sub, i) => (
+                     <motion.div
+                        key={`${sub.id}-normal`}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.05 }}
                      >
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
-                           {/* Product Info */}
-                           <div className="col-span-12 lg:col-span-3 flex items-center gap-4">
-                              <div className="w-14 h-14 rounded-2xl bg-plano-50 flex items-center justify-center text-plano-600 flex-shrink-0 group-hover:scale-110 transition-transform">
-                                 <Sparkles size={24} strokeWidth={1.5} />
-                              </div>
-                              <div className="grid">
-                                 <span className="text-sm font-bold text-plano-900 truncate uppercase tracking-tight">{typeof sub.productId === 'object' ? sub.productId.name : 'Subscription Package'}</span>
-                                 <span className="text-[10px] font-bold text-gray-400 font-mono tracking-widest">{sub.id}</span>
-                              </div>
-                           </div>
-
-                           {/* Pricing */}
-                           <div className="col-span-6 lg:col-span-2">
-                              <div className="flex flex-col">
-                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Plan Term</span>
-                                 <span className="text-xs font-bold text-plano-600 uppercase tracking-tight">{typeof sub.planId === 'object' ? sub.planId.name : 'Recurring Plan'}</span>
-                                 <div className="mt-3 flex items-center gap-2 flex-wrap">
-                                    <span className="px-2 py-1 rounded-full bg-plano-50 border border-plano-100 text-[10px] font-bold uppercase tracking-widest text-plano-600">
-                                       {getCycleLabel(sub)} cycle
-                                    </span>
-                                    <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
-                                       {sub.autoRenew ? 'Auto-renew enabled' : 'Auto-renew off'}
-                                    </span>
+                        <Link
+                           href={`/portal/account/orders/${sub.id}`}
+                           className="block bg-white rounded-[2rem] border border-plano-100 p-6 lg:p-4 hover:border-plano-600 hover:shadow-2xl hover:shadow-plano-600/5 hover:-translate-y-1 transition-all group"
+                        >
+                           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                              <div className="col-span-12 lg:col-span-4 flex items-center gap-4">
+                                 <div className="w-14 h-14 rounded-2xl bg-plano-50 flex items-center justify-center text-plano-600 flex-shrink-0 group-hover:scale-110 transition-transform">
+                                    <Sparkles size={24} strokeWidth={1.5} />
                                  </div>
-                                 <div className="mt-3 w-full max-w-[180px]">
-                                    <div className="flex items-center justify-between mb-2">
-                                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cycle Progress</span>
-                                       <span className="text-[10px] font-bold text-plano-600 tabular-nums">{getCycleProgress(sub.startDate, sub.endDate)}%</span>
-                                    </div>
-                                    <div className="h-2 rounded-full bg-plano-50 overflow-hidden">
-                                       <div
-                                          className={cn(
-                                             'h-full rounded-full bg-gradient-to-r from-plano-500 to-plano-600 transition-all',
-                                             sub.status === 'paused' ? 'from-warning-400 to-warning-500' : sub.status === 'cancelled' ? 'from-gray-300 to-gray-400' : ''
-                                          )}
-                                          style={{ width: `${getCycleProgress(sub.startDate, sub.endDate)}%` }}
-                                       />
-                                    </div>
+                                 <div className="grid">
+                                    <span className="text-sm font-bold text-plano-900 truncate uppercase tracking-tight">{typeof sub.productId === 'object' ? sub.productId.name : 'Subscription Package'}</span>
+                                    <span className="text-[10px] font-bold text-gray-400 font-mono tracking-widest">{sub.id}</span>
                                  </div>
                               </div>
-                           </div>
-
-                           {/* Status */}
-                           <div className="col-span-6 lg:col-span-2 flex justify-center">
-                              {getStatusBadge(sub.status)}
-                           </div>
-
-                           {/* Period */}
-                           <div className="col-span-6 lg:col-span-2">
-                              <div className="flex items-center gap-2 text-gray-500 font-medium">
-                                 <div className="text-[10px] font-bold uppercase tracking-tight">
-                                    {format(new Date(sub.startDate), 'MMM dd')} — {format(new Date(sub.endDate), 'MMM dd, yyyy')}
-                                 </div>
+                              <div className="col-span-6 lg:col-span-3">
+                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Type</span>
+                                 <div className="mt-2 inline-flex px-2 py-1 rounded-full bg-gray-50 border border-gray-200 text-[10px] font-bold uppercase tracking-widest text-gray-600">One-time</div>
                               </div>
-                           </div>
-
-                           {/* Amount */}
-                           <div className="col-span-6 lg:col-span-2 text-right">
-                              <div className="flex flex-col">
-                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Statement Total</span>
-                                 <span className="text-lg font-bold text-plano-900 tabular-nums">₹{sub.grandTotal.toLocaleString()}</span>
+                              <div className="col-span-6 lg:col-span-2 flex justify-center">{getStatusBadge(sub.status)}</div>
+                              <div className="col-span-6 lg:col-span-2 text-[10px] font-bold uppercase tracking-tight text-gray-500">
+                                 Expires {format(new Date(sub.endDate), 'dd MMM yyyy')}
                               </div>
+                              <div className="col-span-6 lg:col-span-1 text-right text-lg font-bold text-plano-900 tabular-nums">₹{sub.grandTotal.toLocaleString()}</div>
                            </div>
-
-                           {/* Actions */}
-                           <div className="col-span-12 lg:col-span-1 flex items-center justify-end gap-3">
-                              <button
-                                 onClick={(e) => handleDownloadInvoice(sub.id, e)}
-                                 className="w-10 h-10 rounded-xl bg-plano-50 border border-plano-100 flex items-center justify-center text-plano-600 hover:bg-plano-600 hover:text-white transition-all shadow-sm group/btn"
-                                 title="Download PDF Invoice"
-                              >
-                                 <Download size={18} className="group-hover/btn:-translate-y-0.5 transition-transform" />
-                              </button>
-                              <div className="w-10 h-10 rounded-full border border-plano-50 flex items-center justify-center text-gray-300 group-hover:text-plano-600 group-hover:border-plano-600 group-hover:bg-plano-50 transition-all">
-                                 <ChevronRight size={18} />
-                              </div>
-                           </div>
-                        </div>
-                     </Link>
-                  </motion.div>
-               )) : (
-                  <div className="py-24 text-center">
-                     <div className="w-16 h-16 rounded-3xl bg-plano-50 flex items-center justify-center text-gray-300 mx-auto mb-6">
-                        <LayoutGrid size={32} />
+                        </Link>
+                     </motion.div>
+                  )) : (
+                     <div className="py-12 text-center rounded-3xl bg-white border border-plano-50">
+                        <h3 className="text-sm font-bold text-plano-900 uppercase">No normal subscriptions</h3>
+                        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mt-2">One-time subscriptions will appear here.</p>
                      </div>
-                     <h3 className="text-lg font-bold text-plano-900 uppercase">No Subscriptions Found</h3>
-                     <p className="text-xs font-medium text-gray-400 uppercase tracking-widest">Go to the shop to browse available packages.</p>
+                  )}
+               </AnimatePresence>
+            </div>
+
+            {filtered.length === 0 ? (
+               <div className="py-24 text-center">
+                  <div className="w-16 h-16 rounded-3xl bg-plano-50 flex items-center justify-center text-gray-300 mx-auto mb-6">
+                     <LayoutGrid size={32} />
                   </div>
-               )}
-            </AnimatePresence>
+                  <h3 className="text-lg font-bold text-plano-900 uppercase">No Subscriptions Found</h3>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-widest">Go to the shop to browse available packages.</p>
+               </div>
+            ) : null}
          </div>
 
          {/* Footer Help */}

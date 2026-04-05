@@ -16,6 +16,7 @@ type QuotationData = Quotation & {
     expiryDate?: string;
     status?: string;
     grandTotal?: number;
+    convertedToSubscription?: boolean;
 };
 
 const getErrorMessage = (error: unknown, fallback: string) => {
@@ -86,6 +87,79 @@ export default function QuotationDetailPage() {
         }
     }
 
+    async function handleReview(action: 'accept' | 'reject' | 'counter') {
+        if (!quotation?._id && !quotation?.id) return;
+        setIsActionLoading(true);
+        try {
+            let counterAmount: number | undefined;
+            let note = '';
+
+            if (action === 'counter') {
+                const current = Number(quotation.totalAmount ?? quotation.grandTotal ?? 0);
+                const next = window.prompt('Enter revised total amount (INR)', String(current));
+                if (next === null) {
+                    setIsActionLoading(false);
+                    return;
+                }
+                const parsed = Number(next);
+                if (!Number.isFinite(parsed) || parsed < 0) {
+                    toastError('Invalid amount', 'Please enter a valid non-negative amount');
+                    setIsActionLoading(false);
+                    return;
+                }
+                counterAmount = parsed;
+                note = window.prompt('Optional note for customer') || '';
+            }
+
+            await api.quotations.review(quotation._id || quotation.id, { action, counterAmount, note });
+            success(`Quotation ${action}ed`);
+            await fetchQuotation();
+        } catch (err: unknown) {
+            toastError('Review failed', getErrorMessage(err, 'Could not update quotation'));
+        } finally {
+            setIsActionLoading(false);
+        }
+    }
+
+    async function handleClose() {
+        if (!quotation?._id && !quotation?.id) return;
+        const reason = window.prompt('Reason for closing this quotation (optional)') || '';
+        setIsActionLoading(true);
+        try {
+            await api.quotations.close(quotation._id || quotation.id, { reason });
+            success('Quotation closed');
+            await fetchQuotation();
+        } catch (err: unknown) {
+            toastError('Close failed', getErrorMessage(err, 'Could not close quotation'));
+        } finally {
+            setIsActionLoading(false);
+        }
+    }
+
+    async function handleUpsell() {
+        if (!quotation?._id && !quotation?.id) return;
+        const current = Number(quotation.totalAmount ?? quotation.grandTotal ?? 0);
+        const next = window.prompt('Enter upsell total amount (INR)', String(current));
+        if (next === null) return;
+        const parsed = Number(next);
+        if (!Number.isFinite(parsed) || parsed < 0) {
+            toastError('Invalid amount', 'Please enter a valid non-negative amount');
+            return;
+        }
+        const note = window.prompt('Upsell note (optional)') || '';
+
+        setIsActionLoading(true);
+        try {
+            await api.quotations.upsell(quotation._id || quotation.id, { targetAmount: parsed, note });
+            success('Upsell quotation created');
+            await fetchQuotation();
+        } catch (err: unknown) {
+            toastError('Upsell failed', getErrorMessage(err, 'Could not create upsell quotation'));
+        } finally {
+            setIsActionLoading(false);
+        }
+    }
+
     if (isLoading) {
         return (
             <div className="min-h-[360px] flex items-center justify-center gap-3 text-text-secondary">
@@ -109,6 +183,10 @@ export default function QuotationDetailPage() {
 
     const total = quotation.totalAmount ?? quotation.grandTotal ?? 0;
     const status = quotation.status || 'draft';
+    const isConverted = Boolean(quotation.convertedToSubscription);
+    const isOverdue = Boolean(quotation.validUntil || quotation.expiryDate)
+        && ['draft', 'sent'].includes(status)
+        && new Date(quotation.validUntil || quotation.expiryDate || '').getTime() < Date.now();
 
     return (
         <div className="flex flex-col gap-6 pb-12 max-w-4xl mx-auto">
@@ -132,10 +210,45 @@ export default function QuotationDetailPage() {
                     </button>
                     <button
                         onClick={handleConvert}
-                        disabled={isActionLoading || status !== 'accepted'}
+                        disabled={isActionLoading || status !== 'accepted' || isConverted}
                         className="px-4 py-2 rounded-btn bg-success-600 text-white text-xs font-bold uppercase tracking-widest hover:bg-success-700 disabled:opacity-60"
                     >
-                        <span className="inline-flex items-center gap-2"><CheckCircle2 size={14} /> Convert</span>
+                        <span className="inline-flex items-center gap-2"><CheckCircle2 size={14} /> {isConverted ? 'Converted' : 'Convert'}</span>
+                    </button>
+                    <button
+                        onClick={() => handleReview('accept')}
+                        disabled={isActionLoading || status === 'accepted' || status === 'rejected' || status === 'expired'}
+                        className="px-4 py-2 rounded-btn bg-success-600/10 text-success-700 text-xs font-bold uppercase tracking-widest hover:bg-success-600 hover:text-white disabled:opacity-60"
+                    >
+                        Accept
+                    </button>
+                    <button
+                        onClick={() => handleReview('counter')}
+                        disabled={isActionLoading || status === 'rejected' || status === 'expired'}
+                        className="px-4 py-2 rounded-btn bg-warning-600/10 text-warning-700 text-xs font-bold uppercase tracking-widest hover:bg-warning-600 hover:text-white disabled:opacity-60"
+                    >
+                        Counter
+                    </button>
+                    <button
+                        onClick={() => handleReview('reject')}
+                        disabled={isActionLoading || status === 'rejected' || status === 'expired'}
+                        className="px-4 py-2 rounded-btn bg-danger-600/10 text-danger-700 text-xs font-bold uppercase tracking-widest hover:bg-danger-600 hover:text-white disabled:opacity-60"
+                    >
+                        Reject
+                    </button>
+                    <button
+                        onClick={handleUpsell}
+                        disabled={isActionLoading || status === 'closed' || status === 'expired' || status === 'rejected'}
+                        className="px-4 py-2 rounded-btn bg-plano-600/10 text-plano-700 text-xs font-bold uppercase tracking-widest hover:bg-plano-600 hover:text-white disabled:opacity-60"
+                    >
+                        Upsell
+                    </button>
+                    <button
+                        onClick={handleClose}
+                        disabled={isActionLoading || status === 'closed' || status === 'expired' || status === 'rejected'}
+                        className="px-4 py-2 rounded-btn bg-gray-200 text-gray-700 text-xs font-bold uppercase tracking-widest hover:bg-gray-300 disabled:opacity-60"
+                    >
+                        Close
                     </button>
                 </div>
             </div>
@@ -149,6 +262,7 @@ export default function QuotationDetailPage() {
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Valid Until</p>
                         <p className="text-sm font-semibold text-text-primary mt-1">{quotation.validUntil || quotation.expiryDate ? new Date(quotation.validUntil || quotation.expiryDate).toLocaleDateString() : '-'}</p>
+                        {isOverdue ? <p className="text-[10px] font-bold uppercase tracking-widest text-danger-600 mt-1">Overdue</p> : null}
                     </div>
                     <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Currency</p>
@@ -158,6 +272,12 @@ export default function QuotationDetailPage() {
                         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Total</p>
                         <p className="text-lg font-serif font-bold text-text-primary mt-1">{formatCurrency(total, 'INR')}</p>
                     </div>
+                    {isConverted ? (
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Subscription</p>
+                            <p className="text-sm font-semibold text-success-600 mt-1">Already converted</p>
+                        </div>
+                    ) : null}
                 </div>
             </section>
         </div>

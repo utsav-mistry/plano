@@ -42,16 +42,15 @@ export default function Navbar() {
     <>
       <nav
         aria-label="Main navigation"
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-250 ${
-          scrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-250 ${scrolled
             ? "bg-[rgba(248,242,246,0.88)] backdrop-blur-[12px] border-b border-black/[0.07] shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
             : "bg-transparent"
-        }`}
+          }`}
         style={{ transition: "background 250ms ease, box-shadow 250ms ease" }}
       >
         <div className="max-w-[1200px] mx-auto px-6 lg:px-8 flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="#" className="flex items-center group no-underline" aria-label="Planoo home">
+          <a href="/" className="flex items-center group no-underline" aria-label="Planoo home">
             {/* Wordmark: Lowercase Caveat (serif) */}
             <span className="font-serif font-bold text-4xl tracking-tight leading-none">
               <span className="text-[#2a1a27]">plano</span>
@@ -77,14 +76,14 @@ export default function Navbar() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
             <a
-              href="#"
+              href="/login"
               className="text-[15px] font-medium text-[#4e3347] hover:text-[#2a1a27] transition-colors duration-150 px-3 py-2"
               style={{ fontFamily: "var(--font-sans)" }}
             >
               Sign in
             </a>
             <a
-              href="#"
+              href="/signup"
               className="btn-primary text-[15px]"
               style={{ fontFamily: "var(--font-sans)" }}
             >
@@ -121,9 +120,8 @@ export default function Navbar() {
         role="dialog"
         aria-modal="true"
         aria-label="Mobile navigation"
-        className={`fixed inset-0 z-40 flex flex-col bg-[#f8f2f6] transition-transform duration-300 ease-in-out ${
-          menuOpen ? "translate-x-0" : "translate-x-full"
-        } md:hidden`}
+        className={`fixed inset-0 z-40 flex flex-col bg-[#f8f2f6] transition-transform duration-300 ease-in-out ${menuOpen ? "translate-x-0" : "translate-x-full"
+          } md:hidden`}
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-[#e1c8d9]">
           <span className="font-serif font-bold text-2xl tracking-tight text-[#2a1a27]">
@@ -152,8 +150,8 @@ export default function Navbar() {
             </a>
           ))}
           <div className="mt-6 flex flex-col gap-3 px-4">
-            <a href="#" className="text-center py-3 text-[15px] font-medium text-[#5a3c53] hover:text-[#2a1a27]">Sign in</a>
-            <a href="#" className="btn-primary text-center text-[15px]">Start free</a>
+            <a href="/login" className="text-center py-3 text-[15px] font-medium text-[#5a3c53] hover:text-[#2a1a27]">Sign in</a>
+            <a href="/signup" className="btn-primary text-center text-[15px]">Start free</a>
           </div>
         </nav>
       </div>

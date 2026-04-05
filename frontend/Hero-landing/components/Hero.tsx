@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 function useMrrCount(target: number, inView: boolean) {
@@ -103,11 +105,13 @@ export default function Hero() {
               <br className="hidden sm:block" />
               <span className="highlight-wrap">
                 {/* Yellow marker SVG sits BEHIND the text via z-index */}
-                <img
+                <Image
                   src="/SVG/yellow_highlight_bold_05.svg"
                   alt=""
                   aria-hidden="true"
                   className="highlight-svg"
+                  width={260}
+                  height={120}
                 />
                 <span className="highlight-text">run themselves</span>
               </span>
@@ -120,7 +124,7 @@ export default function Hero() {
               className={`text-[#4e3347] mb-8 max-w-[520px] transition-all duration-600 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
               style={{ fontSize: "18px", lineHeight: "1.65", fontFamily: "var(--font-sans)", transitionDelay: "200ms" }}
             >
-              Automate recurring billing, invoices, taxes, and renewals — from one clean dashboard. Built for SaaS teams who'd rather ship than chase payments.
+              Automate recurring billing, invoices, taxes, and renewals — from one clean dashboard. Built for SaaS teams who&apos;d rather ship than chase payments.
             </p>
 
             {/* CTA row */}
@@ -129,20 +133,20 @@ export default function Hero() {
               style={{ transitionDelay: "350ms" }}
             >
               <a
-                href="#"
+                href="/signup"
                 className="btn-primary text-[15px] px-6 py-3"
                 aria-describedby="hero-sub"
                 style={{ fontFamily: "var(--font-sans)" }}
               >
                 Start free - 14 days
               </a>
-              <a
-                href="#"
+              <Link
+                href="/portal/shop"
                 className="btn-ghost text-[15px] px-6 py-3"
                 style={{ fontFamily: "var(--font-sans)" }}
               >
                 See it live →
-              </a>
+              </Link>
             </div>
 
             {/* Social proof micro-line */}
@@ -177,17 +181,17 @@ export default function Hero() {
                 style={{ filter: "drop-shadow(0 4px 12px rgba(251,177,48,0.3))" }}
                 aria-hidden="true"
               >
-                <path d="M27.9909 66C19.5825 62.6682 11.0253 59.6392 2.84013 55.7016C1.05428 54.8686 -0.136289 50.8552 0.0125324 48.3564C0.0125324 47.2962 4.0307 45.9332 6.33743 45.5546C8.1977 45.3274 10.2812 46.3875 12.2903 46.9176C13.4064 41.9198 14.4482 36.922 15.5643 32C16.7549 32 17.9455 32 19.0616 32C22.7078 42.7528 26.3539 53.4298 30 64.1826L27.9909 66Z" fill="#FBB130"/>
-                <path d="M184.068 12.3C188.832 11.1 192.765 10.05 196.622 9C196.773 9.6 196.924 10.2 197 10.725C190.42 18.15 183.841 25.575 177.261 33C175.976 32.55 174.69 32.1 173.404 31.65C173.253 22.725 172.799 13.8 173.102 4.95C173.102 3.225 175.9 1.65 177.413 0C179.152 1.725 181.421 3.15 182.555 5.175C183.614 7.125 183.538 9.75 184.068 12.3Z" fill="#FBB130"/>
-                <path d="M120.941 93C108.137 69.53 96.6058 48.2276 85 27C95.1832 29.5413 122.438 80.2933 120.941 93Z" fill="#FBB130"/>
-                <path d="M150.345 91C147.495 80.3955 162.978 42.7911 171.914 37C173.3 43.0167 157.586 83.1031 150.345 91Z" fill="#FBB130"/>
-                <path d="M89.6667 101C75.3704 100.259 38.8519 80.3333 37 71C55.5185 80.4074 73.2963 89.3704 91 98.4074C90.5556 99.2963 90.1111 100.185 89.6667 101Z" fill="#FBB130"/>
-                <path d="M177 99.8449C194.085 91.3287 211.169 82.8865 229 74C227.956 82.6643 190.802 101.918 177 99.8449Z" fill="#FBB130"/>
-                <path d="M250.925 70.8595C248.434 71.6791 245.718 73.3183 243.454 72.9458C241.643 72.6477 238.926 69.8164 239.002 68.1772C239.002 66.389 241.416 63.9302 243.378 63.0361C244.284 62.6635 246.623 65.2713 248.283 66.538C249.189 67.9537 250.094 69.4438 251 70.8595H250.925Z" fill="#FBB130"/>
-                <path d="M1.17783 183.178C2.46817 183.199 3.78917 183.318 5.08083 183.258C15.9966 182.669 26.8971 182.031 37.8129 181.443C38.9433 181.38 40.135 181.514 41.2267 181.841C41.7566 181.997 42.4371 182.807 42.4125 183.329C42.4199 183.867 41.7794 184.558 41.2416 184.892C40.6551 185.241 39.8793 185.326 39.1688 185.364C27.8151 186.092 16.4934 186.837 5.17438 187.419C3.88272 187.479 2.49568 186.461 1.16467 185.967L1.17783 183.178Z" fill="#FBB130"/>
-                <path d="M22.7392 226.346C23.0097 225.584 23.0576 224.622 23.5828 224.076C30.6763 216.461 37.7546 208.796 45.0708 201.38C46.3837 200.015 48.7123 199.678 50.5485 198.876C49.5349 200.686 48.7912 202.762 47.4437 204.273C41.7576 210.656 36.0243 216.972 30.0836 223.139C28.3276 224.969 25.9843 226.203 23.9109 227.703C23.531 227.256 23.1344 226.842 22.7545 226.395L22.7392 226.346Z" fill="#FBB130"/>
-                <path d="M82.7514 131.45C82.5368 132.735 82.5476 134.056 82.1244 135.273C79.2111 143.772 76.2978 152.272 73.1759 160.702C72.7208 161.902 71.2879 162.711 70.2876 163.705C70.0182 162.412 69.2037 160.915 69.5922 159.845C72.6067 151.07 75.8133 142.396 79.0518 133.738C79.457 132.636 80.5186 131.838 81.2604 130.871C81.7569 131.091 82.2381 131.262 82.7347 131.482L82.7514 131.45Z" fill="#FBB130"/>
-                <path d="M34.0502 136.086C40.2319 146.822 47.7524 155.59 53.317 166.576C47.1092 165.366 31.7517 141.496 34.0502 136.086Z" fill="#FBB130"/>
+                <path d="M27.9909 66C19.5825 62.6682 11.0253 59.6392 2.84013 55.7016C1.05428 54.8686 -0.136289 50.8552 0.0125324 48.3564C0.0125324 47.2962 4.0307 45.9332 6.33743 45.5546C8.1977 45.3274 10.2812 46.3875 12.2903 46.9176C13.4064 41.9198 14.4482 36.922 15.5643 32C16.7549 32 17.9455 32 19.0616 32C22.7078 42.7528 26.3539 53.4298 30 64.1826L27.9909 66Z" fill="#FBB130" />
+                <path d="M184.068 12.3C188.832 11.1 192.765 10.05 196.622 9C196.773 9.6 196.924 10.2 197 10.725C190.42 18.15 183.841 25.575 177.261 33C175.976 32.55 174.69 32.1 173.404 31.65C173.253 22.725 172.799 13.8 173.102 4.95C173.102 3.225 175.9 1.65 177.413 0C179.152 1.725 181.421 3.15 182.555 5.175C183.614 7.125 183.538 9.75 184.068 12.3Z" fill="#FBB130" />
+                <path d="M120.941 93C108.137 69.53 96.6058 48.2276 85 27C95.1832 29.5413 122.438 80.2933 120.941 93Z" fill="#FBB130" />
+                <path d="M150.345 91C147.495 80.3955 162.978 42.7911 171.914 37C173.3 43.0167 157.586 83.1031 150.345 91Z" fill="#FBB130" />
+                <path d="M89.6667 101C75.3704 100.259 38.8519 80.3333 37 71C55.5185 80.4074 73.2963 89.3704 91 98.4074C90.5556 99.2963 90.1111 100.185 89.6667 101Z" fill="#FBB130" />
+                <path d="M177 99.8449C194.085 91.3287 211.169 82.8865 229 74C227.956 82.6643 190.802 101.918 177 99.8449Z" fill="#FBB130" />
+                <path d="M250.925 70.8595C248.434 71.6791 245.718 73.3183 243.454 72.9458C241.643 72.6477 238.926 69.8164 239.002 68.1772C239.002 66.389 241.416 63.9302 243.378 63.0361C244.284 62.6635 246.623 65.2713 248.283 66.538C249.189 67.9537 250.094 69.4438 251 70.8595H250.925Z" fill="#FBB130" />
+                <path d="M1.17783 183.178C2.46817 183.199 3.78917 183.318 5.08083 183.258C15.9966 182.669 26.8971 182.031 37.8129 181.443C38.9433 181.38 40.135 181.514 41.2267 181.841C41.7566 181.997 42.4371 182.807 42.4125 183.329C42.4199 183.867 41.7794 184.558 41.2416 184.892C40.6551 185.241 39.8793 185.326 39.1688 185.364C27.8151 186.092 16.4934 186.837 5.17438 187.419C3.88272 187.479 2.49568 186.461 1.16467 185.967L1.17783 183.178Z" fill="#FBB130" />
+                <path d="M22.7392 226.346C23.0097 225.584 23.0576 224.622 23.5828 224.076C30.6763 216.461 37.7546 208.796 45.0708 201.38C46.3837 200.015 48.7123 199.678 50.5485 198.876C49.5349 200.686 48.7912 202.762 47.4437 204.273C41.7576 210.656 36.0243 216.972 30.0836 223.139C28.3276 224.969 25.9843 226.203 23.9109 227.703C23.531 227.256 23.1344 226.842 22.7545 226.395L22.7392 226.346Z" fill="#FBB130" />
+                <path d="M82.7514 131.45C82.5368 132.735 82.5476 134.056 82.1244 135.273C79.2111 143.772 76.2978 152.272 73.1759 160.702C72.7208 161.902 71.2879 162.711 70.2876 163.705C70.0182 162.412 69.2037 160.915 69.5922 159.845C72.6067 151.07 75.8133 142.396 79.0518 133.738C79.457 132.636 80.5186 131.838 81.2604 130.871C81.7569 131.091 82.2381 131.262 82.7347 131.482L82.7514 131.45Z" fill="#FBB130" />
+                <path d="M34.0502 136.086C40.2319 146.822 47.7524 155.59 53.317 166.576C47.1092 165.366 31.7517 141.496 34.0502 136.086Z" fill="#FBB130" />
               </svg>
 
               <div
@@ -200,68 +204,68 @@ export default function Hero() {
                 }}
               >
                 {/* Dashboard header */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#ebe0e8]" style={{ background: "#f5f0f4" }}>
-                <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" aria-hidden="true" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" aria-hidden="true" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]" aria-hidden="true" />
-                <span className="ml-3 text-xs text-[#a97096]" style={{ fontFamily: "var(--font-sans)" }}>app.planoo.io / dashboard</span>
-              </div>
-
-              <div className="p-5">
-                {/* MRR stat */}
-                <div ref={mrrRef} className="flex items-start justify-between mb-5">
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-widest text-[#946985] mb-1" style={{ fontFamily: "var(--font-sans)" }}>Monthly Recurring Revenue</p>
-                    <p
-                      className="font-mono text-3xl font-semibold text-[#2a1a27]"
-                      style={{ fontFamily: "var(--font-mono)" }}
-                    >
-                      ₹{mrr.toLocaleString()}
-                    </p>
-                    <span className="inline-flex items-center gap-1 text-xs text-[#16a34a] mt-1" style={{ fontFamily: "var(--font-sans)" }}>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 9.5V2.5M6 2.5L2.5 6M6 2.5L9.5 6" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      +12.4% from last month
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#f0fdf4] text-[#15803d]" style={{ fontFamily: "var(--font-sans)" }}>Live</span>
-                    <span className="text-xs text-[#946985]" style={{ fontFamily: "var(--font-sans)" }}>142 active subs</span>
-                  </div>
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-[#ebe0e8]" style={{ background: "#f5f0f4" }}>
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444]" aria-hidden="true" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]" aria-hidden="true" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]" aria-hidden="true" />
+                  <span className="ml-3 text-xs text-[#a97096]" style={{ fontFamily: "var(--font-sans)" }}>app.planoo.io / dashboard</span>
                 </div>
 
-                {/* Subscriptions mini-table */}
-                <p className="text-xs font-medium uppercase tracking-widest text-[#946985] mb-2" style={{ fontFamily: "var(--font-sans)" }}>Recent Invoices</p>
-                <div className="rounded-xl overflow-hidden border border-[#ebe0e8]">
-                  <table className="w-full text-xs" style={{ fontFamily: "var(--font-sans)" }}>
-                    <thead>
-                      <tr style={{ background: "#f5f0f4" }}>
-                        <th className="text-left px-3 py-2 text-[#946985] font-medium">Invoice</th>
-                        <th className="text-left px-3 py-2 text-[#946985] font-medium">Customer</th>
-                        <th className="text-right px-3 py-2 text-[#946985] font-medium">Amount</th>
-                        <th className="text-right px-3 py-2 text-[#946985] font-medium">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentInvoices.map((inv, i) => (
-                        <tr key={inv.id} style={{ borderTop: "1px solid #f0e3ec", background: i % 2 === 0 ? "#ffffff" : "#fdf9fc" }}>
-                          <td className="px-3 py-2 font-mono text-[#604058]" style={{ fontFamily: "var(--font-mono)" }}>{inv.id}</td>
-                          <td className="px-3 py-2 text-[#2a1a27] font-medium">{inv.company}</td>
-                          <td className="px-3 py-2 text-right text-[#2a1a27] font-mono" style={{ fontFamily: "var(--font-mono)" }}>{inv.amount}</td>
-                          <td className="px-3 py-2 text-right">
-                            <span
-                              className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                              style={inv.status === "Paid"
-                                ? { background: "#f0fdf4", color: "#15803d" }
-                                : { background: "#fffbeb", color: "#b45309" }}
-                            >
-                              {inv.status}
-                            </span>
-                          </td>
+                <div className="p-5">
+                  {/* MRR stat */}
+                  <div ref={mrrRef} className="flex items-start justify-between mb-5">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-widest text-[#946985] mb-1" style={{ fontFamily: "var(--font-sans)" }}>Monthly Recurring Revenue</p>
+                      <p
+                        className="font-mono text-3xl font-semibold text-[#2a1a27]"
+                        style={{ fontFamily: "var(--font-mono)" }}
+                      >
+                        ₹{mrr.toLocaleString()}
+                      </p>
+                      <span className="inline-flex items-center gap-1 text-xs text-[#16a34a] mt-1" style={{ fontFamily: "var(--font-sans)" }}>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 9.5V2.5M6 2.5L2.5 6M6 2.5L9.5 6" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        +12.4% from last month
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#f0fdf4] text-[#15803d]" style={{ fontFamily: "var(--font-sans)" }}>Live</span>
+                      <span className="text-xs text-[#946985]" style={{ fontFamily: "var(--font-sans)" }}>142 active subs</span>
+                    </div>
+                  </div>
+
+                  {/* Subscriptions mini-table */}
+                  <p className="text-xs font-medium uppercase tracking-widest text-[#946985] mb-2" style={{ fontFamily: "var(--font-sans)" }}>Recent Invoices</p>
+                  <div className="rounded-xl overflow-hidden border border-[#ebe0e8]">
+                    <table className="w-full text-xs" style={{ fontFamily: "var(--font-sans)" }}>
+                      <thead>
+                        <tr style={{ background: "#f5f0f4" }}>
+                          <th className="text-left px-3 py-2 text-[#946985] font-medium">Invoice</th>
+                          <th className="text-left px-3 py-2 text-[#946985] font-medium">Customer</th>
+                          <th className="text-right px-3 py-2 text-[#946985] font-medium">Amount</th>
+                          <th className="text-right px-3 py-2 text-[#946985] font-medium">Status</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {recentInvoices.map((inv, i) => (
+                          <tr key={inv.id} style={{ borderTop: "1px solid #f0e3ec", background: i % 2 === 0 ? "#ffffff" : "#fdf9fc" }}>
+                            <td className="px-3 py-2 font-mono text-[#604058]" style={{ fontFamily: "var(--font-mono)" }}>{inv.id}</td>
+                            <td className="px-3 py-2 text-[#2a1a27] font-medium">{inv.company}</td>
+                            <td className="px-3 py-2 text-right text-[#2a1a27] font-mono" style={{ fontFamily: "var(--font-mono)" }}>{inv.amount}</td>
+                            <td className="px-3 py-2 text-right">
+                              <span
+                                className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                style={inv.status === "Paid"
+                                  ? { background: "#f0fdf4", color: "#15803d" }
+                                  : { background: "#fffbeb", color: "#b45309" }}
+                              >
+                                {inv.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>

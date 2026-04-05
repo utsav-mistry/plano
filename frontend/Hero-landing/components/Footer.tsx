@@ -47,7 +47,7 @@ export default function Footer() {
             Join 2,000+ SaaS teams who've taken billing off their plate with Planoo.
           </p>
           <a
-            href="#"
+            href="/signup"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-[15px] transition-all duration-180 hover:scale-[1.02] focus-visible:outline-[2px] focus-visible:outline-white focus-visible:outline-offset-3"
             style={{ background: "#8f5580", color: "#fff", fontFamily: "var(--font-sans)", boxShadow: "0 4px 24px rgba(143,85,128,0.4)" }}
           >
@@ -88,7 +88,28 @@ export default function Footer() {
                     {links.map((link) => (
                       <li key={link}>
                         <a
-                          href="#"
+                          href={
+                            link === "Features" ? "#features" :
+                              link === "Pricing" ? "#pricing" :
+                                link === "Integrations" ? "/portal/shop" :
+                                  link === "Changelog" ? "/portal/reports" :
+                                    link === "Roadmap" ? "/portal/reports" :
+                                      link === "About" ? "/portal" :
+                                        link === "Blog" ? "/portal/reports" :
+                                          link === "Careers" ? "/signup" :
+                                            link === "Press" ? "/portal/reports" :
+                                              link === "Contact" ? "mailto:support@planoo.tech" :
+                                                link === "Documentation" ? "/portal/reports" :
+                                                  link === "API Reference" ? "/portal/reports" :
+                                                    link === "Status" ? "/portal/reports" :
+                                                      link === "Community" ? "/signup" :
+                                                        link === "Support" ? "mailto:support@planoo.tech" :
+                                                          link === "Privacy Policy" ? "/privacy-policy" :
+                                                            link === "Terms of Service" ? "/terms-of-service" :
+                                                              link === "Cookie Policy" ? "/privacy-policy" :
+                                                                link === "GDPR" ? "/privacy-policy" :
+                                                                  "/"
+                          }
                           className="text-sm text-[#a97096] hover:text-white transition-colors duration-150"
                           style={{ fontFamily: "var(--font-sans)" }}
                         >
@@ -107,9 +128,9 @@ export default function Footer() {
             <p className="text-xs text-[#5a3c53]" style={{ fontFamily: "var(--font-sans)" }}>
               © 2026 Planoo, Inc. All rights reserved.
               <span className="mx-2 text-[#3d2738]">·</span>
-              <a href="#" className="hover:text-[#a97096] transition-colors">Privacy</a>
+              <a href="/privacy-policy" className="hover:text-[#a97096] transition-colors">Privacy</a>
               <span className="mx-2 text-[#3d2738]">·</span>
-              <a href="#" className="hover:text-[#a97096] transition-colors">Terms</a>
+              <a href="/terms-of-service" className="hover:text-[#a97096] transition-colors">Terms</a>
             </p>
 
             {/* Newsletter */}

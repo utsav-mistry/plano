@@ -26,7 +26,7 @@ const quotationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true, 
+      index: true,
     },
     items: {
       type: [lineItemSchema],
@@ -49,16 +49,42 @@ const quotationSchema = new mongoose.Schema(
     sentAt: Date,
     convertedToSubscription: { type: Boolean, default: false },
     subscriptionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription' },
+    closedAt: Date,
+    closeReason: { type: String, trim: true, default: '' },
+    isUpsell: { type: Boolean, default: false },
+    upsellFromQuotationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quotation' },
+    upsellInitiatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    negotiationState: {
+      type: String,
+      enum: ['none', 'pending_admin', 'pending_customer', 'resolved'],
+      default: 'none',
+    },
+    negotiationHistory: {
+      type: [
+        {
+          actorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+          actorRole: { type: String, required: true },
+          action: { type: String, enum: ['counter', 'accept', 'reject'], required: true },
+          previousTotal: { type: Number, min: 0 },
+          proposedTotal: { type: Number, min: 0 },
+          note: { type: String, trim: true, default: '' },
+          createdAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
+    acceptedAt: Date,
+    rejectedAt: Date,
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
   },
-  { 
+  {
     timestamps: true,
-    toJSON: { 
-      virtuals: true, 
+    toJSON: {
+      virtuals: true,
       versionKey: false,
       transform: (doc, ret) => { ret.id = ret._id; return ret; }
     },
@@ -67,6 +93,7 @@ const quotationSchema = new mongoose.Schema(
 );
 
 quotationSchema.index({ status: 1, validUntil: 1 });
+quotationSchema.index({ userId: 1, status: 1, negotiationState: 1 });
 
 const Quotation = mongoose.model('Quotation', quotationSchema);
 export default Quotation;

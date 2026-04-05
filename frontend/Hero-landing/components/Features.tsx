@@ -12,7 +12,7 @@ const features = [
     ),
     title: "Recurring Plans",
     body: "Set daily, weekly, monthly, or yearly billing cycles. Auto-renew or let customers manage their own plan from a self-service portal.",
-    link: "#",
+    link: "/signup",
   },
   {
     icon: (
@@ -23,7 +23,7 @@ const features = [
     ),
     title: "Smart Invoicing",
     body: "Invoices generate the moment a subscription goes active. Tax rules, discounts, and line items applied automatically — zero manual entry.",
-    link: "#",
+    link: "/signup",
   },
   {
     icon: (
@@ -33,7 +33,7 @@ const features = [
     ),
     title: "Payment Tracking",
     body: "See every paid, pending, and overdue invoice in one view. Reconcile payments without leaving the platform.",
-    link: "#",
+    link: "/signup",
   },
   {
     icon: (
@@ -43,7 +43,7 @@ const features = [
     ),
     title: "Reports & Revenue",
     body: "MRR, churn, and invoice aging — visualized. Export to PDF or your accounting tool with one click.",
-    link: "#",
+    link: "/signup",
   },
 ];
 

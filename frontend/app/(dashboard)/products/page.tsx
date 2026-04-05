@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import {
   Package,
   Search,
-  Filter,
   Grid,
   List,
   Plus,
@@ -23,6 +22,8 @@ import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { Product } from '@/types';
 import { toAdminPath } from '@/lib/path-scoping';
+
+const CURRENCIES = ['INR'] as const;
 
 export default function ProductsPage() {
   const pathname = usePathname();
@@ -76,13 +77,17 @@ export default function ProductsPage() {
   }
 
   function openEdit(product: Product) {
+    const normalizedCurrency = CURRENCIES.includes((product.currency || 'INR') as (typeof CURRENCIES)[number])
+      ? (product.currency || 'INR')
+      : 'INR';
+
     setEditTarget(product);
     setEditForm({
       name: product.name || '',
       sku: product.sku || '',
       type: product.type || 'software',
       basePrice: String(product.basePrice ?? 0),
-      currency: product.currency || 'INR',
+      currency: normalizedCurrency,
       description: product.description || '',
     });
   }
@@ -145,10 +150,6 @@ export default function ProductsPage() {
               className="w-full h-10 pl-10 pr-4 rounded-input border border-border dark:border-sidebar-hover bg-gray-25 dark:bg-white/5 focus:border-plano-500 focus:bg-white dark:focus:bg-white/10 focus:outline-none transition-all text-sm font-sans text-text-primary"
             />
           </div>
-          <button className="flex items-center gap-2 px-3 h-10 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-sm font-semibold text-text-secondary hover:bg-sidebar-hover transition-colors">
-            <Filter size={16} />
-            Filter
-          </button>
         </div>
 
         <div className="flex items-center gap-2 self-end md:self-auto">
@@ -206,9 +207,6 @@ export default function ProductsPage() {
                   )}>
                     {product.isActive ? 'Active' : 'Archived'}
                   </span>
-                  <button className="text-gray-400 hover:text-plano-400 transition-colors">
-                    <MoreVertical size={16} />
-                  </button>
                 </div>
               </div>
 
@@ -325,22 +323,86 @@ export default function ProductsPage() {
           <div className="w-full max-w-2xl rounded-card border border-sidebar-hover bg-bg-surface p-6 shadow-2xl">
             <h3 className="text-2xl font-serif font-bold text-text-primary">Edit Product</h3>
             <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input value={editForm.name} onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
-              <input value={editForm.sku} onChange={(e) => setEditForm((p) => ({ ...p, sku: e.target.value.toUpperCase() }))} placeholder="SKU" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
-              <select value={editForm.type} onChange={(e) => setEditForm((p) => ({ ...p, type: e.target.value }))} className="h-11 px-4 rounded-lg border border-border bg-white text-sm">
-                <option value="software">Software</option>
-                <option value="service">Service</option>
-                <option value="addon">Addon</option>
-              </select>
-              <input type="number" value={editForm.basePrice} onChange={(e) => setEditForm((p) => ({ ...p, basePrice: e.target.value }))} placeholder="Base Price" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
-              <select value={editForm.currency} onChange={(e) => setEditForm((p) => ({ ...p, currency: e.target.value }))} className="h-11 px-4 rounded-lg border border-border bg-white text-sm">
-                <option value="INR">INR</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-              </select>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="edit-product-name" className="text-[11px] uppercase font-bold text-gray-500 tracking-widest">
+                  Product Name
+                </label>
+                <input
+                  id="edit-product-name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="Name"
+                  className="h-11 px-4 rounded-lg border border-border bg-white text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="edit-product-sku" className="text-[11px] uppercase font-bold text-gray-500 tracking-widest">
+                  SKU / Identifier
+                </label>
+                <input
+                  id="edit-product-sku"
+                  value={editForm.sku}
+                  onChange={(e) => setEditForm((p) => ({ ...p, sku: e.target.value.toUpperCase() }))}
+                  placeholder="SKU"
+                  className="h-11 px-4 rounded-lg border border-border bg-white text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="edit-product-type" className="text-[11px] uppercase font-bold text-gray-500 tracking-widest">
+                  Product Type
+                </label>
+                <select
+                  id="edit-product-type"
+                  value={editForm.type}
+                  onChange={(e) => setEditForm((p) => ({ ...p, type: e.target.value }))}
+                  className="h-11 px-4 rounded-lg border border-border bg-white text-sm"
+                >
+                  <option value="software">Software</option>
+                  <option value="service">Service</option>
+                  <option value="addon">Addon</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="edit-product-price" className="text-[11px] uppercase font-bold text-gray-500 tracking-widest">
+                  Base Price
+                </label>
+                <input
+                  id="edit-product-price"
+                  type="number"
+                  value={editForm.basePrice}
+                  onChange={(e) => setEditForm((p) => ({ ...p, basePrice: e.target.value }))}
+                  placeholder="Base Price"
+                  className="h-11 px-4 rounded-lg border border-border bg-white text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="edit-product-currency" className="text-[11px] uppercase font-bold text-gray-500 tracking-widest">
+                  Currency
+                </label>
+                <select
+                  id="edit-product-currency"
+                  value={editForm.currency}
+                  onChange={(e) => setEditForm((p) => ({ ...p, currency: e.target.value }))}
+                  className="h-11 px-4 rounded-lg border border-border bg-white text-sm"
+                >
+                  {CURRENCIES.map((currency) => (
+                    <option key={currency} value={currency}>{currency}</option>
+                  ))}
+                </select>
+              </div>
               <div />
-              <textarea value={editForm.description} onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))} placeholder="Description" className="md:col-span-2 h-28 p-4 rounded-lg border border-border bg-white text-sm resize-none" />
+              <div className="md:col-span-2 flex flex-col gap-1.5">
+                <label htmlFor="edit-product-description" className="text-[11px] uppercase font-bold text-gray-500 tracking-widest">
+                  Description
+                </label>
+                <textarea
+                  id="edit-product-description"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="Description"
+                  className="h-28 p-4 rounded-lg border border-border bg-white text-sm resize-none"
+                />
+              </div>
             </div>
             <div className="mt-6 flex items-center justify-end gap-3">
               <button onClick={() => setEditTarget(null)} className="px-4 py-2 rounded-btn border border-border text-text-secondary hover:bg-sidebar-hover">Cancel</button>

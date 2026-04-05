@@ -42,6 +42,60 @@ export default function QuotationsPage() {
     } catch (err: unknown) { toastError('Failed to send', err instanceof Error ? err.message : 'Failed to send'); }
   }
 
+  async function handleReview(id: string, action: 'accept' | 'reject' | 'counter', currentTotal: number) {
+    try {
+      let counterAmount: number | undefined;
+      let note = '';
+
+      if (action === 'counter') {
+        const next = window.prompt('Enter revised total amount (INR)', String(currentTotal || 0));
+        if (next === null) return;
+        const parsed = Number(next);
+        if (!Number.isFinite(parsed) || parsed < 0) {
+          toastError('Invalid amount', 'Please enter a valid non-negative amount.');
+          return;
+        }
+        counterAmount = parsed;
+        note = window.prompt('Optional note for customer') || '';
+      }
+
+      await api.quotations.review(id, { action, counterAmount, note });
+      success(`Quotation ${action}ed`);
+      fetchQuotations();
+    } catch (err: unknown) {
+      toastError('Review failed', err instanceof Error ? err.message : 'Failed to update quotation');
+    }
+  }
+
+  async function handleClose(id: string) {
+    const reason = window.prompt('Reason for closing this quotation (optional)') || '';
+    try {
+      await api.quotations.close(id, { reason });
+      success('Quotation closed');
+      fetchQuotations();
+    } catch (err: unknown) {
+      toastError('Close failed', err instanceof Error ? err.message : 'Failed to close quotation');
+    }
+  }
+
+  async function handleUpsell(id: string, currentTotal: number) {
+    const next = window.prompt('Enter upsell total amount (INR)', String(currentTotal || 0));
+    if (next === null) return;
+    const parsed = Number(next);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      toastError('Invalid amount', 'Please enter a valid non-negative amount.');
+      return;
+    }
+    const note = window.prompt('Upsell note (optional)') || '';
+    try {
+      await api.quotations.upsell(id, { targetAmount: parsed, note });
+      success('Upsell quotation created');
+      fetchQuotations();
+    } catch (err: unknown) {
+      toastError('Upsell failed', err instanceof Error ? err.message : 'Failed to create upsell quotation');
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between">
@@ -110,8 +164,9 @@ export default function QuotationsPage() {
                 </div>
                 <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${q.status === 'accepted' ? 'bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-500 border-success-200 dark:border-success-800'
                   : q.status === 'sent' ? 'bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-500 border-info-200 dark:border-info-800'
-                    : q.status === 'expired' ? 'bg-danger-50 dark:bg-danger-900/20 text-danger-700 dark:text-danger-500 border-danger-200 dark:border-danger-800'
-                      : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10'}`}>
+                    : q.status === 'closed' ? 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10'
+                      : q.status === 'expired' ? 'bg-danger-50 dark:bg-danger-900/20 text-danger-700 dark:text-danger-500 border-danger-200 dark:border-danger-800'
+                        : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10'}`}>
                   {q.status ?? 'draft'}
                 </span>
               </div>
@@ -144,6 +199,44 @@ export default function QuotationsPage() {
                     className="px-4 py-2 bg-plano-600/10 text-plano-600 rounded-btn text-[11px] font-bold uppercase tracking-widest hover:bg-plano-600 hover:text-white transition-all">
                     Send to Customer
                   </button>
+                )}
+                {q.status === 'sent' && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleReview(q.id, 'accept', q.totalAmount || 0)}
+                      className="px-3 py-2 rounded-btn bg-success-600/10 text-success-700 text-[10px] font-bold uppercase tracking-widest hover:bg-success-600 hover:text-white transition-all"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => handleReview(q.id, 'counter', q.totalAmount || 0)}
+                      className="px-3 py-2 rounded-btn bg-warning-600/10 text-warning-700 text-[10px] font-bold uppercase tracking-widest hover:bg-warning-600 hover:text-white transition-all"
+                    >
+                      Counter
+                    </button>
+                    <button
+                      onClick={() => handleReview(q.id, 'reject', q.totalAmount || 0)}
+                      className="px-3 py-2 rounded-btn bg-danger-600/10 text-danger-700 text-[10px] font-bold uppercase tracking-widest hover:bg-danger-600 hover:text-white transition-all"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+                {q.status !== 'closed' && q.status !== 'expired' && q.status !== 'rejected' && (
+                  <div className="flex items-center gap-2 ml-2">
+                    <button
+                      onClick={() => handleUpsell(q.id, q.totalAmount || 0)}
+                      className="px-3 py-2 rounded-btn bg-plano-600/10 text-plano-700 text-[10px] font-bold uppercase tracking-widest hover:bg-plano-600 hover:text-white transition-all"
+                    >
+                      Upsell
+                    </button>
+                    <button
+                      onClick={() => handleClose(q.id)}
+                      className="px-3 py-2 rounded-btn bg-gray-200 text-gray-700 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-300 transition-all"
+                    >
+                      Close
+                    </button>
+                  </div>
                 )}
                 <div className="flex items-center gap-2 ml-auto">
                   <Link href={toAdminPath(pathname, `/quotations/${q.id}`)}

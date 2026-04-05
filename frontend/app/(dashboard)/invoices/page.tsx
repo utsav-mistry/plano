@@ -6,9 +6,6 @@ import { usePathname } from 'next/navigation';
 import {
    Plus,
    Search,
-   Filter,
-   Download,
-   MoreVertical,
    Eye,
    AlertCircle,
    FileText
@@ -28,6 +25,11 @@ export default function InvoicesPage() {
 
    const getInvoiceDate = (invoice: any) => invoice.issueDate || invoice.createdAt;
    const getInvoiceTotal = (invoice: any) => invoice.totalAmount ?? invoice.grandTotal ?? 0;
+   const getEntityId = (value: unknown) => {
+      if (!value || typeof value !== 'object') return String(value || '');
+      const record = value as { id?: string; _id?: string };
+      return String(record.id || record._id || '');
+   };
 
    async function fetchInvoices() {
       setIsLoading(true);
@@ -96,16 +98,6 @@ export default function InvoicesPage() {
                   />
                </div>
 
-               <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-2 px-4 h-10 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-xs font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover transition-colors">
-                     <Filter size={14} />
-                     Filters
-                  </button>
-                  <button className="flex items-center gap-2 px-4 h-10 border border-border dark:border-sidebar-hover bg-bg-surface rounded-input text-xs font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover transition-colors">
-                     <Download size={14} />
-                     Export
-                  </button>
-               </div>
             </div>
 
             <div className="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar">
@@ -186,7 +178,7 @@ export default function InvoicesPage() {
                                  <div className="flex flex-col">
                                     <span className="text-xs font-mono font-bold text-text-primary tracking-tighter">{inv.invoiceNumber}</span>
                                     <Link
-                                       href={toAdminPath(pathname, `/subscriptions/${typeof inv.subscriptionId === 'object' ? inv.subscriptionId?._id : inv.subscriptionId}`)}
+                                       href={toAdminPath(pathname, `/subscriptions/${getEntityId(inv.subscriptionId)}`)}
                                        className="text-[10px] text-plano-600 font-bold hover:underline"
                                     >
                                        {typeof inv.subscriptionId === 'object' ? 'View Sub' : 'View Sub'}
@@ -226,17 +218,12 @@ export default function InvoicesPage() {
                                  </span>
                               </td>
                               <td className="py-4 px-6 text-right">
-                                 <div className="flex items-center justify-end gap-2">
-                                    <Link
-                                       href={toAdminPath(pathname, `/invoices/${inv._id || inv.id}`)}
-                                       className="p-1.5 rounded-btn hover:bg-plano-50 dark:hover:bg-white/10 text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 transition-all opacity-0 group-hover:opacity-100"
-                                    >
-                                       <Eye size={18} />
-                                    </Link>
-                                    <button className="p-1.5 rounded-btn hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-text-primary transition-all">
-                                       <MoreVertical size={18} />
-                                    </button>
-                                 </div>
+                                 <Link
+                                    href={toAdminPath(pathname, `/invoices/${inv._id || inv.id}`)}
+                                    className="inline-flex p-1.5 rounded-btn hover:bg-plano-50 dark:hover:bg-white/10 text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 transition-all opacity-0 group-hover:opacity-100"
+                                 >
+                                    <Eye size={18} />
+                                 </Link>
                               </td>
                            </tr>
                         ))}

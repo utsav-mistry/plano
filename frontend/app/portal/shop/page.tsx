@@ -288,7 +288,7 @@ export default function ShopPage() {
                setSelectedProduct(null);
                setCheckoutQty(1);
                setBillingAddress('');
-               router.push(`/portal/order/confirmation?id=S100${Math.floor(Math.random() * 1000)}&ref=${response.razorpay_payment_id}`);
+               router.push(`/portal/order/confirmation?id=${subscriptionId}&ref=${response.razorpay_payment_id}`);
             } catch (err) {
                toastError('Payment captured, subscription failed', err instanceof Error ? err.message : 'Unable to create subscription record.');
             } finally {

@@ -31,6 +31,8 @@ type DiscountConfig = {
   type?: 'percentage' | 'fixed';
   value?: number;
   name?: string;
+  applicableTo?: 'all' | 'plan' | 'product';
+  applicableIds?: string[];
 };
 
 type RazorpayResponse = {
@@ -80,7 +82,6 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isQuotation, setIsQuotation] = useState(false);
   const [taxesList, setTaxesList] = useState<TaxRecord[]>([]);
-  const [discountsList, setDiscountsList] = useState<DiscountConfig[]>([]);
   const [billingAddress, setBillingAddress] = useState(user?.email ? `Block A, Building 4, ${user.name}'s Residence, Mumbai, MH` : '');
   const [planTaxMap, setPlanTaxMap] = useState<Record<string, string[]>>({});
   const [productTaxMap, setProductTaxMap] = useState<Record<string, string[]>>({});
@@ -103,9 +104,8 @@ export default function CartPage() {
 
     async function fetchConfig() {
       try {
-        const [tRes, dRes, plansRes, productsRes] = await Promise.all([
+        const [tRes, plansRes, productsRes] = await Promise.all([
           api.taxes.getAll(),
-          api.discounts.getAll(),
           api.plans.getAll({ isActive: true, limit: 500 }),
           api.products.getAll({ isActive: true, limit: 500 })
         ]);
@@ -116,14 +116,6 @@ export default function CartPage() {
             : (taxesData?.taxes ?? []);
           setTaxesList(normalizedTaxes as TaxRecord[]);
         }
-        if (dRes.success) {
-          const discountsData = dRes.data as { discounts?: unknown[] } | unknown[];
-          const normalizedDiscounts = Array.isArray(discountsData)
-            ? discountsData
-            : (discountsData?.discounts ?? []);
-          setDiscountsList(normalizedDiscounts as DiscountConfig[]);
-        }
-
         if (plansRes.success) {
           const plansData = plansRes.data as unknown;
           const plansContainer = plansData as { plans?: unknown[] };
@@ -165,6 +157,28 @@ export default function CartPage() {
   const subtotal = useMemo(() =>
     items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
     [items]);
+
+  const cartPlanIds = useMemo(() => Array.from(new Set(items.map((item) => item.planId).filter(Boolean))), [items]);
+  const cartProductIds = useMemo(() => Array.from(new Set(items.map((item) => item.productId).filter(Boolean))), [items]);
+
+  const getEligibleSubtotal = (discount: { applicableTo?: string; applicableIds?: string[] } | null) => {
+    if (!discount || discount.applicableTo === 'all') return subtotal;
+    const applicableIds = new Set((discount.applicableIds || []).map((id) => String(id)).filter(Boolean));
+
+    return items.reduce((acc, item) => {
+      const matchesPlan = discount.applicableTo === 'plan'
+        ? (applicableIds.size === 0 || applicableIds.has(item.planId))
+        : false;
+      const matchesProduct = discount.applicableTo === 'product'
+        ? (applicableIds.size === 0 || applicableIds.has(item.productId))
+        : false;
+
+      if (matchesPlan || matchesProduct) {
+        return acc + (item.price * item.quantity);
+      }
+      return acc;
+    }, 0);
+  };
 
   const taxBreakdown = useMemo(() => {
     const mapById = new Map<string, TaxRecord>();
@@ -244,26 +258,41 @@ export default function CartPage() {
   const total = useMemo(() => subtotal - discountAmount + taxes, [subtotal, taxes, discountAmount]);
 
   const handleApplyPromo = () => {
-    const found = discountsList.find(d => (d.code ?? '').toUpperCase() === promo.toUpperCase() && d.isActive);
-
-    if (found) {
-      // Validate Minimum Purchase (Module 13)
-      if (found.minPurchaseAmount && subtotal < found.minPurchaseAmount) {
-        toastError('Minimum Amount Not Met', `This code requires at least ₹${found.minPurchaseAmount.toLocaleString()}`);
-        return;
-      }
-
-      const value = found.value ?? 0;
-      const amt = found.type === 'percentage' ? (subtotal * (value / 100)) : value;
-      applyDiscount(found.code ?? promo.toUpperCase(), amt);
-      toastSuccess('Success', `${found.name} Applied!`);
-    } else if (promo.toUpperCase() === 'PLANO20') {
-      // Fallback for demo
-      applyDiscount('PLANO20', subtotal * 0.2);
-      toastSuccess('Success', '20% discount applied to your order!');
-    } else {
-      toastError('Invalid Code', 'The promo code you entered is not valid or expired.');
+    const code = promo.trim().toUpperCase();
+    if (!code) {
+      toastError('Missing Code', 'Enter a discount code to apply it.');
+      return;
     }
+
+    api.discounts.validate({
+      code,
+      orderAmount: subtotal,
+      planIds: cartPlanIds,
+      productIds: cartProductIds,
+    })
+      .then((res) => {
+        if (!res.success || !res.data) {
+          throw new Error('Discount code is not valid.');
+        }
+
+        const discount = res.data as DiscountConfig;
+        const eligibleSubtotal = getEligibleSubtotal(discount);
+
+        if (eligibleSubtotal <= 0) {
+          throw new Error('This discount does not apply to the items in your cart.');
+        }
+
+        const value = Number(discount.value ?? 0);
+        const amt = discount.type === 'percentage'
+          ? (eligibleSubtotal * (value / 100))
+          : Math.min(value, eligibleSubtotal);
+
+        applyDiscount(discount.code ?? code, amt);
+        toastSuccess('Success', `${discount.name || discount.code} applied.`);
+      })
+      .catch((err) => {
+        toastError('Invalid Code', err instanceof Error ? err.message : 'The promo code you entered is not valid or expired.');
+      });
   };
 
   async function createSubscriptionsFromCart(paymentId: string) {
@@ -365,7 +394,7 @@ export default function CartPage() {
 
           toastSuccess('Payment Captured', `Transaction ID: ${response.razorpay_payment_id}`);
           clearCart();
-          router.push(`/portal/order/confirmation?id=S100${Math.floor(Math.random() * 1000)}&ref=${response.razorpay_payment_id}`);
+          router.push(`/portal/order/confirmation?id=${subscriptionIds[0]}&ref=${response.razorpay_payment_id}`);
         } catch (err) {
           toastError('Payment captured, subscription failed', err instanceof Error ? err.message : 'Unable to create subscription records.');
         } finally {
@@ -731,7 +760,7 @@ export default function CartPage() {
                     Apply
                   </button>
                 </div>
-                <p className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-4">Hint: try PLANO20</p>
+                <p className="text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-4">Enter a valid discount code issued for your account</p>
               </div>
             )}
 

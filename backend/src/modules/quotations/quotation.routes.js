@@ -13,5 +13,9 @@ router.post('/', idempotency, authorize(ROLES.ADMIN, ROLES.INTERNAL_USER, ROLES.
 router.put('/:id', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER), quotationController.update);
 router.post('/:id/send', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER), quotationController.send);
 router.post('/:id/convert', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER, ROLES.PORTAL_USER), quotationController.convert);
+router.post('/:id/review', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER), quotationController.review);
+router.post('/:id/respond', authorize(ROLES.PORTAL_USER), quotationController.respond);
+router.post('/:id/close', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER, ROLES.PORTAL_USER), quotationController.close);
+router.post('/:id/upsell', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER, ROLES.PORTAL_USER), quotationController.upsell);
 
 export default router;

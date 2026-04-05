@@ -56,6 +56,9 @@ export const getById = async (id) => {
 };
 
 export const markSent = async (id) => {
+  if (!mongoose.isValidObjectId(id)) {
+    throw ApiError.badRequest('Invalid invoice id');
+  }
   const invoice = await Invoice.findByIdAndUpdate(
     id,
     { status: INVOICE_STATUS.SENT, sentAt: new Date() },
@@ -66,6 +69,9 @@ export const markSent = async (id) => {
 };
 
 export const voidInvoice = async (id, reason) => {
+  if (!mongoose.isValidObjectId(id)) {
+    throw ApiError.badRequest('Invalid invoice id');
+  }
   const invoice = await Invoice.findById(id);
   if (!invoice) throw ApiError.notFound('Invoice not found');
   if (invoice.status === INVOICE_STATUS.PAID) {

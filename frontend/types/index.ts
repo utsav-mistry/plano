@@ -196,12 +196,17 @@ export interface Discount {
   type: 'percentage' | 'fixed';
   value: number;
   appliesTo: 'products' | 'subscriptions' | 'both';
+  applicableTo?: 'all' | 'plan' | 'product';
+  applicableIds?: string[];
   minPurchaseAmount?: number;
   minQuantity?: number;
   validFrom: string;
   validTo: string;
+  validUntil?: string;
   maxUses?: number;
+  maxUsage?: number | null;
   currentUses: number;
+  usedCount?: number;
   isActive: boolean;
 }
 
@@ -210,7 +215,7 @@ export interface Quotation {
   quotationNumber: string;
   userId: string | User;
   planId: string | Plan;
-  status: 'draft' | 'sent' | 'accepted' | 'declined' | 'expired';
+  status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'closed' | 'expired';
   issueDate: string;
   expiryDate: string;
   subtotal: number;
@@ -220,6 +225,22 @@ export interface Quotation {
   currency: string;
   items: InvoiceItem[];
   notes?: string;
+  negotiationState?: 'none' | 'pending_admin' | 'pending_customer' | 'resolved';
+  convertedToSubscription?: boolean;
+  subscriptionId?: string | Subscription;
+  closedAt?: string;
+  closeReason?: string;
+  isUpsell?: boolean;
+  upsellFromQuotationId?: string | Quotation;
+  negotiationHistory?: Array<{
+    actorId: string | User;
+    actorRole: UserRole;
+    action: 'counter' | 'accept' | 'reject';
+    previousTotal?: number;
+    proposedTotal?: number;
+    note?: string;
+    createdAt: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
