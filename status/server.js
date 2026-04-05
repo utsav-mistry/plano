@@ -152,7 +152,7 @@ async function checkBackend() {
 }
 
 async function checkFrontend() {
-  const url = process.env.FRONTEND_HEALTH_URL || 'http://localhost:3000';
+  const url = process.env.FRONTEND_HEALTH_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
   const res = await withTimeout(fetch(url), 3000);
   if (!res.ok) throw new Error(`Frontend returned ${res.status}`);
 }

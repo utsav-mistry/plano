@@ -93,7 +93,8 @@ module.exports = {
       time: true,
       env: {
         NODE_ENV: "production",
-        PORT: 8000
+        PORT: 8000,
+        FRONTEND_HEALTH_URL: process.env.FRONTEND_HEALTH_URL || process.env.FRONTEND_URL || "http://localhost:3000"
       }
     }
   ]
