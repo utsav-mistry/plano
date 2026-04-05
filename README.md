@@ -137,7 +137,7 @@ What `setup.sh` does:
 
 Recommended backend production env values:
 - `COOKIE_DOMAIN=.planoo.tech`
-- `CORS_ORIGINS=https://planoo.tech,https://www.planoo.tech`
+- `CORS_ORIGINS=https://planoo.tech,https://www.planoo.tech,https://admin.planoo.tech,https://portal.planoo.tech`
 
 ### Nginx — Subdomain Layout
 

@@ -72,7 +72,7 @@ Now edit env files with production values:
 
 Critical backend values:
 - NODE_ENV=production
-- CORS_ORIGINS=https://planoo.tech,https://www.planoo.tech
+- CORS_ORIGINS=https://planoo.tech,https://www.planoo.tech,https://admin.planoo.tech,https://portal.planoo.tech
 - FRONTEND_URL=https://planoo.tech
 - COOKIE_DOMAIN=.planoo.tech
 - MONGODB_URI=...

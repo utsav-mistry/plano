@@ -50,10 +50,23 @@ app.get('/health', (req, res) => {
 });
 
 // ─── Security ────────────────────────────────────────────────
+const defaultCorsOrigins = [
+  'https://planoo.tech',
+  'https://www.planoo.tech',
+  'https://admin.planoo.tech',
+  'https://portal.planoo.tech',
+];
+
+const configuredCorsOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const corsWhitelist = new Set([...defaultCorsOrigins, ...configuredCorsOrigins]);
+
 const corsOptions = {
   origin: (origin, callback) => {
-    const whitelist = (process.env.CORS_ORIGINS || '').split(',').map(o => o.trim());
-    if (!origin || whitelist.includes(origin)) return callback(null, true);
+    if (!origin || corsWhitelist.has(origin)) return callback(null, true);
     callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,

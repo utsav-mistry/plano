@@ -13,7 +13,7 @@ type LoginFormProps = {
 };
 
 function LoginFormContent({ nextPath }: LoginFormProps) {
-    const { login, user, isLoading: authLoading } = useAuth();
+    const { login, logout, user, isLoading: authLoading } = useAuth();
     const { error: toastError } = useToast();
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
@@ -22,9 +22,16 @@ function LoginFormContent({ nextPath }: LoginFormProps) {
 
     useEffect(() => {
         if (!authLoading && user) {
-            router.push(defaultRouteForRole(user?.role));
+            const destination = nextPath || defaultRouteForRole(user?.role);
+
+            if (destination === '/login') {
+                logout();
+                return;
+            }
+
+            router.replace(destination);
         }
-    }, [user, authLoading, router]);
+    }, [user, authLoading, router, nextPath, logout]);
 
     const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : 'Please check your credentials and try again.';
 

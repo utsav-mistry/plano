@@ -26,6 +26,15 @@ cd $APP_DIR || exit 1
 # ─────────────────────────────────────────────────────────────
 echo "===== $(date) =====" | tee -a $LOG_FILE
 
+AUTO_STASHED=0
+STASH_NAME="auto-deploy-stash-$(date +%Y%m%d-%H%M%S)"
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Local changes detected. Auto-stashing before pull..." | tee -a $LOG_FILE
+  git stash push --include-untracked -m "$STASH_NAME" >/dev/null 2>&1 || true
+  AUTO_STASHED=1
+fi
+
 verify_runtime() {
   # ── Reload/start using shared PM2 instance (zero-downtime) ─
   pm2 startOrReload ecosystem.config.js --update-env
@@ -93,4 +102,9 @@ else
   echo "No changes to deploy; verifying running services" | tee -a $LOG_FILE
   verify_runtime
   echo "Services verified" | tee -a $LOG_FILE
+fi
+
+if [ "$AUTO_STASHED" -eq 1 ]; then
+  echo "NOTE: Local changes were stashed as '$STASH_NAME'" | tee -a $LOG_FILE
+  echo "      Review with: git stash list" | tee -a $LOG_FILE
 fi

@@ -5,24 +5,13 @@ export function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const isAdminPath = pathname.startsWith('/admin');
     const isPortalPath = pathname.startsWith('/portal');
-    const isPortalRoot = pathname === '/portal';
 
     if (!isAdminPath && !isPortalPath) {
         return NextResponse.next();
     }
 
-    if (isPortalRoot) {
-        return NextResponse.next();
-    }
-
-    const refreshToken = req.cookies.get('refreshToken')?.value;
-    if (!refreshToken) {
-        const url = req.nextUrl.clone();
-        url.pathname = '/login';
-        url.searchParams.set('next', pathname);
-        return NextResponse.redirect(url);
-    }
-
+    // Avoid hard auth redirects here because cookie visibility differs by subdomain in production.
+    // Access control is handled by role-aware layouts and API auth checks.
     return NextResponse.next();
 }
 
