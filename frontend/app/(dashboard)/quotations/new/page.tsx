@@ -47,6 +47,7 @@ export default function NewQuotationPage() {
 
   const [currentItem, setCurrentItem] = useState({
     productId: '',
+    description: '',
     quantity: '1',
     unitPrice: '',
   });
@@ -75,24 +76,29 @@ export default function NewQuotationPage() {
       setCurrentItem({
         ...currentItem,
         productId: id,
+        description: prod.description || prod.name || '',
         unitPrice: prod.basePrice.toString(),
       });
     }
   };
 
   const addItem = () => {
-    if (!currentItem.productId || !currentItem.quantity) return;
+    if (!currentItem.productId || !currentItem.quantity || !currentItem.description.trim()) {
+      toastError('Validation', 'Please select a product and enter a description for the line item.');
+      return;
+    }
     const prod = products.find(p => p._id === currentItem.productId);
     setForm(p => ({
       ...p,
       items: [...p.items, {
         productId: currentItem.productId,
+        description: currentItem.description.trim(),
         quantity: Number(currentItem.quantity),
         unitPrice: Number(currentItem.unitPrice),
         name: prod?.name
       }]
     }));
-    setCurrentItem({ productId: '', quantity: '1', unitPrice: '' });
+    setCurrentItem({ productId: '', description: '', quantity: '1', unitPrice: '' });
   };
 
   const removeItem = (idx: number) => {
@@ -209,7 +215,7 @@ export default function NewQuotationPage() {
             {/* Add Item Row */}
             <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-xl border border-border dark:border-sidebar-hover flex flex-col gap-6">
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div className="md:col-span-6 flex flex-col">
+                <div className="md:col-span-4 flex flex-col">
                   <label className={labelStyle}>Product</label>
                   <select
                     suppressHydrationWarning
@@ -220,6 +226,17 @@ export default function NewQuotationPage() {
                     <option value="" className="bg-bg-surface text-gray-500">Select offering...</option>
                     {products.map(p => <option key={p._id} value={p._id} className="bg-bg-surface text-text-primary">{p.name}</option>)}
                   </select>
+                </div>
+                <div className="md:col-span-4 flex flex-col">
+                  <label className={labelStyle}>Description</label>
+                  <input
+                    suppressHydrationWarning
+                    type="text"
+                    placeholder="Line item description"
+                    value={currentItem.description}
+                    onChange={(e) => setCurrentItem({ ...currentItem, description: e.target.value })}
+                    className={inputStyle}
+                  />
                 </div>
                 <div className="md:col-span-2 flex flex-col">
                   <label className={labelStyle}>Qty</label>
@@ -232,7 +249,7 @@ export default function NewQuotationPage() {
                     className={inputStyle}
                   />
                 </div>
-                <div className="md:col-span-4 flex flex-col">
+                <div className="md:col-span-2 flex flex-col">
                   <label className={labelStyle}>Unit Rate</label>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold pr-2 border-r border-border dark:border-sidebar-hover mr-2">₹</div>
@@ -262,6 +279,7 @@ export default function NewQuotationPage() {
                 <thead>
                   <tr className="border-b border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/10">
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Selected Item</th>
+                    <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Description</th>
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center">Unit Price</th>
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center whitespace-nowrap">Qty</th>
                     <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right">Total</th>
@@ -280,6 +298,9 @@ export default function NewQuotationPage() {
                       <tr key={i} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
                         <td className="py-4 px-6">
                           <span className="text-sm font-bold text-text-primary">{item.name}</span>
+                        </td>
+                        <td className="py-4 px-6 text-sm text-text-secondary">
+                          {item.description}
                         </td>
                         <td className="py-4 px-6 text-center font-mono text-xs text-text-primary">
                           {formatCurrency(item.unitPrice, form.currency)}

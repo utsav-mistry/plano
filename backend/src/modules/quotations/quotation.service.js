@@ -1,4 +1,5 @@
 import Quotation from './quotation.model.js';
+import Product from '../products/product.model.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { QUOTATION_STATUS } from '../../constants/statuses.js';
 import { ROLES } from '../../constants/roles.js';
@@ -39,15 +40,24 @@ export const create = async (data, createdBy) => {
     throw ApiError.badRequest('At least one quotation item is required');
   }
 
+  const productIds = [...new Set(items.map((item) => normalizeObjectId(item.productId)).filter(Boolean))];
+  const products = productIds.length > 0
+    ? await Product.find({ _id: { $in: productIds } }).select('name description')
+    : [];
+  const productMap = new Map(products.map((product) => [product._id.toString(), product]));
+
   const normalizedItems = items.map((item) => {
     const quantity = Number(item.quantity || 0);
     const unitPrice = Number(item.unitPrice || 0);
     const discountValue = Number(item.discountValue || 0);
     const taxValue = Number(item.taxValue || 0);
     const computedTotal = Math.max(quantity * unitPrice - discountValue + taxValue, 0);
+    const product = productMap.get(normalizeObjectId(item.productId));
+    const description = String(item.description || item.name || product?.description || product?.name || 'Quotation item').trim();
 
     return {
       ...item,
+      description,
       quantity,
       unitPrice,
       discountValue,
