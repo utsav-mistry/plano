@@ -26,10 +26,11 @@ export const create = async (data, createdBy) => {
   return invoice;
 };
 
-export const getAll = async ({ page = 1, limit = 20, status, userId }) => {
+export const getAll = async ({ page = 1, limit = 20, status, userId, subscriptionId }) => {
   const filter = {};
   if (status) filter.status = status;
   if (userId) filter.userId = userId;
+  if (subscriptionId) filter.subscriptionId = subscriptionId;
   const skip = (page - 1) * limit;
   const [invoices, total] = await Promise.all([
     Invoice.find(filter)

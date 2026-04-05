@@ -5,6 +5,9 @@ import catchAsync from '../../utils/catchAsync.js';
 import { ROLES } from '../../constants/roles.js';
 
 export const create = catchAsync(async (req, res) => {
+  if (req.user.role === ROLES.PORTAL_USER) {
+    req.body.userId = req.user._id;
+  }
   const q = await quotationService.create(req.body, req.user._id);
   new ApiResponse(201, { quotation: q }, 'Quotation created').send(res);
 });
@@ -41,6 +44,13 @@ export const send = catchAsync(async (req, res) => {
 });
 
 export const convert = catchAsync(async (req, res) => {
+  if (req.user.role === ROLES.PORTAL_USER) {
+    const quotation = await quotationService.getById(req.params.id);
+    const ownerId = quotation.userId?._id?.toString() || quotation.userId?.toString();
+    if (ownerId !== req.user._id.toString()) {
+      throw ApiError.forbidden('Access denied');
+    }
+  }
   const q = await quotationService.convert(req.params.id, req.user._id);
   new ApiResponse(200, { quotation: q }, 'Quotation converted to subscription').send(res);
 });

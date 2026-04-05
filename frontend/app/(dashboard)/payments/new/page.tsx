@@ -8,12 +8,13 @@ import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { toAdminPath } from '@/lib/path-scoping';
+import { Invoice } from '@/types';
 
 const PAYMENT_METHODS = [
   { value: 'card', label: 'Credit/Debit Card' },
   { value: 'bank_transfer', label: 'Bank Transfer' },
   { value: 'upi', label: 'UPI' },
-  { value: 'cash', label: 'Cash Entry' },
+  { value: 'manual', label: 'Cash / Manual Entry' },
 ];
 
 const CURRENCIES = ['INR'];
@@ -23,7 +24,7 @@ export default function RecordPaymentPage() {
   const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loadingDeps, setLoadingDeps] = useState(true);
 
   const [form, setForm] = useState({
@@ -31,36 +32,40 @@ export default function RecordPaymentPage() {
     userId: '',
     amount: '',
     currency: 'INR',
-    paymentMethod: 'bank_transfer',
-    transactionId: '',
-    paymentDate: new Date().toISOString().split('T')[0],
+    method: 'bank_transfer',
+    gatewayTransactionId: '',
+    processedAt: new Date().toISOString().split('T')[0],
     notes: ''
   });
 
   useEffect(() => {
     async function loadDeps() {
       try {
-        const res = await api.invoices.getAll({ status: 'confirmed' });
+        const res = await api.invoices.getAll();
         if (res.success) {
-          const data = res.data as any;
-          setInvoices(data.invoices ?? data ?? []);
+          const data = res.data as Invoice[] | { invoices?: Invoice[] };
+          const allInvoices = Array.isArray(data) ? data : (data.invoices ?? []);
+          const payableInvoices = allInvoices.filter((inv) => !['paid', 'void', 'refunded'].includes((inv.status || '').toLowerCase()));
+          setInvoices(payableInvoices);
         }
       } catch (err) {
         console.error('Failed to load invoices', err);
+        toastError('Unable to load invoices', err instanceof Error ? err.message : 'Try again in a moment.');
       } finally {
         setLoadingDeps(false);
       }
     }
     loadDeps();
-  }, []);
+  }, [toastError]);
 
   const handleInvoiceChange = (id: string) => {
-    const inv = invoices.find(i => i._id === id);
+    const inv = invoices.find(i => i.id === id || (i as any)._id === id);
     if (inv) {
+      const userId = typeof inv.userId === 'object' ? (inv.userId.id || (inv.userId as any)._id) : inv.userId;
       setForm(p => ({
         ...p,
         invoiceId: id,
-        userId: typeof inv.userId === 'object' ? inv.userId._id : inv.userId,
+        userId: userId || '',
         amount: inv.totalAmount.toString(),
         currency: inv.currency || 'INR'
       }));
@@ -80,7 +85,9 @@ export default function RecordPaymentPage() {
     try {
       const res = await api.payments.record({
         ...form,
-        amount: Number(form.amount)
+        amount: Number(form.amount),
+        gateway: 'razorpay',
+        processedAt: new Date(form.processedAt).toISOString(),
       });
       if (res.success) {
         success('Payment recorded!', 'Transaction successfully logged and reconciled.');
@@ -126,7 +133,7 @@ export default function RecordPaymentPage() {
             >
               <option value="">Select an invoice to auto-fill...</option>
               {invoices.map((inv) => (
-                <option key={inv._id} value={inv._id}>
+                <option key={inv.id || (inv as any)._id} value={inv.id || (inv as any)._id}>
                   INV-{inv.invoiceNumber} — {typeof inv.userId === 'object' ? inv.userId?.name : 'Customer'} (₹{inv.totalAmount})
                 </option>
               ))}
@@ -177,8 +184,8 @@ export default function RecordPaymentPage() {
             <label className={label}>Payment Method</label>
             <div className="relative">
               <select
-                value={form.paymentMethod}
-                onChange={e => setForm(p => ({ ...p, paymentMethod: e.target.value }))}
+                value={form.method}
+                onChange={e => setForm(p => ({ ...p, method: e.target.value }))}
                 className={cn(field, "appearance-none pr-10 cursor-pointer")}
               >
                 {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
@@ -193,8 +200,8 @@ export default function RecordPaymentPage() {
               <input
                 suppressHydrationWarning
                 type="date"
-                value={form.paymentDate}
-                onChange={e => setForm(p => ({ ...p, paymentDate: e.target.value }))}
+                value={form.processedAt}
+                onChange={e => setForm(p => ({ ...p, processedAt: e.target.value }))}
                 className={cn(field, "pl-11 pr-4")}
               />
             </div>
@@ -208,8 +215,8 @@ export default function RecordPaymentPage() {
             suppressHydrationWarning
             type="text"
             placeholder="e.g. TXN-9981-A2"
-            value={form.transactionId}
-            onChange={e => setForm(p => ({ ...p, transactionId: e.target.value.toUpperCase() }))}
+            value={form.gatewayTransactionId}
+            onChange={e => setForm(p => ({ ...p, gatewayTransactionId: e.target.value.toUpperCase() }))}
             className={cn(field, "uppercase font-mono")}
           />
           <p className="text-[10px] text-gray-400 font-medium mt-1.5 flex items-center gap-1.5 ml-1">

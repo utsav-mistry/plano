@@ -15,12 +15,6 @@ export default function PortalHomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Hide scrollbar for this page specifically
-    document.documentElement.style.overflow = 'hidden';
-    return () => { document.documentElement.style.overflow = 'auto'; };
-  }, []);
-
-  useEffect(() => {
     async function fetchData() {
       try {
         const [prodRes, subRes] = await Promise.all([
@@ -57,12 +51,12 @@ export default function PortalHomePage() {
   }
 
   return (
-    <div className="relative h-[calc(100vh-64px)] overflow-hidden flex items-center justify-center">
+    <div className="relative min-h-[calc(100vh-64px)] flex items-center justify-center py-8 sm:py-10 overflow-hidden">
       {/* Decorative Orbs */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-plano-400 opacity-10 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-plano-200 opacity-5 blur-3xl rounded-full translate-x-1/4 translate-y-1/4" />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col items-center text-center w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 flex flex-col items-center text-center w-full">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}

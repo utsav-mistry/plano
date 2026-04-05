@@ -21,17 +21,27 @@ export default function MyOrdersPage() {
    const [search, setSearch] = useState('');
    const { success: toastSuccess, error: toastError } = useToast();
 
-   const handleDownloadInvoice = async (id: string, e: React.MouseEvent) => {
+   const handleDownloadInvoice = async (subscriptionId: string, e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       try {
-         const response = await api.invoices.downloadPdf(id);
+         const invoicesRes = await api.invoices.getAll({ subscriptionId, limit: 1 });
+         const invoicesData = invoicesRes.data as { invoices?: { id: string }[] } | { id: string }[];
+         const invoices = Array.isArray(invoicesData) ? invoicesData : (invoicesData?.invoices ?? []);
+         const latestInvoice = invoices[0];
+
+         if (!latestInvoice?.id) {
+            toastError('No invoice found', 'There is no invoice available for this order yet.');
+            return;
+         }
+
+         const response = await api.invoices.downloadPdf(latestInvoice.id);
          if (response.ok) {
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Invoice-${id}.pdf`;
+            a.download = `Invoice-${latestInvoice.id}.pdf`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -56,12 +66,13 @@ export default function MyOrdersPage() {
             }
          } catch (err) {
             console.error('Failed to fetch subscriptions', err);
+            toastError('Unable to load orders', err instanceof Error ? err.message : 'Please refresh and try again.');
          } finally {
             setIsLoading(false);
          }
       }
       fetchSubscriptions();
-   }, []);
+   }, [toastError]);
 
    const filtered = Array.isArray(subscriptions) ? subscriptions.filter(s =>
       s.id.toLowerCase().includes(search.toLowerCase()) ||

@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/app/context/AuthContext';
 import { toAdminPath } from '@/lib/path-scoping';
+import BrandLogo from '@/components/branding/BrandLogo';
 
 const navGroups = [
   {
@@ -75,11 +76,11 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
       {/* Logo */}
       <div className="h-14 flex items-center px-4 border-b border-sidebar-hover">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="min-w-[32px] h-8 bg-plano-600 rounded flex items-center justify-center text-white font-bold text-xl">
-            P
+          <div className="min-w-[32px] h-8 bg-white/5 rounded flex items-center justify-center">
+            <BrandLogo variant="mark" className="text-[20px]" />
           </div>
           {!collapsed && (
-            <span className="font-serif text-xl font-bold text-white whitespace-nowrap">Plano</span>
+            <BrandLogo variant="dark" textClassName="text-[27px] whitespace-nowrap" />
           )}
         </div>
       </div>

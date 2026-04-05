@@ -33,15 +33,64 @@ function LoginFormContent({ nextPath }: LoginFormProps) {
         }
     }, [user, authLoading, router, nextPath, logout]);
 
-    const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : 'Please check your credentials and try again.';
+    const getErrorMessage = (error: unknown) => {
+        const fallback = 'Please check your credentials and try again.';
+        const message = error instanceof Error ? error.message : fallback;
+        const normalized = message.toLowerCase();
+
+        if (normalized.includes('invalid email or password') || normalized.includes('invalid credentials')) {
+            return 'Invalid email or password. Please verify both fields.';
+        }
+        if (normalized.includes('email not verified') || normalized.includes('verify')) {
+            return 'Your email is not verified yet. Please verify first and then login.';
+        }
+        if (normalized.includes('inactive') || normalized.includes('disabled') || normalized.includes('blocked')) {
+            return 'Your account is currently inactive. Contact support to reactivate it.';
+        }
+        if (normalized.includes('too many attempts') || normalized.includes('rate limit') || normalized.includes('429')) {
+            return 'Too many login attempts. Wait a minute and try again.';
+        }
+        if (normalized.includes('network') || normalized.includes('cors') || normalized.includes('unable to reach server')) {
+            return 'Cannot reach login server right now. Please check your connection and retry.';
+        }
+
+        return message || fallback;
+    };
+
+    const getErrorTitle = (error: unknown) => {
+        const message = error instanceof Error ? error.message : '';
+        const normalized = message.toLowerCase();
+
+        if (normalized.includes('invalid email or password') || normalized.includes('invalid credentials')) {
+            return 'Invalid credentials';
+        }
+        if (normalized.includes('email not verified') || normalized.includes('verify')) {
+            return 'Email not verified';
+        }
+        if (normalized.includes('inactive') || normalized.includes('disabled') || normalized.includes('blocked') || normalized.includes('deactivated')) {
+            return 'Account inactive';
+        }
+        if (normalized.includes('too many attempts') || normalized.includes('rate limit') || normalized.includes('429')) {
+            return 'Too many attempts';
+        }
+        if (normalized.includes('network') || normalized.includes('cors') || normalized.includes('unable to reach server')) {
+            return 'Server unreachable';
+        }
+
+        return 'Login failed';
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!form.email.trim() || !form.password.trim()) {
+            toastError('Missing credentials', 'Email and password are required to sign in.');
+            return;
+        }
         setIsLoading(true);
         try {
             await login(form, nextPath);
         } catch (error: unknown) {
-            toastError('Login failed', getErrorMessage(error));
+            toastError(getErrorTitle(error), getErrorMessage(error));
         } finally {
             setIsLoading(false);
         }

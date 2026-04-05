@@ -9,6 +9,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useCartStore } from '@/store/cartStore';
 import { cn } from '@/lib/utils';
 import CommandPalette from '@/components/portal/CommandPalette';
+import BrandLogo from '@/components/branding/BrandLogo';
 
 export default function PortalNavbar() {
   const [profileOpen, setProfileOpen] = useState(false);
@@ -18,9 +19,9 @@ export default function PortalNavbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = () => { 
-    logout(); 
-    router.push('/login'); 
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
   };
 
   const navLinks = [
@@ -40,14 +41,14 @@ export default function PortalNavbar() {
   return (
     <nav className="sticky top-0 z-[100] border-b border-plano-200 bg-white/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        
+
         {/* Left: Logo + Nav */}
         <div className="flex items-center gap-12">
           <Link href="/portal" className="flex items-center gap-2 group">
-             <div className="w-8 h-8 bg-plano-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm">
-                <span className="font-caveat text-white text-xl font-bold leading-none">P</span>
-             </div>
-             <span className="font-caveat text-2xl font-bold text-plano-900 tracking-tight">Plano</span>
+            <div className="w-8 h-8 bg-plano-100 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm">
+              <BrandLogo variant="mark" className="text-[20px]" />
+            </div>
+            <BrandLogo variant="light" textClassName="text-[30px]" />
           </Link>
 
           <div className="hidden md:flex gap-8 text-sm font-semibold">
@@ -55,8 +56,8 @@ export default function PortalNavbar() {
               if (link.protected && !user) return null;
               const isActive = pathname === link.href;
               return (
-                <Link 
-                  key={link.label} 
+                <Link
+                  key={link.label}
                   href={link.href}
                   className={cn(
                     "relative py-1 transition-colors hover:text-plano-600",
@@ -65,8 +66,8 @@ export default function PortalNavbar() {
                 >
                   {link.label}
                   {isActive && (
-                    <motion.div 
-                      layoutId="nav-pill" 
+                    <motion.div
+                      layoutId="nav-pill"
                       className="absolute -bottom-[21px] left-0 right-0 h-0.5 bg-plano-600 rounded-full"
                     />
                   )}
@@ -77,13 +78,15 @@ export default function PortalNavbar() {
         </div>
 
         {/* Right: Cart + Profile */}
-        <div className="flex items-center gap-4">
-          <CommandPalette />
-          
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="hidden md:block">
+            <CommandPalette />
+          </div>
+
           {/* Cart */}
-          <Link 
-            href="/portal/cart" 
-            className="group relative h-10 px-4 rounded-full border border-plano-100 flex items-center gap-2 transition-all hover:border-plano-200 hover:bg-plano-50"
+          <Link
+            href="/portal/cart"
+            className="group relative h-10 px-3 sm:px-4 rounded-full border border-plano-100 flex items-center gap-2 transition-all hover:border-plano-200 hover:bg-plano-50"
           >
             <ShoppingCart size={18} className="text-plano-600" />
             <span className="text-sm font-bold text-plano-900 hidden sm:inline">Cart</span>
@@ -97,14 +100,14 @@ export default function PortalNavbar() {
           {/* Profile Dropdown */}
           {user ? (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setProfileOpen(o => !o)}
                 className="h-10 pl-3 pr-4 rounded-full border border-plano-100 flex items-center gap-2 transition-all hover:border-plano-200 hover:bg-plano-50"
               >
                 <div className="w-6 h-6 rounded-full bg-plano-100 flex items-center justify-center">
                   <User size={14} className="text-plano-600" />
                 </div>
-                <span className="text-sm font-bold text-plano-900 truncate max-w-[100px]">{user.name.split(' ')[0]}</span>
+                <span className="hidden sm:inline text-sm font-bold text-plano-900 truncate max-w-[100px]">{user.name.split(' ')[0]}</span>
                 <ChevronDown size={14} className={cn("text-gray-400 transition-transform", profileOpen && "rotate-180")} />
               </button>
 
@@ -112,8 +115,8 @@ export default function PortalNavbar() {
                 {profileOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)} />
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-plano-50 overflow-hidden z-20"
@@ -129,8 +132,8 @@ export default function PortalNavbar() {
                           // FIX [AUDIT-C1]: Backend roles are lowercase — compare against 'admin'
                           if (item.adminOnly && user.role !== 'admin') return null;
                           return (
-                            <Link 
-                              key={item.label} 
+                            <Link
+                              key={item.label}
                               href={item.href}
                               onClick={() => setProfileOpen(false)}
                               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-plano-50 hover:text-plano-600 transition-all group"
@@ -143,7 +146,7 @@ export default function PortalNavbar() {
                       </div>
 
                       <div className="p-2 border-t border-plano-50">
-                        <button 
+                        <button
                           onClick={handleLogout}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-danger-500 hover:bg-danger-50 transition-all group"
                         >
@@ -157,11 +160,47 @@ export default function PortalNavbar() {
               </AnimatePresence>
             </div>
           ) : (
-            <Link 
-              href="/login" 
+            <Link
+              href="/login"
               className="h-10 px-6 rounded-full bg-plano-600 text-white text-sm font-bold transition-all hover:bg-plano-900 hover:shadow-lg hover:-translate-y-0.5"
             >
               Login
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <div className="md:hidden border-t border-plano-100/70 bg-white/95 px-4 py-2">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {navLinks.map((link) => {
+            if (link.protected && !user) return null;
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={cn(
+                  'whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-colors border',
+                  isActive
+                    ? 'bg-plano-600 text-white border-plano-600'
+                    : 'bg-white text-gray-500 border-plano-100 hover:text-plano-700 hover:border-plano-300'
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+          {user && (
+            <Link
+              href="/portal/reports"
+              className={cn(
+                'whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest transition-colors border',
+                pathname === '/portal/reports'
+                  ? 'bg-plano-600 text-white border-plano-600'
+                  : 'bg-white text-gray-500 border-plano-100 hover:text-plano-700 hover:border-plano-300'
+              )}
+            >
+              Analytics
             </Link>
           )}
         </div>

@@ -59,6 +59,146 @@ function normalizePlansPayload(data: any) {
   return data;
 }
 
+function normalizeSubscriptionEntity(subscription: any) {
+  if (!subscription || typeof subscription !== 'object') return subscription;
+  return {
+    ...subscription,
+    id: subscription.id || subscription._id,
+    userId: normalizeUserEntity(subscription.userId),
+    planId: normalizePlanEntity(subscription.planId),
+    productId: normalizeProductEntity(subscription.productId),
+  };
+}
+
+function normalizeUserEntity(user: any) {
+  if (!user || typeof user !== 'object') return user;
+  return {
+    ...user,
+    id: user.id || user._id,
+  };
+}
+
+function normalizeSubscriptionsPayload(data: any) {
+  if (Array.isArray(data)) return data.map(normalizeSubscriptionEntity);
+  if (data && typeof data === 'object') {
+    if (Array.isArray(data.subscriptions)) {
+      return { ...data, subscriptions: data.subscriptions.map(normalizeSubscriptionEntity) };
+    }
+    if (data.subscription && typeof data.subscription === 'object') {
+      return normalizeSubscriptionEntity(data.subscription);
+    }
+    if (data._id || data.id) return normalizeSubscriptionEntity(data);
+  }
+  return data;
+}
+
+function normalizeInvoiceEntity(invoice: any) {
+  if (!invoice || typeof invoice !== 'object') return invoice;
+  return {
+    ...invoice,
+    id: invoice.id || invoice._id,
+    issueDate: invoice.issueDate || invoice.createdAt,
+    taxAmount: invoice.taxAmount ?? invoice.taxTotal ?? 0,
+    discountAmount: invoice.discountAmount ?? invoice.discountTotal ?? 0,
+    totalAmount: invoice.totalAmount ?? invoice.grandTotal ?? 0,
+    balanceDue:
+      invoice.balanceDue ??
+      Math.max((invoice.totalAmount ?? invoice.grandTotal ?? 0) - (invoice.paidAmount ?? 0), 0),
+    items: Array.isArray(invoice.items)
+      ? invoice.items.map((item: any) => ({
+        ...item,
+        amount: item.amount ?? item.total ?? 0,
+      }))
+      : [],
+    userId: normalizeUserEntity(invoice.userId),
+    subscriptionId: normalizeSubscriptionEntity(invoice.subscriptionId),
+  };
+}
+
+function normalizeInvoicesPayload(data: any) {
+  if (Array.isArray(data)) return data.map(normalizeInvoiceEntity);
+  if (data && typeof data === 'object') {
+    if (Array.isArray(data.invoices)) {
+      return { ...data, invoices: data.invoices.map(normalizeInvoiceEntity) };
+    }
+    if (data.invoice && typeof data.invoice === 'object') {
+      return normalizeInvoiceEntity(data.invoice);
+    }
+    if (data._id || data.id) return normalizeInvoiceEntity(data);
+  }
+  return data;
+}
+
+function normalizeQuotationEntity(quotation: any) {
+  if (!quotation || typeof quotation !== 'object') return quotation;
+  return {
+    ...quotation,
+    id: quotation.id || quotation._id,
+    issueDate: quotation.issueDate || quotation.createdAt,
+    expiryDate: quotation.expiryDate || quotation.validUntil,
+    subtotal: quotation.subtotal ?? 0,
+    taxAmount: quotation.taxAmount ?? quotation.taxTotal ?? 0,
+    discountAmount: quotation.discountAmount ?? quotation.discountTotal ?? 0,
+    totalAmount: quotation.totalAmount ?? quotation.grandTotal ?? 0,
+    userId: normalizeUserEntity(quotation.userId),
+    planId: normalizePlanEntity(quotation.planId),
+  };
+}
+
+function normalizeQuotationsPayload(data: any) {
+  if (Array.isArray(data)) return data.map(normalizeQuotationEntity);
+  if (data && typeof data === 'object') {
+    if (Array.isArray(data.quotations)) {
+      return { ...data, quotations: data.quotations.map(normalizeQuotationEntity) };
+    }
+    if (data.quotation && typeof data.quotation === 'object') {
+      return normalizeQuotationEntity(data.quotation);
+    }
+    if (data._id || data.id) return normalizeQuotationEntity(data);
+  }
+  return data;
+}
+
+function normalizePaymentEntity(payment: any) {
+  if (!payment || typeof payment !== 'object') return payment;
+  return {
+    ...payment,
+    id: payment.id || payment._id,
+    invoiceId: normalizeInvoiceEntity(payment.invoiceId),
+    userId: normalizeUserEntity(payment.userId),
+  };
+}
+
+function normalizePaymentsPayload(data: any) {
+  if (Array.isArray(data)) return data.map(normalizePaymentEntity);
+  if (data && typeof data === 'object') {
+    if (Array.isArray(data.payments)) {
+      return { ...data, payments: data.payments.map(normalizePaymentEntity) };
+    }
+    if (data.payment && typeof data.payment === 'object') {
+      return normalizePaymentEntity(data.payment);
+    }
+    if (data._id || data.id) return normalizePaymentEntity(data);
+  }
+  return data;
+}
+
+function getApiErrorMessage(path: string, status: number, data: any): string {
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    return String(data.errors[0]);
+  }
+  if (typeof data?.message === 'string' && data.message.trim()) {
+    return data.message;
+  }
+  if (path === '/auth/login' && status === 401) {
+    return 'Invalid email or password.';
+  }
+  if (status === 429) {
+    return 'Too many attempts. Please wait a minute and try again.';
+  }
+  return 'Something went wrong';
+}
+
 // ─── Token Refresh Mutex ──────────────────────────────────────────────
 // Prevents multiple parallel requests from each triggering a refresh.
 let isRefreshing = false;
@@ -92,11 +232,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
   });
 
   // ── First attempt ──────────────────────────────────────────────────
-  const response = await fetch(url, {
-    ...options,
-    credentials: 'include',           // send both accessToken & refreshToken cookies
-    headers: buildHeaders(),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      credentials: 'include',           // send both accessToken & refreshToken cookies
+      headers: buildHeaders(),
+    });
+  } catch {
+    throw new Error('Unable to reach server. Please check network/CORS and try again.');
+  }
 
   if (response.status === 204) return { success: true, data: null as any };
 
@@ -140,11 +285,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
   // ── Other 401 (invalid session, not expired) ─────────────────────────
   if (response.status === 401 && typeof window !== 'undefined') {
     localStorage.removeItem('plano_user');
-    window.location.href = '/login';
+    if (!path.startsWith('/auth/')) {
+      window.location.href = '/login';
+    }
   }
 
   if (!response.ok) {
-    throw new Error(data.message || 'Something went wrong');
+    throw new Error(getApiErrorMessage(path, response.status, data));
   }
 
   return data as ApiResponse<T>;
@@ -253,59 +400,125 @@ export const api = {
   subscriptions: {
     getAll: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
-      return request<Subscription[]>(`/subscriptions${q}`);
+      return request<Subscription[] | { subscriptions?: Subscription[] }>(`/subscriptions${q}`).then((res) => ({
+        ...res,
+        data: normalizeSubscriptionsPayload(res.data),
+      }));
     },
-    getById: (id: string) => request<Subscription>(`/subscriptions/${id}`),
+    getById: (id: string) => request<Subscription | { subscription?: Subscription }>(`/subscriptions/${id}`).then((res) => ({
+      ...res,
+      data: normalizeSubscriptionsPayload(res.data),
+    })),
     create: (data: any) =>
-      request<Subscription>('/subscriptions', { method: 'POST', body: JSON.stringify(data) }),
+      request<Subscription | { subscription?: Subscription }>('/subscriptions', { method: 'POST', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeSubscriptionsPayload(res.data),
+      })),
     update: (id: string, data: any) =>
-      request<Subscription>(`/subscriptions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+      request<Subscription | { subscription?: Subscription }>(`/subscriptions/${id}`, { method: 'PATCH', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeSubscriptionsPayload(res.data),
+      })),
     confirm: (id: string) =>
-      request<Subscription>(`/subscriptions/${id}/confirm`, { method: 'POST' }),
+      request<Subscription | { subscription?: Subscription }>(`/subscriptions/${id}/confirm`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeSubscriptionsPayload(res.data),
+      })),
     activate: (id: string) =>
-      request<Subscription>(`/subscriptions/${id}/activate`, { method: 'POST' }),
+      request<Subscription | { subscription?: Subscription }>(`/subscriptions/${id}/activate`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeSubscriptionsPayload(res.data),
+      })),
     cancel: (id: string, reason: string) =>
-      request<Subscription>(`/subscriptions/${id}/cancel`, { method: 'POST', body: JSON.stringify({ reason }) }),
+      request<Subscription | { subscription?: Subscription }>(`/subscriptions/${id}/cancel`, { method: 'POST', body: JSON.stringify({ reason }) }).then((res) => ({
+        ...res,
+        data: normalizeSubscriptionsPayload(res.data),
+      })),
     pause: (id: string) =>
-      request<Subscription>(`/subscriptions/${id}/pause`, { method: 'POST' }),
+      request<Subscription | { subscription?: Subscription }>(`/subscriptions/${id}/pause`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeSubscriptionsPayload(res.data),
+      })),
     resume: (id: string) =>
-      request<Subscription>(`/subscriptions/${id}/resume`, { method: 'POST' }),
+      request<Subscription | { subscription?: Subscription }>(`/subscriptions/${id}/resume`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeSubscriptionsPayload(res.data),
+      })),
   },
 
   // ─── Quotations ────────────────────────────────────────────
   quotations: {
     getAll: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
-      return request<Quotation[]>(`/quotations${q}`);
+      return request<Quotation[] | { quotations?: Quotation[] }>(`/quotations${q}`).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      }));
     },
-    getById: (id: string) => request<Quotation>(`/quotations/${id}`),
+    getById: (id: string) => request<Quotation | { quotation?: Quotation }>(`/quotations/${id}`).then((res) => ({
+      ...res,
+      data: normalizeQuotationsPayload(res.data),
+    })),
     create: (data: any) =>
-      request<Quotation>('/quotations', { method: 'POST', body: JSON.stringify(data) }),
+      request<Quotation | { quotation?: Quotation }>('/quotations', { method: 'POST', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      })),
     update: (id: string, data: any) =>
-      request<Quotation>(`/quotations/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+      request<Quotation | { quotation?: Quotation }>(`/quotations/${id}`, { method: 'PUT', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      })),
     send: (id: string) =>
-      request<Quotation>(`/quotations/${id}/send`, { method: 'POST' }),
+      request<Quotation | { quotation?: Quotation }>(`/quotations/${id}/send`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      })),
     convert: (id: string) =>
-      request<Quotation>(`/quotations/${id}/convert`, { method: 'POST' }),
+      request<Quotation | { quotation?: Quotation }>(`/quotations/${id}/convert`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeQuotationsPayload(res.data),
+      })),
   },
 
   // ─── Invoices ──────────────────────────────────────────────
   invoices: {
     getAll: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
-      return request<Invoice[]>(`/invoices${q}`);
+      return request<Invoice[] | { invoices?: Invoice[] }>(`/invoices${q}`).then((res) => ({
+        ...res,
+        data: normalizeInvoicesPayload(res.data),
+      }));
     },
     create: (data: any) =>
-      request<Invoice>('/invoices', { method: 'POST', body: JSON.stringify(data) }),
-    getById: (id: string) => request<Invoice>(`/invoices/${id}`),
+      request<Invoice | { invoice?: Invoice }>('/invoices', { method: 'POST', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeInvoicesPayload(res.data),
+      })),
+    getById: (id: string) => request<Invoice | { invoice?: Invoice }>(`/invoices/${id}`).then((res) => ({
+      ...res,
+      data: normalizeInvoicesPayload(res.data),
+    })),
     confirm: (id: string) =>
-      request<Invoice>(`/invoices/${id}/confirm`, { method: 'POST' }),
+      request<Invoice | { invoice?: Invoice }>(`/invoices/${id}/confirm`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeInvoicesPayload(res.data),
+      })),
     send: (id: string) =>
-      request<Invoice>(`/invoices/${id}/send`, { method: 'POST' }),
+      request<Invoice | { invoice?: Invoice }>(`/invoices/${id}/send`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeInvoicesPayload(res.data),
+      })),
     cancel: (id: string) =>
-      request<Invoice>(`/invoices/${id}/cancel`, { method: 'POST' }),
+      request<Invoice | { invoice?: Invoice }>(`/invoices/${id}/cancel`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizeInvoicesPayload(res.data),
+      })),
     voidInvoice: (id: string, reason?: string) =>
-      request<Invoice>(`/invoices/${id}/void`, { method: 'POST', body: JSON.stringify({ reason }) }),
+      request<Invoice | { invoice?: Invoice }>(`/invoices/${id}/void`, { method: 'POST', body: JSON.stringify({ reason }) }).then((res) => ({
+        ...res,
+        data: normalizeInvoicesPayload(res.data),
+      })),
     downloadPdf: async (id: string) => {
       const url = `${API_BASE_URL}/invoices/${id}/download`;
       return fetch(url, {
@@ -319,13 +532,25 @@ export const api = {
   payments: {
     getAll: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
-      return request<Payment[]>(`/payments${q}`);
+      return request<Payment[] | { payments?: Payment[] }>(`/payments${q}`).then((res) => ({
+        ...res,
+        data: normalizePaymentsPayload(res.data),
+      }));
     },
-    getById: (id: string) => request<Payment>(`/payments/${id}`),
+    getById: (id: string) => request<Payment | { payment?: Payment }>(`/payments/${id}`).then((res) => ({
+      ...res,
+      data: normalizePaymentsPayload(res.data),
+    })),
     record: (data: any) =>
-      request<Payment>('/payments', { method: 'POST', body: JSON.stringify(data) }),
+      request<Payment | { payment?: Payment }>('/payments', { method: 'POST', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizePaymentsPayload(res.data),
+      })),
     refund: (id: string) =>
-      request<Payment>(`/payments/${id}/refund`, { method: 'POST' }),
+      request<Payment | { payment?: Payment }>(`/payments/${id}/refund`, { method: 'POST' }).then((res) => ({
+        ...res,
+        data: normalizePaymentsPayload(res.data),
+      })),
   },
 
   // ─── Discounts ─────────────────────────────────────────────

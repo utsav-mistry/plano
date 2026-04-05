@@ -20,10 +20,11 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { toAdminPath } from '@/lib/path-scoping';
+import { Payment } from '@/types';
 
 export default function PaymentsPage() {
    const pathname = usePathname();
-   const [payments, setPayments] = useState<any[]>([]);
+   const [payments, setPayments] = useState<Payment[]>([]);
    const [isLoading, setIsLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
    const [search, setSearch] = useState('');
@@ -39,8 +40,8 @@ export default function PaymentsPage() {
       try {
          const response = await api.payments.getAll();
          if (response.success) {
-            const data = response.data as any;
-            setPayments(data.payments ?? data ?? []);
+            const data = response.data as Payment[] | { payments?: Payment[] };
+            setPayments(Array.isArray(data) ? data : (data.payments ?? []));
          }
       } catch (err: any) {
          setError(err.message || 'Failed to load payments');
@@ -49,21 +50,27 @@ export default function PaymentsPage() {
       }
    }
 
+   const getPaymentId = (pay: Payment) => pay.id || (pay as any)?._id || '';
+   const getMethod = (pay: Payment) => (pay as any)?.method || (pay as any)?.paymentMethod || 'manual';
+   const getPaymentDate = (pay: Payment) => (pay as any)?.paymentDate || (pay as any)?.processedAt || pay.createdAt;
+   const getReference = (pay: Payment) => (pay as any)?.gatewayTransactionId || (pay as any)?.transactionId || '-';
+   const getDisplayStatus = (pay: Payment) => (pay.status === 'success' ? 'completed' : pay.status);
+
    const filteredPayments = payments.filter(p =>
-      p.transactionId?.toLowerCase().includes(search.toLowerCase()) ||
-      p._id.toLowerCase().includes(search.toLowerCase()) ||
+      getReference(p).toLowerCase().includes(search.toLowerCase()) ||
+      getPaymentId(p).toLowerCase().includes(search.toLowerCase()) ||
       (typeof p.userId === 'object' && p.userId?.name?.toLowerCase().includes(search.toLowerCase()))
    );
 
    function exportPaymentsCsv() {
       const header = ['payment_id', 'date', 'customer', 'method', 'amount_inr', 'status'];
       const rows = filteredPayments.map((pay) => [
-         pay._id,
-         pay.paymentDate ? new Date(pay.paymentDate).toISOString().slice(0, 10) : '',
+         getPaymentId(pay),
+         getPaymentDate(pay) ? new Date(getPaymentDate(pay)).toISOString().slice(0, 10) : '',
          typeof pay.userId === 'object' ? (pay.userId?.name || 'Customer') : 'Customer',
-         pay.paymentMethod || '',
+         getMethod(pay),
          String(pay.amount ?? 0),
-         pay.status || '',
+         getDisplayStatus(pay) || '',
       ]);
 
       const csv = [header, ...rows]
@@ -157,18 +164,18 @@ export default function PaymentsPage() {
                      </thead>
                      <tbody className="divide-y divide-border dark:divide-sidebar-hover">
                         {filteredPayments.map((pay) => (
-                           <tr key={pay._id} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
+                           <tr key={getPaymentId(pay)} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
                               <td className="py-4 px-6">
                                  <div className="flex flex-col">
-                                    <span className="text-xs font-mono font-bold text-text-primary tracking-tighter">PAY-{pay._id.slice(-6).toUpperCase()}</span>
-                                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{new Date(pay.paymentDate).toLocaleDateString()}</span>
+                                    <span className="text-xs font-mono font-bold text-text-primary tracking-tighter">PAY-{getPaymentId(pay).slice(-6).toUpperCase()}</span>
+                                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">{getPaymentDate(pay) ? new Date(getPaymentDate(pay)).toLocaleDateString() : '-'}</span>
                                  </div>
                               </td>
                               <td className="py-4 px-6">
                                  {pay.invoiceId ? (
-                                    <Link href={toAdminPath(pathname, `/invoices/${typeof pay.invoiceId === 'object' ? pay.invoiceId?._id : pay.invoiceId}`)} className="flex items-center gap-1 text-xs font-mono font-bold text-plano-600 hover:underline">
+                                    <Link href={toAdminPath(pathname, `/invoices/${typeof pay.invoiceId === 'object' ? (pay.invoiceId as any)?.id || (pay.invoiceId as any)?._id : pay.invoiceId}`)} className="flex items-center gap-1 text-xs font-mono font-bold text-plano-600 hover:underline">
                                        <Receipt size={12} />
-                                       INV-{typeof pay.invoiceId === 'object' ? pay.invoiceId?.invoiceNumber : '...'}
+                                       {typeof pay.invoiceId === 'object' ? ((pay.invoiceId as any)?.invoiceNumber || 'Invoice') : 'Invoice'}
                                     </Link>
                                  ) : (
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">Standalone</span>
@@ -180,11 +187,11 @@ export default function PaymentsPage() {
                               <td className="py-4 px-6">
                                  <span className={cn(
                                     "px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest border",
-                                    pay.paymentMethod === 'bank_transfer' ? "bg-plano-50 dark:bg-white/10 text-plano-700 dark:text-plano-400 border-plano-200 dark:border-white/10" :
-                                       pay.paymentMethod === 'card' ? "bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-500 border-info-200 dark:border-info-800" :
+                                    getMethod(pay) === 'bank_transfer' ? "bg-plano-50 dark:bg-white/10 text-plano-700 dark:text-plano-400 border-plano-200 dark:border-white/10" :
+                                       getMethod(pay) === 'card' ? "bg-info-50 dark:bg-info-900/20 text-info-700 dark:text-info-500 border-info-200 dark:border-info-800" :
                                           "bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-white/10"
                                  )}>
-                                    {pay.paymentMethod.replace('_', ' ')}
+                                    {getMethod(pay).replace('_', ' ')}
                                  </span>
                               </td>
                               <td className="py-4 px-6 text-right">
@@ -193,11 +200,11 @@ export default function PaymentsPage() {
                               <td className="py-4 px-6 text-center">
                                  <span className={cn(
                                     "text-[10px] font-bold uppercase tracking-tighter px-2.5 py-1 rounded-full border",
-                                    pay.status === 'completed' ? "bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-500 border-success-200 dark:border-success-800" :
+                                    (pay.status === 'success' || pay.status === 'completed') ? "bg-success-50 dark:bg-success-900/20 text-success-700 dark:text-success-500 border-success-200 dark:border-success-800" :
                                        pay.status === 'failed' ? "bg-danger-50 dark:bg-danger-900/20 text-danger-700 dark:text-danger-500 border-danger-200 dark:border-danger-800" :
                                           "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/10"
                                  )}>
-                                    {pay.status}
+                                    {getDisplayStatus(pay)}
                                  </span>
                               </td>
                               <td className="py-4 px-6 text-right">

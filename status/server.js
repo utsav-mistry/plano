@@ -9,8 +9,8 @@
  */
 
 import http from 'http';
-import net  from 'net';
-import fs   from 'fs';
+import net from 'net';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -33,16 +33,16 @@ try {
 // ─────────────────────────────────────────────────────────────────────────────
 // CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
-const PORT      = parseInt(process.env.PORT) || 4000;
-const POLL_MS   = 5000;
+const PORT = parseInt(process.env.PORT) || 4000;
+const POLL_MS = 5000;
 const HYSTERESIS = 3;          // failures before "outage"
-const USE_MOCK  = process.env.MOCK_CHECKERS === 'true';
+const USE_MOCK = process.env.MOCK_CHECKERS === 'true';
 
 const REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT) || 6379;
 const REDIS_PASS = process.env.REDIS_PASSWORD || null;
 
-const WEIGHTS = { backend: 0.35, mongodb: 0.25, redis: 0.20, bullmq: 0.12, smtp: 0.08 };
+const WEIGHTS = { backend: 0.30, frontend: 0.20, mongodb: 0.20, redis: 0.15, bullmq: 0.10, smtp: 0.05 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // UTILS
@@ -57,17 +57,17 @@ function withTimeout(promise, ms) {
 /** TCP reachability — just checks the port opens */
 function tcpPing(host, port, ms = 3000) {
   return new Promise((resolve, reject) => {
-    const sock  = net.createConnection({ host, port });
+    const sock = net.createConnection({ host, port });
     const timer = setTimeout(() => { sock.destroy(); reject(new Error(`TCP timeout ${host}:${port}`)); }, ms);
     sock.on('connect', () => { clearTimeout(timer); sock.destroy(); resolve(); });
-    sock.on('error',   e  => { clearTimeout(timer); reject(e); });
+    sock.on('error', e => { clearTimeout(timer); reject(e); });
   });
 }
 
 /** Redis PING via raw RESP protocol — no ioredis needed */
 function redisPing() {
   return new Promise((resolve, reject) => {
-    const sock  = net.createConnection({ host: REDIS_HOST, port: REDIS_PORT });
+    const sock = net.createConnection({ host: REDIS_HOST, port: REDIS_PORT });
     const timer = setTimeout(() => { sock.destroy(); reject(new Error('Redis timeout')); }, 2000);
     let buf = '';
     sock.on('connect', () => {
@@ -90,7 +90,7 @@ function redisPing() {
 }
 
 function fmtDate(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -108,8 +108,8 @@ function seed(id) {
     m.set(date, {
       date, status,
       uptimePercent: status === 'operational' ? 100
-                   : status === 'degraded'    ? +(82 + Math.random()*13).toFixed(1)
-                   :                            +(55 + Math.random()*20).toFixed(1),
+        : status === 'degraded' ? +(82 + Math.random() * 13).toFixed(1)
+          : +(55 + Math.random() * 20).toFixed(1),
     });
   }
   store[id] = m;
@@ -121,7 +121,7 @@ function recordToday(id, status) {
   if (store[id].size > 90) store[id].delete(store[id].keys().next().value);
 }
 
-const getHistory   = id => Array.from(store[id].values());
+const getHistory = id => Array.from(store[id].values());
 const getAvgUptime = id => {
   const arr = getHistory(id);
   return +(arr.reduce((s, d) => s + d.uptimePercent, 0) / arr.length).toFixed(2);
@@ -130,14 +130,14 @@ const getAvgUptime = id => {
 // ─────────────────────────────────────────────────────────────────────────────
 // HYSTERESIS
 // ─────────────────────────────────────────────────────────────────────────────
-const failures   = {};
+const failures = {};
 const backoffCtr = {};
 
-const statusOf   = id => { const f = failures[id]||0; return f===0?'operational':f<HYSTERESIS?'degraded':'outage'; };
-const calcHealth = (id, ms) => Math.max(0, Math.min(100, 100-(failures[id]||0)*15-(ms>1000?10:0)-(ms>3000?20:0)));
+const statusOf = id => { const f = failures[id] || 0; return f === 0 ? 'operational' : f < HYSTERESIS ? 'degraded' : 'outage'; };
+const calcHealth = (id, ms) => Math.max(0, Math.min(100, 100 - (failures[id] || 0) * 15 - (ms > 1000 ? 10 : 0) - (ms > 3000 ? 20 : 0)));
 function shouldBackoff(id) {
-  if ((failures[id]||0) < HYSTERESIS) return false;
-  backoffCtr[id] = (backoffCtr[id]||0) + 1;
+  if ((failures[id] || 0) < HYSTERESIS) return false;
+  backoffCtr[id] = (backoffCtr[id] || 0) + 1;
   return backoffCtr[id] > 3 && backoffCtr[id] % 2 === 0;
 }
 
@@ -146,14 +146,20 @@ function shouldBackoff(id) {
 // ─────────────────────────────────────────────────────────────────────────────
 async function checkBackend() {
   const url = process.env.BACKEND_HEALTH_URL || 'http://localhost:5000/health';
-  const res  = await withTimeout(fetch(url), 3000);
+  const res = await withTimeout(fetch(url), 3000);
   const body = await res.json().catch(() => ({}));
   if (body?.status !== 'ok') throw new Error(`Unexpected: ${JSON.stringify(body)}`);
 }
 
+async function checkFrontend() {
+  const url = process.env.FRONTEND_HEALTH_URL || 'http://localhost:3000';
+  const res = await withTimeout(fetch(url), 3000);
+  if (!res.ok) throw new Error(`Frontend returned ${res.status}`);
+}
+
 async function checkMongo() {
-  const uri  = process.env.MONGO_URI || 'mongodb://localhost:27017/plano';
-  const m    = uri.match(/mongodb:\/\/(?:[^@]+@)?([^/:]+)(?::(\d+))?/);
+  const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/plano';
+  const m = uri.match(/mongodb:\/\/(?:[^@]+@)?([^/:]+)(?::(\d+))?/);
   const host = m?.[1] || 'localhost';
   const port = parseInt(m?.[2]) || 27017;
   await tcpPing(host, port, 2000);
@@ -167,18 +173,20 @@ async function checkSMTP() {
 
 const CHECKERS = {
   backend: checkBackend,
+  frontend: checkFrontend,
   mongodb: checkMongo,
-  redis:   redisPing,
-  bullmq:  redisPing,   // BullMQ health = Redis is reachable + responding
-  smtp:    checkSMTP,
+  redis: redisPing,
+  bullmq: redisPing,   // BullMQ health = Redis is reachable + responding
+  smtp: checkSMTP,
 };
 
 const SERVICES = [
   { id: 'backend', name: 'Backend' },
+  { id: 'frontend', name: 'Frontend' },
   { id: 'mongodb', name: 'MongoDB' },
-  { id: 'redis',   name: 'Redis'   },
-  { id: 'bullmq',  name: 'BullMQ' },
-  { id: 'smtp',    name: 'SMTP'    },
+  { id: 'redis', name: 'Redis' },
+  { id: 'bullmq', name: 'BullMQ' },
+  { id: 'smtp', name: 'SMTP' },
 ];
 SERVICES.forEach(s => seed(s.id));
 
@@ -187,10 +195,10 @@ SERVICES.forEach(s => seed(s.id));
 // ─────────────────────────────────────────────────────────────────────────────
 async function checkOne({ id, name }) {
   if (shouldBackoff(id)) {
-    return { id, name, status: statusOf(id), responseTimeMs: null, lastChecked: new Date().toISOString(), healthScore: calcHealth(id,9999), consecutiveFailures: failures[id]||0, error: 'Backoff', uptimeHistory: getHistory(id), uptimePercent: getAvgUptime(id) };
+    return { id, name, status: statusOf(id), responseTimeMs: null, lastChecked: new Date().toISOString(), healthScore: calcHealth(id, 9999), consecutiveFailures: failures[id] || 0, error: 'Backoff', uptimeHistory: getHistory(id), uptimePercent: getAvgUptime(id) };
   }
   if (USE_MOCK) {
-    const ms = Math.floor(15 + Math.random()*85);
+    const ms = Math.floor(15 + Math.random() * 85);
     await new Promise(r => setTimeout(r, ms));
     failures[id] = 0; backoffCtr[id] = 0;
     recordToday(id, 'operational');
@@ -200,40 +208,40 @@ async function checkOne({ id, name }) {
   try {
     await CHECKERS[id](); failures[id] = 0; backoffCtr[id] = 0; status = 'operational';
   } catch (e) {
-    failures[id] = (failures[id]||0) + 1; status = statusOf(id); error = e.message;
+    failures[id] = (failures[id] || 0) + 1; status = statusOf(id); error = e.message;
   }
   const ms = Date.now() - start;
   recordToday(id, status);
-  return { id, name, status, responseTimeMs: ms, lastChecked: new Date().toISOString(), healthScore: calcHealth(id,ms), consecutiveFailures: failures[id]||0, error, uptimeHistory: getHistory(id), uptimePercent: getAvgUptime(id) };
+  return { id, name, status, responseTimeMs: ms, lastChecked: new Date().toISOString(), healthScore: calcHealth(id, ms), consecutiveFailures: failures[id] || 0, error, uptimeHistory: getHistory(id), uptimePercent: getAvgUptime(id) };
 }
 
 function cascade(services) {
-  const down = services.find(s => s.id==='backend')?.status === 'outage';
-  return services.map(s => (s.id!=='backend' && down && s.status==='operational') ? {...s,status:'degraded',cascaded:true} : s);
+  const down = services.find(s => s.id === 'backend')?.status === 'outage';
+  return services.map(s => (s.id !== 'backend' && down && s.status === 'operational') ? { ...s, status: 'degraded', cascaded: true } : s);
 }
 
 function computeOverall(services) {
-  let score = services.reduce((a,s) => a+(WEIGHTS[s.id]||0)*(s.status==='operational'?1:s.status==='degraded'?0.5:0), 0);
-  if (services.find(s=>s.id==='backend')?.status==='outage') score = Math.min(score, 0.3);
+  let score = services.reduce((a, s) => a + (WEIGHTS[s.id] || 0) * (s.status === 'operational' ? 1 : s.status === 'degraded' ? 0.5 : 0), 0);
+  if (services.find(s => s.id === 'backend')?.status === 'outage') score = Math.min(score, 0.3);
   return {
-    status:        score>0.9?'operational':score>0.5?'degraded':'outage',
-    uptimePercent: +(score*100).toFixed(2),
-    message:       score>0.9?'All systems operational':score>0.5?'Partial degradation':'Service outage in progress',
+    status: score > 0.9 ? 'operational' : score > 0.5 ? 'degraded' : 'outage',
+    uptimePercent: +(score * 100).toFixed(2),
+    message: score > 0.9 ? 'All systems operational' : score > 0.5 ? 'Partial degradation' : 'Service outage in progress',
   };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POLLING LOOP
 // ─────────────────────────────────────────────────────────────────────────────
-let latestData  = null;
+let latestData = null;
 const sseClients = new Set();
 
 async function runChecks() {
-  const raw      = await Promise.all(SERVICES.map(checkOne));
+  const raw = await Promise.all(SERVICES.map(checkOne));
   const services = cascade(raw);
-  latestData     = { timestamp: new Date().toISOString(), overall: computeOverall(services), services };
-  const payload  = `event: health\ndata: ${JSON.stringify(latestData)}\n\n`;
-  sseClients.forEach(res => { try { res.write(payload); } catch {} });
+  latestData = { timestamp: new Date().toISOString(), overall: computeOverall(services), services };
+  const payload = `event: health\ndata: ${JSON.stringify(latestData)}\n\n`;
+  sseClients.forEach(res => { try { res.write(payload); } catch { } });
 }
 runChecks().catch(console.error);
 setInterval(() => runChecks().catch(console.error), POLL_MS);
@@ -248,17 +256,17 @@ const server = http.createServer((req, res) => {
 
   // Health JSON
   if (url === '/api/health') {
-    if (!latestData) { res.writeHead(503,{'Content-Type':'application/json'}); return res.end(JSON.stringify({error:'Not ready'})); }
-    res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-cache'});
+    if (!latestData) { res.writeHead(503, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ error: 'Not ready' })); }
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
     return res.end(JSON.stringify(latestData));
   }
 
   // SSE stream
   if (url === '/api/stream') {
-    res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive'});
+    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
     if (latestData) res.write(`event: health\ndata: ${JSON.stringify(latestData)}\n\n`);
     sseClients.add(res);
-    const hb = setInterval(() => { try { res.write(': heartbeat\n\n'); } catch {} }, 15000);
+    const hb = setInterval(() => { try { res.write(': heartbeat\n\n'); } catch { } }, 15000);
     req.on('close', () => { clearInterval(hb); sseClients.delete(res); });
     return;
   }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,33 +8,45 @@
   <meta name="description" content="Real-time health monitoring for Plano services." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
 
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --bg:       #f0f2f5;
-      --surface:  #ffffff;
-      --border:   #e4e7ec;
-      --txt:      #101828;
-      --txt-2:    #667085;
-      --txt-3:    #98a2b3;
-      --radius:   16px;
-      --shadow:   0 1px 3px rgba(16,24,40,.06), 0 4px 16px rgba(16,24,40,.04);
+      --bg: #f8f5f8;
+      --surface: #ffffff;
+      --border: #eee3ec;
+      --txt: #101828;
+      --txt-2: #6f6470;
+      --txt-3: #a28aa0;
+      --radius: 16px;
+      --shadow: 0 2px 10px rgba(113, 75, 103, .08), 0 8px 28px rgba(113, 75, 103, .06);
 
-      --ok:       #12b76a;
-      --ok-bg:    #ecfdf3;
-      --ok-bd:    #abefc6;
-      --ok-ring:  rgba(18,183,106,.15);
+      --plano-500: #714b67;
+      --plano-600: #604058;
+      --plano-100: #ebe0e8;
 
-      --deg:      #f79009;
-      --deg-bg:   #fffaeb;
-      --deg-bd:   #fedf89;
+      --ok: #12b76a;
+      --ok-bg: #ecfdf3;
+      --ok-bd: #abefc6;
+      --ok-ring: rgba(18, 183, 106, .15);
 
-      --out:      #f04438;
-      --out-bg:   #fef3f2;
-      --out-bd:   #fecdca;
+      --deg: #f79009;
+      --deg-bg: #fffaeb;
+      --deg-bd: #fedf89;
+
+      --out: #f04438;
+      --out-bg: #fef3f2;
+      --out-bd: #fecdca;
     }
 
     body {
@@ -48,34 +61,94 @@
     .hdr {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 50;
+      position: sticky;
+      top: 0;
+      z-index: 50;
     }
-    .hdr-inner {
-      max-width: 1040px; margin: 0 auto;
-      padding: 14px 28px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .brand { display: flex; align-items: center; gap: 8px; }
-    .brand-name { font-size: 15px; font-weight: 700; color: var(--txt); }
-    .brand-sep  { color: var(--border); }
-    .brand-sub  { font-size: 14px; color: var(--txt-3); font-weight: 400; }
 
-    .hdr-right  { display: flex; align-items: center; gap: 12px; }
-    .upd-time   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--txt-3); }
-    .queue-btn  {
-      font-size: 12px; font-weight: 500;
-      color: var(--txt-2); text-decoration: none;
-      border: 1px solid var(--border); border-radius: 8px;
-      padding: 5px 13px; display: flex; align-items: center; gap: 5px;
+    .hdr-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-name {
+      font-size: 30px;
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      color: var(--txt);
+      letter-spacing: -.02em;
+      line-height: .9;
+    }
+
+    .brand-name .o {
+      color: #7C3AED;
+    }
+
+    .brand-sep {
+      color: var(--border);
+    }
+
+    .brand-sub {
+      font-size: 14px;
+      color: var(--txt-3);
+      font-weight: 400;
+    }
+
+    .hdr-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .upd-time {
+      font-family: 'Inter', sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 11px;
+      color: var(--txt-3);
+    }
+
+    .queue-btn {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--txt-2);
+      text-decoration: none;
+      border: 1px solid var(--plano-100);
+      border-radius: 999px;
+      padding: 5px 13px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
       transition: border-color .15s, color .15s;
     }
-    .queue-btn:hover { border-color: var(--txt-3); color: var(--txt); }
+
+    .queue-btn:hover {
+      border-color: var(--plano-500);
+      color: var(--plano-600);
+    }
 
     /* ── Main ────────────────────────────────────────────── */
-    .wrap { max-width: 1040px; margin: 0 auto; padding: 36px 28px 80px; }
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 36px 28px 80px;
+    }
+
     .section-label {
-      font-size: 11px; font-weight: 600; letter-spacing: .9px;
-      text-transform: uppercase; color: var(--txt-3);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .9px;
+      text-transform: uppercase;
+      color: var(--plano-500);
       margin-bottom: 16px;
     }
 
@@ -88,53 +161,123 @@
       padding: 32px 36px;
       margin-bottom: 28px;
     }
+
     .overall-top {
-      display: flex; align-items: center;
-      justify-content: space-between; flex-wrap: wrap; gap: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
       margin-bottom: 28px;
     }
-    .overall-left { display: flex; align-items: center; gap: 18px; }
+
+    .overall-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
 
     .status-ring {
-      width: 56px; height: 56px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
       transition: background .4s, box-shadow .4s;
     }
-    .status-ring.ok  { background: var(--ok-bg);  box-shadow: 0 0 0 8px var(--ok-ring); }
-    .status-ring.deg { background: var(--deg-bg); box-shadow: 0 0 0 8px rgba(247,144,9,.12); }
-    .status-ring.out { background: var(--out-bg); box-shadow: 0 0 0 8px rgba(240,68,56,.12); }
 
-    .overall-msg { font-size: 20px; font-weight: 700; line-height: 1.2; }
-    .overall-sub { font-size: 13px; color: var(--txt-2); margin-top: 5px; }
-
-    .overall-pct-block { text-align: right; }
-    .overall-pct {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 44px; font-weight: 600; line-height: 1;
-      transition: color .4s;
+    .status-ring.ok {
+      background: var(--ok-bg);
+      box-shadow: 0 0 0 8px var(--ok-ring);
     }
-    .overall-pct.ok  { color: var(--ok);  }
-    .overall-pct.deg { color: var(--deg); }
-    .overall-pct.out { color: var(--out); }
-    .overall-pct-lbl { font-size: 12px; color: var(--txt-3); margin-top: 5px; }
+
+    .status-ring.deg {
+      background: var(--deg-bg);
+      box-shadow: 0 0 0 8px rgba(247, 144, 9, .12);
+    }
+
+    .status-ring.out {
+      background: var(--out-bg);
+      box-shadow: 0 0 0 8px rgba(240, 68, 56, .12);
+    }
+
+    .overall-msg {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .overall-sub {
+      font-size: 13px;
+      color: var(--txt-2);
+      margin-top: 5px;
+    }
+
+    .overall-pct-block {
+      text-align: right;
+    }
+
+    .overall-pct {
+      font-family: 'Inter', sans-serif;
+      font-size: 44px;
+      font-weight: 600;
+      line-height: 1;
+      transition: color .4s;
+      letter-spacing: -.03em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .overall-pct.ok {
+      color: var(--ok);
+    }
+
+    .overall-pct.deg {
+      color: var(--deg);
+    }
+
+    .overall-pct.out {
+      color: var(--out);
+    }
+
+    .overall-pct-lbl {
+      font-size: 12px;
+      color: var(--txt-3);
+      margin-top: 5px;
+    }
 
     /* Overall progress bar */
     .bar-label {
-      display: flex; justify-content: space-between;
-      font-size: 12px; color: var(--txt-3);
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--txt-3);
       margin-bottom: 8px;
     }
+
     .bar-track {
       display: none;
     }
+
     .bar-fill {
-      height: 100%; border-radius: 99px;
-      transition: width .8s cubic-bezier(.4,0,.2,1), background .4s;
+      height: 100%;
+      border-radius: 99px;
+      transition: width .8s cubic-bezier(.4, 0, .2, 1), background .4s;
     }
-    .bar-fill.ok  { background: linear-gradient(90deg, #6ce9a6, #12b76a); }
-    .bar-fill.deg { background: linear-gradient(90deg, #fec84b, #f79009); }
-    .bar-fill.out { background: linear-gradient(90deg, #fda29b, #f04438); }
+
+    .bar-fill.ok {
+      background: linear-gradient(90deg, #6ce9a6, #12b76a);
+    }
+
+    .bar-fill.deg {
+      background: linear-gradient(90deg, #fec84b, #f79009);
+    }
+
+    .bar-fill.out {
+      background: linear-gradient(90deg, #fda29b, #f04438);
+    }
 
     /* ── Services grid ───────────────────────────────────── */
     .grid {
@@ -150,173 +293,353 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 24px 26px;
-      display: flex; flex-direction: column; gap: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
 
     /* Top: name + badge */
-    .svc-top { display: flex; align-items: center; justify-content: space-between; }
-    .svc-name-row { display: flex; align-items: center; gap: 9px; }
+    .svc-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .svc-name-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
     .svc-dot {
-      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
       transition: background .3s, box-shadow .3s;
     }
-    .svc-dot.ok  { background: var(--ok);  box-shadow: 0 0 0 3px var(--ok-ring); }
-    .svc-dot.deg { background: var(--deg); box-shadow: 0 0 0 3px rgba(247,144,9,.15); }
-    .svc-dot.out { background: var(--out); box-shadow: 0 0 0 3px rgba(240,68,56,.15); }
-    .svc-dot.unk { background: var(--border); }
-    .svc-name { font-size: 15px; font-weight: 600; }
+
+    .svc-dot.ok {
+      background: var(--ok);
+      box-shadow: 0 0 0 3px var(--ok-ring);
+    }
+
+    .svc-dot.deg {
+      background: var(--deg);
+      box-shadow: 0 0 0 3px rgba(247, 144, 9, .15);
+    }
+
+    .svc-dot.out {
+      background: var(--out);
+      box-shadow: 0 0 0 3px rgba(240, 68, 56, .15);
+    }
+
+    .svc-dot.unk {
+      background: var(--border);
+    }
+
+    .svc-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
 
     .svc-badge {
-      font-size: 11px; font-weight: 600;
-      padding: 3px 10px; border-radius: 99px; border: 1px solid;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+      border: 1px solid;
       transition: background .3s, color .3s, border-color .3s;
     }
-    .svc-badge.ok  { background: var(--ok-bg);  color: var(--ok);  border-color: var(--ok-bd);  }
-    .svc-badge.deg { background: var(--deg-bg); color: var(--deg); border-color: var(--deg-bd); }
-    .svc-badge.out { background: var(--out-bg); color: var(--out); border-color: var(--out-bd); }
-    .svc-badge.unk { background: #f9fafb; color: var(--txt-3); border-color: var(--border); }
+
+    .svc-badge.ok {
+      background: var(--ok-bg);
+      color: var(--ok);
+      border-color: var(--ok-bd);
+    }
+
+    .svc-badge.deg {
+      background: var(--deg-bg);
+      color: var(--deg);
+      border-color: var(--deg-bd);
+    }
+
+    .svc-badge.out {
+      background: var(--out-bg);
+      color: var(--out);
+      border-color: var(--out-bd);
+    }
+
+    .svc-badge.unk {
+      background: #f9fafb;
+      color: var(--txt-3);
+      border-color: var(--border);
+    }
 
     /* Metrics row */
-    .svc-metrics { display: flex; align-items: stretch; gap: 0; }
-    .svc-metric  { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-    .svc-metric + .svc-metric { border-left: 1px solid var(--border); padding-left: 16px; margin-left: 16px; }
-    .svc-metric-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 600; line-height: 1; }
-    .svc-metric-lbl { font-size: 11px; color: var(--txt-3); }
+    .svc-metrics {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .svc-metric {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .svc-metric+.svc-metric {
+      border-left: 1px solid var(--border);
+      padding-left: 16px;
+      margin-left: 16px;
+    }
+
+    .svc-metric-val {
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -.02em;
+    }
+
+    .svc-metric-lbl {
+      font-size: 11px;
+      color: var(--txt-3);
+    }
 
     /* Single uptime progress bar */
     .svc-uptime {}
+
     .svc-uptime-header {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 8px;
     }
-    .svc-uptime-label { font-size: 12px; color: var(--txt-3); }
-    .svc-uptime-pct   { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--txt-2); font-weight: 700; }
+
+    .svc-uptime-label {
+      font-size: 12px;
+      color: var(--txt-3);
+    }
+
+    .svc-uptime-pct {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--txt-2);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
     .svc-bar-track {
       display: none;
     }
+
     .svc-bar-fill {
-      height: 100%; border-radius: 99px;
-      transition: width .8s cubic-bezier(.4,0,.2,1), background .4s;
+      height: 100%;
+      border-radius: 99px;
+      transition: width .8s cubic-bezier(.4, 0, .2, 1), background .4s;
     }
-    .svc-bar-fill.ok  { background: linear-gradient(90deg, #6ce9a6, #12b76a); }
-    .svc-bar-fill.deg { background: linear-gradient(90deg, #fec84b, #f79009); }
-    .svc-bar-fill.out { background: linear-gradient(90deg, #fda29b, #f04438); }
-    .svc-bar-fill.unk { background: var(--border); }
+
+    .svc-bar-fill.ok {
+      background: linear-gradient(90deg, #6ce9a6, #12b76a);
+    }
+
+    .svc-bar-fill.deg {
+      background: linear-gradient(90deg, #fec84b, #f79009);
+    }
+
+    .svc-bar-fill.out {
+      background: linear-gradient(90deg, #fda29b, #f04438);
+    }
+
+    .svc-bar-fill.unk {
+      background: var(--border);
+    }
 
     /* Last checked */
-    .svc-checked { font-size: 11px; color: var(--txt-3); font-family: 'JetBrains Mono', monospace; }
+    .svc-checked {
+      font-size: 11px;
+      color: var(--txt-3);
+      font-family: 'Inter', sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
 
     /* ── Skeleton ─────────────────────────────────────────── */
     .sk {
-      background: linear-gradient(90deg,#eaecf0 25%,#f2f4f7 50%,#eaecf0 75%);
+      background: linear-gradient(90deg, #eaecf0 25%, #f2f4f7 50%, #eaecf0 75%);
       background-size: 200% 100%;
       animation: shimmer 1.4s infinite;
       border-radius: 6px;
     }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0
+      }
+
+      100% {
+        background-position: -200% 0
+      }
+    }
 
     /* ── Error ─────────────────────────────────────────────── */
     .err {
-      background: var(--out-bg); border: 1px solid var(--out-bd);
-      border-radius: var(--radius); padding: 36px; text-align: center;
+      background: var(--out-bg);
+      border: 1px solid var(--out-bd);
+      border-radius: var(--radius);
+      padding: 36px;
+      text-align: center;
     }
-    .err h3 { color: var(--out); font-size: 15px; margin-bottom: 6px; }
-    .err p  { color: var(--out); font-size: 13px; opacity: .75; }
-    .err button { margin-top: 14px; background: none; border: none; color: var(--out); font-size: 13px; cursor: pointer; text-decoration: underline; }
+
+    .err h3 {
+      color: var(--out);
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .err p {
+      color: var(--out);
+      font-size: 13px;
+      opacity: .75;
+    }
+
+    .err button {
+      margin-top: 14px;
+      background: none;
+      border: none;
+      color: var(--out);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
 
     /* ── Footer ──────────────────────────────────────────────── */
-    .foot { margin-top: 48px; border-top: 1px solid var(--border); }
-    .foot-inner {
-      max-width: 1040px; margin: 0 auto; padding: 20px 28px;
-      display: flex; align-items: center; justify-content: space-between;
-      font-size: 12px; color: var(--txt-3);
+    .foot {
+      margin-top: 48px;
+      border-top: 1px solid var(--border);
     }
-    .foot a { color: var(--txt-3); text-decoration: none; }
-    .foot a:hover { color: var(--txt-2); }
+
+    .foot-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--txt-3);
+    }
+
+    .foot a {
+      color: var(--txt-3);
+      text-decoration: none;
+    }
+
+    .foot a:hover {
+      color: var(--txt-2);
+    }
 
     @media (max-width: 540px) {
-      .overall-top { flex-direction: column; }
-      .overall-pct-block { text-align: left; }
-      .overall { padding: 24px 20px; }
-      .svc-card { padding: 20px; }
+      .overall-top {
+        flex-direction: column;
+      }
+
+      .overall-pct-block {
+        text-align: left;
+      }
+
+      .overall {
+        padding: 24px 20px;
+      }
+
+      .svc-card {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<!-- Header -->
-<header class="hdr">
-  <div class="hdr-inner">
-    <div class="brand">
-      <span class="brand-name">Plano</span>
-      <span class="brand-sep">·</span>
-      <span class="brand-sub">Status</span>
+  <!-- Header -->
+  <header class="hdr">
+    <div class="hdr-inner">
+      <div class="brand">
+        <span class="brand-name">plan<span class="o">o</span></span>
+        <span class="brand-sep">·</span>
+        <span class="brand-sub">Status</span>
+      </div>
+      <div class="hdr-right">
+        <span class="upd-time" id="updTime"></span>
+        <a class="queue-btn" href="/queue">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 3H8L6 7h12z" />
+          </svg>
+          Queue
+        </a>
+      </div>
     </div>
-    <div class="hdr-right">
-      <span class="upd-time" id="updTime"></span>
-      <a class="queue-btn" href="/queue">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L6 7h12z"/></svg>
-        Queue
-      </a>
+  </header>
+
+  <!-- Main -->
+  <main class="wrap">
+    <p class="section-label">System Status</p>
+    <div id="app"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="foot">
+    <div class="foot-inner">
+      <span>© <span id="yr"></span> Plano · Subscription Management</span>
+      <a href="https://planoo.tech" target="_blank" rel="noopener">planoo.tech ↗</a>
     </div>
-  </div>
-</header>
+  </footer>
 
-<!-- Main -->
-<main class="wrap">
-  <p class="section-label">System Status</p>
-  <div id="app"></div>
-</main>
+  <script>
+    /* ══════════════════════════════════════════════════════════════
+       Plano Status — Vanilla JS, zero deps
+       DOM is built ONCE. Every subsequent 5s refresh only mutates
+       text content + class names → zero flicker, zero re-animation.
+    ══════════════════════════════════════════════════════════════ */
 
-<!-- Footer -->
-<footer class="foot">
-  <div class="foot-inner">
-    <span>© <span id="yr"></span> Plano · Subscription Management</span>
-    <a href="https://planoo.tech" target="_blank" rel="noopener">planoo.tech ↗</a>
-  </div>
-</footer>
+    document.getElementById('yr').textContent = new Date().getFullYear();
 
-<script>
-/* ══════════════════════════════════════════════════════════════
-   Plano Status — Vanilla JS, zero deps
-   DOM is built ONCE. Every subsequent 5s refresh only mutates
-   text content + class names → zero flicker, zero re-animation.
-══════════════════════════════════════════════════════════════ */
+    const app = document.getElementById('app');
+    const updTime = document.getElementById('updTime');
 
-document.getElementById('yr').textContent = new Date().getFullYear();
+    const SC = { operational: 'ok', degraded: 'deg', outage: 'out', unknown: 'unk' };
+    const SL = { operational: 'Operational', degraded: 'Degraded', outage: 'Outage', unknown: 'Unknown' };
+    const MSG = {
+      ok: ['All systems operational', "We're not aware of any issues affecting Plano systems."],
+      deg: ['Partial degradation', 'Some services are experiencing degraded performance.'],
+      out: ['Service outage in progress', 'Multiple services are currently experiencing an outage.'],
+    };
+    const ICON = { ok: '✅', deg: '⚠️', out: '🔴' };
 
-const app     = document.getElementById('app');
-const updTime = document.getElementById('updTime');
+    let initialized = false;
 
-const SC  = { operational:'ok', degraded:'deg', outage:'out', unknown:'unk' };
-const SL  = { operational:'Operational', degraded:'Degraded', outage:'Outage', unknown:'Unknown' };
-const MSG = {
-  ok:  ['All systems operational',    "We're not aware of any issues affecting Plano systems."],
-  deg: ['Partial degradation',        'Some services are experiencing degraded performance.'],
-  out: ['Service outage in progress', 'Multiple services are currently experiencing an outage.'],
-};
-const ICON = { ok:'✅', deg:'⚠️', out:'🔴' };
+    function fmtMs(ms) { return ms != null ? `${ms}ms` : '—'; }
+    function fmtTime(iso) { try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }); } catch { return '—'; } }
+    function setClass(id, remove, add) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove(...remove);
+      el.classList.add(add);
+    }
+    const STATUS_CLASSES = ['ok', 'deg', 'out', 'unk'];
 
-let initialized = false;
+    /* ── First render: build DOM once ─────────────────────────── */
+    function buildDOM(data) {
+      const o = data.overall;
+      const cls = SC[o.status] || 'deg';
+      const m = MSG[cls] || MSG.deg;
 
-function fmtMs(ms)   { return ms != null ? `${ms}ms` : '—'; }
-function fmtTime(iso){ try { return new Date(iso).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}); } catch { return '—'; } }
-function setClass(id, remove, add) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove(...remove);
-  el.classList.add(add);
-}
-const STATUS_CLASSES = ['ok','deg','out','unk'];
-
-/* ── First render: build DOM once ─────────────────────────── */
-function buildDOM(data) {
-  const o   = data.overall;
-  const cls = SC[o.status] || 'deg';
-  const m   = MSG[cls] || MSG.deg;
-
-  app.innerHTML = `
+      app.innerHTML = `
     <!-- Overall tile -->
     <div class="overall">
       <div class="overall-top">
@@ -346,20 +669,20 @@ function buildDOM(data) {
       ${data.services.map(buildCard).join('')}
     </div>`;
 
-  initialized = true;
-}
+      initialized = true;
+    }
 
-function buildCard(s) {
-  const cls = SC[s.status] || 'unk';
-  const pct = s.uptimePercent ?? 0;
-  return `
+    function buildCard(s) {
+      const cls = SC[s.status] || 'unk';
+      const pct = s.uptimePercent ?? 0;
+      return `
     <div class="svc-card">
       <div class="svc-top">
         <div class="svc-name-row">
           <span class="svc-dot ${cls}" id="dot-${s.id}"></span>
           <span class="svc-name">${s.name}</span>
         </div>
-        <span class="svc-badge ${cls}" id="badge-${s.id}">${SL[s.status]||'Unknown'}</span>
+        <span class="svc-badge ${cls}" id="badge-${s.id}">${SL[s.status] || 'Unknown'}</span>
       </div>
 
       <div class="svc-metrics">
@@ -385,46 +708,46 @@ function buildCard(s) {
 
       <div class="svc-checked">Checked <span id="chk-${s.id}">${fmtTime(s.lastChecked)}</span></div>
     </div>`;
-}
+    }
 
-/* ── Subsequent updates: mutate in place, zero flicker ─────── */
-function updateInPlace(data) {
-  const o   = data.overall;
-  const cls = SC[o.status] || 'deg';
-  const m   = MSG[cls] || MSG.deg;
+    /* ── Subsequent updates: mutate in place, zero flicker ─────── */
+    function updateInPlace(data) {
+      const o = data.overall;
+      const cls = SC[o.status] || 'deg';
+      const m = MSG[cls] || MSG.deg;
 
-  // Overall
-  setClass('o-ring', STATUS_CLASSES, cls);
-  setClass('o-pct',  STATUS_CLASSES, cls);
-  setClass('o-fill', STATUS_CLASSES, cls);
-  document.getElementById('o-ring').textContent  = ICON[cls];
-  document.getElementById('o-msg').textContent   = m[0];
-  document.getElementById('o-sub').textContent   = m[1];
-  document.getElementById('o-pct').textContent   = `${o.uptimePercent}%`;
-  document.getElementById('o-pct2').textContent  = `${o.uptimePercent}%`;
-  document.getElementById('o-fill').style.width  = `${o.uptimePercent}%`;
+      // Overall
+      setClass('o-ring', STATUS_CLASSES, cls);
+      setClass('o-pct', STATUS_CLASSES, cls);
+      setClass('o-fill', STATUS_CLASSES, cls);
+      document.getElementById('o-ring').textContent = ICON[cls];
+      document.getElementById('o-msg').textContent = m[0];
+      document.getElementById('o-sub').textContent = m[1];
+      document.getElementById('o-pct').textContent = `${o.uptimePercent}%`;
+      document.getElementById('o-pct2').textContent = `${o.uptimePercent}%`;
+      document.getElementById('o-fill').style.width = `${o.uptimePercent}%`;
 
-  // Service cards
-  data.services.forEach(s => {
-    const cls2 = SC[s.status] || 'unk';
-    const pct  = s.uptimePercent ?? 0;
+      // Service cards
+      data.services.forEach(s => {
+        const cls2 = SC[s.status] || 'unk';
+        const pct = s.uptimePercent ?? 0;
 
-    setClass(`dot-${s.id}`,   STATUS_CLASSES, cls2);
-    setClass(`badge-${s.id}`, STATUS_CLASSES, cls2);
-    setClass(`fill-${s.id}`,  STATUS_CLASSES, cls2);
+        setClass(`dot-${s.id}`, STATUS_CLASSES, cls2);
+        setClass(`badge-${s.id}`, STATUS_CLASSES, cls2);
+        setClass(`fill-${s.id}`, STATUS_CLASSES, cls2);
 
-    document.getElementById(`badge-${s.id}`).textContent = SL[s.status] || 'Unknown';
-    document.getElementById(`ms-${s.id}`).textContent    = fmtMs(s.responseTimeMs);
-    document.getElementById(`hs-${s.id}`).textContent    = s.healthScore ?? '—';
-    document.getElementById(`pct-${s.id}`).textContent   = `${pct}%`;
-    document.getElementById(`fill-${s.id}`).style.width  = `${pct}%`;
-    document.getElementById(`chk-${s.id}`).textContent   = fmtTime(s.lastChecked);
-  });
-}
+        document.getElementById(`badge-${s.id}`).textContent = SL[s.status] || 'Unknown';
+        document.getElementById(`ms-${s.id}`).textContent = fmtMs(s.responseTimeMs);
+        document.getElementById(`hs-${s.id}`).textContent = s.healthScore ?? '—';
+        document.getElementById(`pct-${s.id}`).textContent = `${pct}%`;
+        document.getElementById(`fill-${s.id}`).style.width = `${pct}%`;
+        document.getElementById(`chk-${s.id}`).textContent = fmtTime(s.lastChecked);
+      });
+    }
 
-/* ── Skeleton ─────────────────────────────────────────────── */
-function showSkeleton() {
-  app.innerHTML = `
+    /* ── Skeleton ─────────────────────────────────────────────── */
+    function showSkeleton() {
+      app.innerHTML = `
     <div class="overall" style="margin-bottom:28px">
       <div style="display:flex;align-items:center;gap:18px;margin-bottom:28px">
         <div class="sk" style="width:56px;height:56px;border-radius:50%"></div>
@@ -440,47 +763,48 @@ function showSkeleton() {
         <div><div class="sk" style="height:12px;width:140px;margin-bottom:10px"></div><div class="sk" style="height:7px;border-radius:99px"></div></div>
       </div>`).join('')}
     </div>`;
-}
+    }
 
-function showError(msg) {
-  app.innerHTML = `<div class="err"><h3>Could not load status</h3><p>${msg||'Unknown error'}</p><button onclick="poll()">Retry</button></div>`;
-  initialized = false;
-}
+    function showError(msg) {
+      app.innerHTML = `<div class="err"><h3>Could not load status</h3><p>${msg || 'Unknown error'}</p><button onclick="poll()">Retry</button></div>`;
+      initialized = false;
+    }
 
-/* ── Fetch & poll every 5s ────────────────────────────────── */
-let firstLoad = true;
+    /* ── Fetch & poll every 5s ────────────────────────────────── */
+    let firstLoad = true;
 
-async function poll() {
-  try {
-    const res  = await fetch('/api/health');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!initialized) { buildDOM(data); firstLoad = false; }
-    else               { updateInPlace(data); }
-    updTime.textContent = `Updated ${fmtTime(data.timestamp)}`;
-  } catch (err) {
-    if (firstLoad) showError(err.message);
-    console.error('[status]', err.message);
-  }
-}
+    async function poll() {
+      try {
+        const res = await fetch('/api/health');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!initialized) { buildDOM(data); firstLoad = false; }
+        else { updateInPlace(data); }
+        updTime.textContent = `Updated ${fmtTime(data.timestamp)}`;
+      } catch (err) {
+        if (firstLoad) showError(err.message);
+        console.error('[status]', err.message);
+      }
+    }
 
-showSkeleton();
-poll();
-setInterval(poll, 5000);
+    showSkeleton();
+    poll();
+    setInterval(poll, 5000);
 
-// SSE — browser connects once and receives live pushes (no polling overhead)
-if (typeof EventSource !== 'undefined') {
-  const es = new EventSource('/api/stream');
-  es.addEventListener('health', e => {
-    try {
-      const data = JSON.parse(e.data);
-      if (!initialized) { buildDOM(data); firstLoad = false; }
-      else               { updateInPlace(data); }
-      updTime.textContent = `Updated ${fmtTime(data.timestamp)}`;
-    } catch {}
-  });
-}
-</script>
+    // SSE — browser connects once and receives live pushes (no polling overhead)
+    if (typeof EventSource !== 'undefined') {
+      const es = new EventSource('/api/stream');
+      es.addEventListener('health', e => {
+        try {
+          const data = JSON.parse(e.data);
+          if (!initialized) { buildDOM(data); firstLoad = false; }
+          else { updateInPlace(data); }
+          updTime.textContent = `Updated ${fmtTime(data.timestamp)}`;
+        } catch { }
+      });
+    }
+  </script>
 
 </body>
+
 </html>

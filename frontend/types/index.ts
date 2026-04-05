@@ -141,8 +141,8 @@ export interface InvoiceItem {
   amount: number;
 }
 
-export type PaymentMethod = 'cash' | 'bank_transfer' | 'upi' | 'card';
-export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
+export type PaymentMethod = 'card' | 'bank_transfer' | 'upi' | 'wallet' | 'manual' | 'cash';
+export type PaymentStatus = 'pending' | 'success' | 'failed' | 'refunded' | 'partially_refunded' | 'completed';
 
 export interface Payment {
   id: string;

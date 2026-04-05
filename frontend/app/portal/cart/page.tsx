@@ -190,12 +190,49 @@ export default function CartPage() {
 
   const handleRequestQuote = () => {
     setIsLoading(true);
-    setTimeout(() => {
-      toastSuccess('Quotation Submitted', 'Our sales team will review your request shortly.');
+
+    const validItems = items
+      .filter((item) => item.quantity > 0 && item.price >= 0)
+      .map((item) => ({
+        productId: item.productId,
+        planId: item.planId,
+        description: `${item.name} (${item.planLabel})`,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        total: item.price * item.quantity,
+      }));
+
+    if (validItems.length === 0) {
+      toastError('Quotation failed', 'Your cart does not contain valid items for quotation.');
       setIsLoading(false);
-      clearCart();
-      router.push(`/portal/account/orders?status=quotation&ref=Q-${Math.floor(Math.random() * 10000)}`);
-    }, 1500);
+      return;
+    }
+
+    const validUntil = new Date();
+    validUntil.setDate(validUntil.getDate() + 15);
+
+    api.quotations.create({
+      items: validItems,
+      subtotal,
+      discountTotal: discountAmount,
+      taxTotal: taxes,
+      grandTotal: total,
+      currency: 'INR',
+      validUntil: validUntil.toISOString(),
+      notes: `Portal quotation request by ${user?.email || 'customer'}`,
+    })
+      .then((res) => {
+        if (!res.success) {
+          throw new Error('Quotation request failed');
+        }
+        toastSuccess('Quotation Submitted', 'Your quotation request has been saved.');
+        clearCart();
+        router.push('/portal/quotes');
+      })
+      .catch((err: unknown) => {
+        toastError('Quotation failed', err instanceof Error ? err.message : 'Unable to submit quotation right now.');
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const handleCheckout = () => {
