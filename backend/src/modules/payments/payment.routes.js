@@ -12,6 +12,9 @@ router.post('/webhook/:gateway', paymentController.webhook);
 
 router.use(authenticate);
 
+router.get('/audit/checkouts', authorize(ROLES.ADMIN, ROLES.INTERNAL_USER, ROLES.PORTAL_USER), paymentController.checkoutAudit);
+router.post('/razorpay/order', paymentLimiter, authorize(ROLES.ADMIN, ROLES.INTERNAL_USER, ROLES.PORTAL_USER), paymentController.createRazorpayOrder);
+router.post('/verify/razorpay-checkout', paymentLimiter, idempotency, authorize(ROLES.ADMIN, ROLES.INTERNAL_USER, ROLES.PORTAL_USER), paymentController.verifyRazorpayCheckout);
 router.get('/', paymentController.getAll);
 router.get('/:id', paymentController.getById);
 router.post('/', paymentLimiter, idempotency, paymentController.create);

@@ -169,6 +169,21 @@ export default function PlansPage() {
                 </span>
               </div>
 
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 rounded-full bg-plano-50 text-plano-600 border border-plano-100 text-[10px] font-bold uppercase tracking-widest">
+                  Recurring plan
+                </span>
+                <span className="px-2 py-1 rounded-full bg-plano-50 text-plano-600 border border-plano-100 text-[10px] font-bold uppercase tracking-widest">
+                  {plan.billingCycle} cycle
+                </span>
+                <span className={cn(
+                  'px-2 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest',
+                  plan.isAutoClose ? 'bg-warning-50 text-warning-600 border-warning-100' : 'bg-success-50 text-success-600 border-success-100'
+                )}>
+                  {plan.isAutoClose ? 'Auto-close' : 'Auto-renew'}
+                </span>
+              </div>
+
               <div className="grid grid-cols-2 gap-4 py-4 border-y border-sidebar-hover">
                 <div className="flex flex-col gap-1">
                   <span className="text-[9px] uppercase font-bold text-gray-500 tracking-[0.2em]">Trial Period</span>

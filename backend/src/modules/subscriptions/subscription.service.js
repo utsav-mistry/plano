@@ -1,5 +1,7 @@
 import Subscription from './subscription.model.js';
 import Plan from '../plans/plan.model.js';
+import Product from '../products/product.model.js';
+import Tax from '../taxes/tax.model.js';
 import { ApiError } from '../../utils/ApiError.js';
 import { SUBSCRIPTION_STATUS, BILLING_CYCLE } from '../../constants/statuses.js';
 import { invoiceQueue } from '../../config/bullmq.js';
@@ -19,10 +21,93 @@ const calcNextBillingDate = (fromDate, billingCycle) => {
   return date;
 };
 
+const normalizeObjectId = (value) => {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    if (value._id) return String(value._id);
+    if (value.id) return String(value.id);
+  }
+  return String(value);
+};
+
+const isGstLike = (tax) => {
+  const code = String(tax.code || '').toUpperCase();
+  const name = String(tax.name || '').toUpperCase();
+  return code.includes('GST') || code.includes('CGST') || code.includes('SGST') || code.includes('IGST')
+    || name.includes('GST') || name.includes('CGST') || name.includes('SGST') || name.includes('IGST');
+};
+
+const calculateTax = async ({ plan, product, taxableBase }) => {
+  const planTaxIds = Array.isArray(plan.taxIds)
+    ? plan.taxIds.map(normalizeObjectId).filter(Boolean)
+    : [];
+
+  const productTaxIds = Array.isArray(product?.taxIds)
+    ? product.taxIds.map(normalizeObjectId).filter(Boolean)
+    : [];
+
+  const combinedTaxIds = [...new Set([...planTaxIds, ...productTaxIds])];
+
+  let taxes = [];
+  if (combinedTaxIds.length > 0) {
+    taxes = await Tax.find({ _id: { $in: combinedTaxIds }, isActive: true });
+  } else {
+    taxes = await Tax.find({ isActive: true });
+    taxes = taxes.filter(isGstLike);
+  }
+
+  const inclusiveTaxes = taxes.filter((tax) => tax.type === 'inclusive' && Number(tax.rate) > 0);
+  const exclusiveTaxes = taxes.filter((tax) => tax.type !== 'inclusive' && Number(tax.rate) > 0);
+
+  const inclusiveCombinedRate = inclusiveTaxes.reduce((sum, tax) => sum + Number(tax.rate || 0), 0);
+  const inclusiveTotal = inclusiveCombinedRate > 0
+    ? (taxableBase - taxableBase / (1 + inclusiveCombinedRate / 100))
+    : 0;
+
+  const taxBreakdown = [];
+  let payableTax = 0;
+
+  for (const tax of inclusiveTaxes) {
+    const rate = Number(tax.rate || 0);
+    const amount = inclusiveCombinedRate > 0 ? (inclusiveTotal * rate) / inclusiveCombinedRate : 0;
+    taxBreakdown.push({
+      taxId: tax._id,
+      code: tax.code,
+      name: tax.name,
+      rate,
+      type: 'inclusive',
+      amount,
+      isIncludedInPrice: true,
+    });
+  }
+
+  for (const tax of exclusiveTaxes) {
+    const rate = Number(tax.rate || 0);
+    const amount = taxableBase * (rate / 100);
+    payableTax += amount;
+    taxBreakdown.push({
+      taxId: tax._id,
+      code: tax.code,
+      name: tax.name,
+      rate,
+      type: 'exclusive',
+      amount,
+      isIncludedInPrice: false,
+    });
+  }
+
+  return {
+    payableTax,
+    taxBreakdown,
+  };
+};
+
 export const create = async (data, createdBy) => {
   const plan = await Plan.findById(data.planId).populate('discountIds taxIds');
   if (!plan) throw ApiError.notFound('Plan not found');
   if (!plan.isActive) throw ApiError.badRequest('Selected plan is not active');
+  const product = await Product.findById(plan.productId).populate('taxIds');
 
   const startDate = new Date();
   let status = SUBSCRIPTION_STATUS.ACTIVE;
@@ -55,13 +140,15 @@ export const create = async (data, createdBy) => {
     }
   }
 
-  // Apply tax
-  let taxApplied = 0;
-  for (const tax of plan.taxIds || []) {
-    taxApplied += (totalPrice - discountApplied) * (tax.rate / 100);
-  }
+  const taxableBase = Math.max(totalPrice - discountApplied, 0);
+  const { payableTax, taxBreakdown } = await calculateTax({
+    plan,
+    product,
+    taxableBase,
+  });
 
-  const grandTotal = totalPrice - discountApplied + taxApplied;
+  const taxApplied = payableTax;
+  const grandTotal = taxableBase + payableTax;
 
   const subscription = await Subscription.create({
     userId: data.userId,
@@ -78,8 +165,10 @@ export const create = async (data, createdBy) => {
     totalPrice,
     discountApplied,
     taxApplied,
+    taxBreakdown,
     grandTotal,
     currency: plan.currency,
+    billingAddress: data.billingAddress || '',
     createdBy,
   });
 

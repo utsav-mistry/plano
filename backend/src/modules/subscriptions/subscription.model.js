@@ -63,6 +63,20 @@ const subscriptionSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    taxBreakdown: {
+      type: [
+        {
+          taxId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tax' },
+          code: { type: String, trim: true },
+          name: { type: String, trim: true },
+          rate: { type: Number, min: 0 },
+          type: { type: String, enum: ['inclusive', 'exclusive'] },
+          amount: { type: Number, default: 0 },
+          isIncludedInPrice: { type: Boolean, default: false },
+        },
+      ],
+      default: [],
+    },
     grandTotal: {
       type: Number,
       required: true,
@@ -70,6 +84,11 @@ const subscriptionSchema = new mongoose.Schema(
     currency: {
       type: String,
       default: 'USD',
+    },
+    billingAddress: {
+      type: String,
+      trim: true,
+      default: '',
     },
     cancellationReason: String,
     cancelledAt: Date,
@@ -82,8 +101,8 @@ const subscriptionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { 
-      virtuals: true, 
+    toJSON: {
+      virtuals: true,
       versionKey: false,
       transform: (doc, ret) => { ret.id = ret._id; return ret; }
     },

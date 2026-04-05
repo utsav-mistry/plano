@@ -33,6 +33,35 @@ export const refund = catchAsync(async (req, res) => {
 });
 
 export const webhook = catchAsync(async (req, res) => {
-  const result = await paymentService.handleWebhook(req.params.gateway, req.body);
+  const signature = req.headers['x-razorpay-signature'];
+  const result = await paymentService.handleWebhook(req.params.gateway, {
+    body: req.body,
+    signature,
+    rawBody: req.rawBody,
+  });
   res.status(200).json(result);
+});
+
+export const verifyRazorpayCheckout = catchAsync(async (req, res) => {
+  if (req.user.role === ROLES.PORTAL_USER) {
+    req.body.userId = req.user._id;
+  }
+  const result = await paymentService.verifyRazorpayCheckoutAndRecord({
+    ...req.body,
+    userId: req.body.userId || req.user._id,
+  });
+  new ApiResponse(200, result, 'Checkout verified and payment recorded').send(res);
+});
+
+export const checkoutAudit = catchAsync(async (req, res) => {
+  if (req.user.role === ROLES.PORTAL_USER) {
+    req.query.userId = req.user._id;
+  }
+  const result = await paymentService.getCheckoutAudit(req.query);
+  new ApiResponse(200, result, 'Checkout audit fetched').send(res);
+});
+
+export const createRazorpayOrder = catchAsync(async (req, res) => {
+  const result = await paymentService.createRazorpayOrder(req.body || {});
+  new ApiResponse(200, { order: result }, 'Razorpay order created').send(res);
 });

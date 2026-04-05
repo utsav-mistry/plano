@@ -32,6 +32,13 @@ export const getById = catchAsync(async (req, res) => {
 });
 
 export const update = catchAsync(async (req, res) => {
+  if (req.user.role === ROLES.PORTAL_USER) {
+    const sub = await subscriptionService.getById(req.params.id);
+    const ownerId = sub.userId?._id?.toString() || sub.userId?.toString();
+    if (ownerId !== req.user._id.toString()) {
+      throw ApiError.forbidden('You can only update your own subscriptions');
+    }
+  }
   const subscription = await subscriptionService.update(req.params.id, req.body);
   new ApiResponse(200, { subscription }, 'Subscription updated').send(res);
 });

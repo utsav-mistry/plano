@@ -8,7 +8,53 @@ const generateQuotationNumber = () => {
 };
 
 export const create = async (data, createdBy) => {
-  return Quotation.create({ ...data, quotationNumber: generateQuotationNumber(), createdBy });
+  const items = Array.isArray(data.items) ? data.items : [];
+  if (items.length === 0) {
+    throw ApiError.badRequest('At least one quotation item is required');
+  }
+
+  const normalizedItems = items.map((item) => {
+    const quantity = Number(item.quantity || 0);
+    const unitPrice = Number(item.unitPrice || 0);
+    const discountValue = Number(item.discountValue || 0);
+    const taxValue = Number(item.taxValue || 0);
+    const computedTotal = Math.max(quantity * unitPrice - discountValue + taxValue, 0);
+
+    return {
+      ...item,
+      quantity,
+      unitPrice,
+      discountValue,
+      taxValue,
+      total: Number(item.total ?? computedTotal),
+    };
+  });
+
+  const subtotal = normalizedItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+  const itemDiscountTotal = normalizedItems.reduce((sum, item) => sum + (item.discountValue || 0), 0);
+  const itemTaxTotal = normalizedItems.reduce((sum, item) => sum + (item.taxValue || 0), 0);
+
+  const discountTotal = Number.isFinite(Number(data.discountTotal))
+    ? Number(data.discountTotal)
+    : itemDiscountTotal;
+  const taxTotal = Number.isFinite(Number(data.taxTotal))
+    ? Number(data.taxTotal)
+    : itemTaxTotal;
+  const grandTotal = subtotal - discountTotal + taxTotal;
+
+  const validUntil = data.validUntil ? new Date(data.validUntil) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
+
+  return Quotation.create({
+    ...data,
+    items: normalizedItems,
+    subtotal,
+    discountTotal,
+    taxTotal,
+    grandTotal,
+    validUntil,
+    quotationNumber: generateQuotationNumber(),
+    createdBy,
+  });
 };
 
 export const getAll = async ({ page = 1, limit = 20, status, userId }) => {

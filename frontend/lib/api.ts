@@ -6,6 +6,7 @@ import {
   Subscription,
   Invoice,
   Payment,
+  CheckoutAuditEvent,
   Tax,
   Discount,
   KPIStats,
@@ -551,6 +552,29 @@ export const api = {
         ...res,
         data: normalizePaymentsPayload(res.data),
       })),
+    verifyRazorpayCheckout: (data: {
+      subscriptionId: string;
+      razorpay_order_id: string;
+      razorpay_payment_id: string;
+      razorpay_signature: string;
+      method?: string;
+      gatewayResponse?: unknown;
+    }) =>
+      request<any>('/payments/verify/razorpay-checkout', { method: 'POST', body: JSON.stringify(data) }),
+    createRazorpayOrder: (data: {
+      amount: number;
+      currency?: string;
+      receipt?: string;
+      notes?: Record<string, string>;
+    }) =>
+      request<{ order: { id: string; amount: number; currency: string; status: string; receipt: string } }>('/payments/razorpay/order', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    getCheckoutAudit: (params?: { limit?: number; userId?: string }) => {
+      const q = params ? `?${new URLSearchParams(params as any)}` : '';
+      return request<{ events: CheckoutAuditEvent[] }>(`/payments/audit/checkouts${q}`);
+    },
   },
 
   // ─── Discounts ─────────────────────────────────────────────

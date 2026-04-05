@@ -16,6 +16,15 @@ import { useToast } from '@/components/ui/Toast';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
+function getCycleProgress(startDate?: string, endDate?: string) {
+   if (!startDate || !endDate) return 0;
+   const start = new Date(startDate).getTime();
+   const end = new Date(endDate).getTime();
+   const now = Date.now();
+   if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+   return Math.max(0, Math.min(100, Math.round(((now - start) / (end - start)) * 100)));
+}
+
 export default function OrderDetailPage() {
    const { orderId } = useParams();
    const router = useRouter();
@@ -26,6 +35,7 @@ export default function OrderDetailPage() {
    const [isLoading, setIsLoading] = useState(true);
    const [isRenewing, setIsRenewing] = useState(false);
    const [isClosing, setIsClosing] = useState(false);
+   const [isUpdatingRenewal, setIsUpdatingRenewal] = useState(false);
 
    useEffect(() => {
       async function fetchData() {
@@ -114,6 +124,25 @@ export default function OrderDetailPage() {
       }
    };
 
+   const handleToggleAutoRenew = async () => {
+      if (!order) return;
+      setIsUpdatingRenewal(true);
+      try {
+         const res = await api.subscriptions.update(order.id, { autoRenew: !order.autoRenew });
+         if (res.success) {
+            toastSuccess(
+               order.autoRenew ? 'Auto-renew disabled' : 'Auto-renew enabled',
+               order.autoRenew ? 'This subscription will not renew automatically.' : 'This subscription will renew automatically.'
+            );
+            setOrder((prev) => (prev ? { ...prev, autoRenew: !prev.autoRenew } : prev));
+         }
+      } catch (err: any) {
+         toastError('Auto-renew update failed', err.message || 'Unable to update recurrence settings.');
+      } finally {
+         setIsUpdatingRenewal(false);
+      }
+   };
+
    if (isLoading) {
       return (
          <div className="min-h-screen flex items-center justify-center">
@@ -134,6 +163,8 @@ export default function OrderDetailPage() {
 
    const productName = typeof order.productId === 'object' ? order.productId.name : 'Subscription Package';
    const planName = typeof order.planId === 'object' ? order.planId.name : 'Plan details';
+   const planCycle = typeof order.planId === 'object' ? order.planId.billingCycle : 'recurring';
+   const cycleProgress = getCycleProgress(order.startDate, order.endDate);
 
    return (
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -169,6 +200,20 @@ export default function OrderDetailPage() {
                      Renew Now
                   </button>
                )}
+
+               <button
+                  onClick={handleToggleAutoRenew}
+                  disabled={isUpdatingRenewal || order.status === 'cancelled'}
+                  className={cn(
+                     'h-14 px-8 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed',
+                     order.autoRenew
+                        ? 'border border-success-100 bg-success-50/40 text-success-700 hover:bg-success-50'
+                        : 'border border-gray-200 bg-white text-gray-500 hover:border-plano-300 hover:text-plano-600'
+                  )}
+               >
+                  {isUpdatingRenewal ? <Loader2 className="animate-spin" size={18} /> : <RefreshCw size={18} />}
+                  {order.autoRenew ? 'Auto-renew ON' : 'Auto-renew OFF'}
+               </button>
 
                {/* Pause/Resume Logic */}
                {(order.planId as any)?.isPausable !== false && order.status === 'active' && (
@@ -220,6 +265,31 @@ export default function OrderDetailPage() {
                         </div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Active Plan</p>
                         <h4 className="text-2xl font-bold text-plano-900 uppercase tracking-tight mb-6">{planName}</h4>
+
+                        <div className="mb-6 flex items-center gap-2 flex-wrap">
+                           <span className="px-2.5 py-1 rounded-full bg-plano-50 border border-plano-100 text-[10px] font-bold uppercase tracking-widest text-plano-600">
+                              {planCycle} cycle
+                           </span>
+                           <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
+                              {order.autoRenew ? 'Auto-renew enabled' : 'Auto-renew off'}
+                           </span>
+                        </div>
+
+                        <div className="mb-6">
+                           <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cycle Progress</span>
+                              <span className="text-[10px] font-bold text-plano-600 tabular-nums">{cycleProgress}%</span>
+                           </div>
+                           <div className="h-2 rounded-full bg-plano-50 overflow-hidden">
+                              <div
+                                 className={cn(
+                                    'h-full rounded-full bg-gradient-to-r from-plano-500 to-plano-600 transition-all',
+                                    order.status === 'paused' ? 'from-warning-400 to-warning-500' : order.status === 'cancelled' ? 'from-gray-300 to-gray-400' : ''
+                                 )}
+                                 style={{ width: `${cycleProgress}%` }}
+                              />
+                           </div>
+                        </div>
 
                         <div className="grid grid-cols-2 gap-4">
                            <div className="flex flex-col gap-1">

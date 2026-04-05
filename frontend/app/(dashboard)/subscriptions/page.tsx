@@ -20,6 +20,20 @@ import { Subscription } from '@/types';
 import { api } from '@/lib/api';
 import { toAdminPath } from '@/lib/path-scoping';
 
+function getCycleProgress(startDate?: string, endDate?: string) {
+  if (!startDate || !endDate) return 0;
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
+  const now = Date.now();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+  return Math.max(0, Math.min(100, Math.round(((now - start) / (end - start)) * 100)));
+}
+
+function getCycleLabel(subscription: Subscription) {
+  const plan = typeof subscription.planId === 'object' ? subscription.planId : null;
+  return plan?.billingCycle || 'recurring';
+}
+
 export default function SubscriptionsPage() {
   const pathname = usePathname();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -290,10 +304,35 @@ export default function SubscriptionsPage() {
                         </span>
                       </td>
                       <td className="py-4 px-6">
-                        <span className="text-xs font-bold text-text-secondary flex items-center gap-2">
-                          <FileCheck size={14} className="text-plano-500" />
-                          {typeof sub.planId !== 'string' ? sub.planId?.name : 'Plan'}
-                        </span>
+                        <div className="flex flex-col gap-2">
+                          <span className="text-xs font-bold text-text-secondary flex items-center gap-2">
+                            <FileCheck size={14} className="text-plano-500" />
+                            {typeof sub.planId !== 'string' ? sub.planId?.name : 'Plan'}
+                          </span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-2 py-1 rounded-full bg-plano-50 text-plano-600 border border-plano-100 text-[10px] font-bold uppercase tracking-widest">
+                              {getCycleLabel(sub)} cycle
+                            </span>
+                            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
+                              {sub.autoRenew ? 'Auto-renew enabled' : 'Auto-renew off'}
+                            </span>
+                          </div>
+                          <div className="w-full max-w-[180px]">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cycle Progress</span>
+                              <span className="text-[10px] font-bold text-plano-600 tabular-nums">{getCycleProgress(sub.startDate, sub.endDate)}%</span>
+                            </div>
+                            <div className="h-2 rounded-full bg-plano-50 overflow-hidden">
+                              <div
+                                className={cn(
+                                  'h-full rounded-full bg-gradient-to-r from-plano-500 to-plano-600 transition-all',
+                                  sub.status === 'paused' ? 'from-warning-400 to-warning-500' : sub.status === 'cancelled' ? 'from-gray-300 to-gray-400' : ''
+                                )}
+                                style={{ width: `${getCycleProgress(sub.startDate, sub.endDate)}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-right">
                         <div className="flex flex-col items-end">

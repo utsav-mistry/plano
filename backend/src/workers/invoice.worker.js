@@ -27,13 +27,25 @@ const invoiceWorker = new Worker(
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 7); // Net-7 terms
 
+    const taxDetails = Array.isArray(subscription.taxBreakdown)
+      ? subscription.taxBreakdown
+        .map((line) => {
+          const label = line.code || line.name || 'TAX';
+          const mode = line.isIncludedInPrice ? 'incl' : 'add';
+          return `${label}:${Number(line.amount || 0).toFixed(2)}(${mode})`;
+        })
+        .join(', ')
+      : '';
+
+    const description = `${subscription.planId?.name || 'Subscription'} — ${subscription.billingPeriodLabel || 'Billing Period'}${taxDetails ? ` | GST ${taxDetails}` : ''}`;
+
     const invoice = await Invoice.create({
       invoiceNumber: generateInvoiceNumber(),
       subscriptionId: subscription._id,
       userId: subscription.userId,
       items: [
         {
-          description: `${subscription.planId?.name || 'Subscription'} — ${subscription.billingPeriodLabel || 'Billing Period'}`,
+          description,
           quantity: subscription.quantity,
           unitPrice: subscription.unitPrice,
           discountValue: subscription.discountApplied,

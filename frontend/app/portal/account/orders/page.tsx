@@ -15,6 +15,20 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/Toast';
 
+function getCycleProgress(startDate?: string, endDate?: string) {
+   if (!startDate || !endDate) return 0;
+   const start = new Date(startDate).getTime();
+   const end = new Date(endDate).getTime();
+   const now = Date.now();
+   if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+   return Math.max(0, Math.min(100, Math.round(((now - start) / (end - start)) * 100)));
+}
+
+function getCycleLabel(subscription: Subscription) {
+   const plan = typeof subscription.planId === 'object' ? subscription.planId : null;
+   return plan?.billingCycle || 'recurring';
+}
+
 export default function MyOrdersPage() {
    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
    const [isLoading, setIsLoading] = useState(true);
@@ -74,10 +88,14 @@ export default function MyOrdersPage() {
       fetchSubscriptions();
    }, [toastError]);
 
-   const filtered = Array.isArray(subscriptions) ? subscriptions.filter(s =>
-      s.id.toLowerCase().includes(search.toLowerCase()) ||
-      (typeof s.productId === 'object' && s.productId.name.toLowerCase().includes(search.toLowerCase()))
-   ) : [];
+   const filtered = Array.isArray(subscriptions)
+      ? subscriptions
+         .filter(s =>
+            s.id.toLowerCase().includes(search.toLowerCase()) ||
+            (typeof s.productId === 'object' && s.productId.name.toLowerCase().includes(search.toLowerCase()))
+         )
+         .sort((a, b) => (b.grandTotal || 0) - (a.grandTotal || 0))
+      : [];
 
    const getStatusBadge = (status: string) => {
       switch (status.toLowerCase()) {
@@ -172,6 +190,29 @@ export default function MyOrdersPage() {
                               <div className="flex flex-col">
                                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Plan Term</span>
                                  <span className="text-xs font-bold text-plano-600 uppercase tracking-tight">{typeof sub.planId === 'object' ? sub.planId.name : 'Recurring Plan'}</span>
+                                 <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                    <span className="px-2 py-1 rounded-full bg-plano-50 border border-plano-100 text-[10px] font-bold uppercase tracking-widest text-plano-600">
+                                       {getCycleLabel(sub)} cycle
+                                    </span>
+                                    <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
+                                       {sub.autoRenew ? 'Auto-renew enabled' : 'Auto-renew off'}
+                                    </span>
+                                 </div>
+                                 <div className="mt-3 w-full max-w-[180px]">
+                                    <div className="flex items-center justify-between mb-2">
+                                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Cycle Progress</span>
+                                       <span className="text-[10px] font-bold text-plano-600 tabular-nums">{getCycleProgress(sub.startDate, sub.endDate)}%</span>
+                                    </div>
+                                    <div className="h-2 rounded-full bg-plano-50 overflow-hidden">
+                                       <div
+                                          className={cn(
+                                             'h-full rounded-full bg-gradient-to-r from-plano-500 to-plano-600 transition-all',
+                                             sub.status === 'paused' ? 'from-warning-400 to-warning-500' : sub.status === 'cancelled' ? 'from-gray-300 to-gray-400' : ''
+                                          )}
+                                          style={{ width: `${getCycleProgress(sub.startDate, sub.endDate)}%` }}
+                                       />
+                                    </div>
+                                 </div>
                               </div>
                            </div>
 

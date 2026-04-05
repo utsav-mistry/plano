@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Search, SlidersHorizontal, ArrowUpDown, Loader2, Sparkles, Plus, Layers, FilterX, X, FileCheck, ArrowRight, CreditCard, Minus } from 'lucide-react';
+import { Search, ArrowUpDown, Loader2, Sparkles, Plus, Layers, FilterX, X, FileCheck, ArrowRight, CreditCard, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { api } from '@/lib/api';
@@ -12,6 +12,12 @@ import { useToast } from '@/components/ui/Toast';
 import { useAuth } from '@/app/context/AuthContext';
 import { useCartStore } from '@/store/cartStore';
 
+type RazorpayCheckoutResponse = {
+   razorpay_payment_id?: string;
+   razorpay_order_id?: string;
+   razorpay_signature?: string;
+};
+
 export default function ShopPage() {
    const router = useRouter();
    const { user } = useAuth();
@@ -21,12 +27,11 @@ export default function ShopPage() {
    const [isLoading, setIsLoading] = useState(true);
    const [search, setSearch] = useState('');
    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
-   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'newest'>('newest');
    const [selectedBundle, setSelectedBundle] = useState<any | null>(null);
    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
    const [checkoutQty, setCheckoutQty] = useState(1);
    const [isPaying, setIsPaying] = useState(false);
+   const [billingAddress, setBillingAddress] = useState('');
 
    const getDisplayPriceInfo = (product: Product) => {
       if (product.plans && product.plans.length > 0) {
@@ -34,7 +39,7 @@ export default function ShopPage() {
          const lowest = sorted[0];
          return {
             price: Number(lowest.price || 0),
-            label: lowest.billingCycle === 'monthly' ? 'month' : lowest.billingCycle === 'yearly' ? 'year' : lowest.name,
+            label: lowest.billingCycle === 'monthly' ? 'month' : lowest.billingCycle === 'yearly' ? 'year' : lowest.billingCycle,
          };
       }
 
@@ -59,12 +64,39 @@ export default function ShopPage() {
    useEffect(() => {
       async function fetchProducts() {
          try {
-            const res = await api.products.getAll();
-            if (res.success) {
-               // Handle both direct array and paginated object responses
-               const rawData = res.data as any;
-               const productsList = Array.isArray(rawData) ? rawData : (rawData?.products || []);
-               setProducts(productsList);
+            const [productsRes, plansRes] = await Promise.all([
+               api.products.getAll(),
+               api.plans.getAll({ isActive: true, limit: 200 })
+            ]);
+
+            if (productsRes.success) {
+               const rawProducts = productsRes.data as any;
+               const productsList = Array.isArray(rawProducts) ? rawProducts : (rawProducts?.products || []);
+
+               const rawPlans = plansRes.success ? plansRes.data as any : [];
+               const plansList = Array.isArray(rawPlans) ? rawPlans : (rawPlans?.plans || []);
+
+               const plansByProduct = new Map<string, any[]>();
+               for (const plan of plansList) {
+                  const productId = typeof plan.productId === 'object'
+                     ? (plan.productId?.id || plan.productId?._id)
+                     : plan.productId;
+                  if (!productId) continue;
+                  const list = plansByProduct.get(productId) || [];
+                  list.push(plan);
+                  plansByProduct.set(productId, list);
+               }
+
+               const merged = productsList.map((product: any) => {
+                  const pid = product.id || product._id;
+                  const linkedPlans = plansByProduct.get(pid) || [];
+                  return {
+                     ...product,
+                     plans: linkedPlans.sort((a, b) => Number(a.price || 0) - Number(b.price || 0)),
+                  };
+               });
+
+               setProducts(merged);
             }
          } catch (err) {
             console.error('Failed to fetch products', err);
@@ -89,21 +121,20 @@ export default function ShopPage() {
                (p.description?.toLowerCase().includes(search.toLowerCase()) || false);
             const matchesCategory = !selectedCategory || selectedCategory === 'All' || p.type === selectedCategory;
 
-            const base = getDisplayPriceInfo(p).price;
-            const matchesPrice = base >= priceRange[0] && base <= priceRange[1];
-
-            return matchesSearch && matchesCategory && matchesPrice;
+            return matchesSearch && matchesCategory;
          })
-         .sort((a, b) => {
-            if (sortBy === 'price-asc') {
-               return getDisplayPriceInfo(a).price - getDisplayPriceInfo(b).price;
-            }
-            if (sortBy === 'price-desc') {
-               return getDisplayPriceInfo(b).price - getDisplayPriceInfo(a).price;
-            }
-            return 0; // Default to natural/unsorted
-         });
-   }, [products, search, selectedCategory, priceRange, sortBy]);
+         .sort((a, b) => getDisplayPriceInfo(b).price - getDisplayPriceInfo(a).price);
+   }, [products, search, selectedCategory]);
+
+   const recurringProducts = useMemo(
+      () => filteredProducts.filter((p) => Array.isArray(p.plans) && p.plans.length > 0),
+      [filteredProducts]
+   );
+
+   const subscriptionProducts = useMemo(
+      () => filteredProducts.filter((p) => !Array.isArray(p.plans) || p.plans.length === 0),
+      [filteredProducts]
+   );
 
    const selectedProductPriceInfo = selectedProduct ? getDisplayPriceInfo(selectedProduct) : { price: 0, label: 'unit' };
    const selectedProductTotal = selectedProductPriceInfo.price * checkoutQty;
@@ -111,12 +142,38 @@ export default function ShopPage() {
    function openProductCheckout(product: Product) {
       setSelectedProduct(product);
       setCheckoutQty(1);
+      setBillingAddress(user?.name ? `${user.name}, ${user.email || ''}` : '');
    }
 
    function closeProductCheckoutModal() {
       if (isPaying) return;
       setSelectedProduct(null);
       setCheckoutQty(1);
+      setBillingAddress('');
+   }
+
+   async function createSubscriptionFromDirectCheckout(paymentId: string) {
+      if (!selectedProduct) throw new Error('No product selected');
+
+      const planRef = getFirstPlanRef(selectedProduct);
+      if (!planRef?.id || planRef.id.startsWith('base-')) {
+         throw new Error('This product does not have an active recurring plan yet. Please contact support.');
+      }
+
+      const subRes = await api.subscriptions.create({
+         planId: planRef.id,
+         quantity: checkoutQty,
+         autoRenew: true,
+         paymentReference: paymentId,
+         billingAddress,
+      });
+
+      const sub = subRes.data as { id?: string; _id?: string };
+      const subscriptionId = sub?.id || sub?._id;
+      if (!subscriptionId) {
+         throw new Error('Subscription created but identifier is missing.');
+      }
+      return subscriptionId;
    }
 
    function handleAddSelectedProductToCart() {
@@ -155,7 +212,7 @@ export default function ShopPage() {
       setCheckoutQty(1);
    }
 
-   function handleRazorpayCheckout() {
+   async function handleRazorpayCheckout() {
       if (!selectedProduct) return;
       if (typeof window === 'undefined' || !(window as any).Razorpay) {
          toastError('Razorpay unavailable', 'Payment SDK not loaded yet. Please try again in a moment.');
@@ -168,12 +225,40 @@ export default function ShopPage() {
          return;
       }
 
+      if (!billingAddress.trim()) {
+         toastError('Billing address required', 'Please enter your billing address before payment.');
+         return;
+      }
+
       setIsPaying(true);
+
+      let orderId = '';
+      try {
+         const orderRes = await api.payments.createRazorpayOrder({
+            amount: selectedProductTotal,
+            currency: 'INR',
+            notes: {
+               scope: 'portal_shop_direct',
+               productId: getProductId(selectedProduct),
+               qty: String(checkoutQty),
+            },
+         });
+         const orderData = orderRes.data as { order?: { id?: string } };
+         orderId = orderData?.order?.id || '';
+         if (!orderId) {
+            throw new Error('Unable to create Razorpay order id.');
+         }
+      } catch (err) {
+         setIsPaying(false);
+         toastError('Checkout init failed', err instanceof Error ? err.message : 'Unable to initialize payment order.');
+         return;
+      }
 
       const options = {
          key: razorpayKey,
          amount: Math.round(selectedProductTotal * 100),
          currency: 'INR',
+         order_id: orderId,
          name: 'Plano Subscriptions',
          description: `${selectedProduct.name} (${checkoutQty} x ${selectedProductPriceInfo.label})`,
          image: 'https://cdn.razorpay.com/logos/H6U6f9bA6G6E7M_medium.png',
@@ -182,12 +267,33 @@ export default function ShopPage() {
             email: user?.email,
          },
          theme: { color: '#8f5580' },
-         handler: (response: any) => {
-            setIsPaying(false);
-            setSelectedProduct(null);
-            setCheckoutQty(1);
-            toastSuccess('Payment Captured', `Transaction ID: ${response.razorpay_payment_id}`);
-            router.push(`/portal/order/confirmation?id=S100${Math.floor(Math.random() * 1000)}&ref=${response.razorpay_payment_id}`);
+         handler: async (response: RazorpayCheckoutResponse) => {
+            try {
+               if (!response.razorpay_payment_id || !response.razorpay_order_id || !response.razorpay_signature) {
+                  throw new Error('Missing Razorpay verification fields. Ensure checkout is created with a Razorpay order.');
+               }
+
+               const subscriptionId = await createSubscriptionFromDirectCheckout(response.razorpay_payment_id);
+
+               await api.payments.verifyRazorpayCheckout({
+                  subscriptionId,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  method: 'upi',
+                  gatewayResponse: response,
+               });
+
+               toastSuccess('Payment Captured', `Transaction ID: ${response.razorpay_payment_id}`);
+               setSelectedProduct(null);
+               setCheckoutQty(1);
+               setBillingAddress('');
+               router.push(`/portal/order/confirmation?id=S100${Math.floor(Math.random() * 1000)}&ref=${response.razorpay_payment_id}`);
+            } catch (err) {
+               toastError('Payment captured, subscription failed', err instanceof Error ? err.message : 'Unable to create subscription record.');
+            } finally {
+               setIsPaying(false);
+            }
          },
          modal: {
             ondismiss: () => setIsPaying(false),
@@ -230,9 +336,6 @@ export default function ShopPage() {
                      className="h-10 w-full pl-11 pr-4 rounded-xl bg-white border border-plano-100 text-xs font-bold text-plano-900 outline-none focus:border-plano-600 transition-all uppercase tracking-widest placeholder:text-[9px] shadow-sm"
                   />
                </div>
-               <button className="h-10 w-10 rounded-xl bg-white border border-plano-100 flex items-center justify-center text-gray-400 hover:text-plano-600 shadow-sm">
-                  <SlidersHorizontal size={16} />
-               </button>
             </div>
          </div>
 
@@ -261,21 +364,12 @@ export default function ShopPage() {
                      </div>
                   </div>
 
-                  {/* Price Range */}
                   <div className="p-4 bg-white rounded-2xl border border-plano-50 shadow-sm">
-                     <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center justify-between italic">
-                        Budget
-                        <span className="text-plano-600 font-mono">₹{priceRange[1]}</span>
+                     <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 italic">
+                        Sorting Rule
                      </h3>
-                     <input
-                        type="range"
-                        min="0"
-                        max="150000"
-                        step="5000"
-                        value={priceRange[1]}
-                        onChange={e => setPriceRange([0, parseInt(e.target.value)])}
-                        className="w-full accent-plano-600 h-1 bg-plano-50 rounded-full appearance-none cursor-pointer"
-                     />
+                     <p className="text-[10px] font-bold text-plano-600 uppercase tracking-widest">Highest priced to lowest priced</p>
+                     <p className="text-[9px] text-gray-400 font-medium mt-2 uppercase tracking-wider">No preset budget slider is applied.</p>
                   </div>
 
                   {/* Professional Templates (Module 10) */}
@@ -312,21 +406,11 @@ export default function ShopPage() {
                      </div>
                   </div>
 
-                  {/* Sorting */}
                   <div className="p-4 bg-plano-50/30 rounded-2xl border border-plano-50">
-                     <div className="flex items-center gap-2 mb-3">
+                     <div className="flex items-center gap-2">
                         <ArrowUpDown size={14} className="text-plano-600" />
-                        <span className="text-[10px] font-bold text-plano-900 uppercase tracking-widest">Global Order</span>
+                        <span className="text-[10px] font-bold text-plano-900 uppercase tracking-widest">Auto sorted by price</span>
                      </div>
-                     <select
-                        value={sortBy}
-                        onChange={e => setSortBy(e.target.value as any)}
-                        className="w-full bg-transparent text-[10px] font-bold text-gray-500 outline-none uppercase tracking-widest"
-                     >
-                        <option value="newest">Featured First</option>
-                        <option value="price-asc">Price Low-High</option>
-                        <option value="price-desc">Price High-Low</option>
-                     </select>
                   </div>
                </div>
 
@@ -334,45 +418,140 @@ export default function ShopPage() {
                <div className="lg:col-span-3">
                   <AnimatePresence mode="popLayout">
                      {filteredProducts.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
-                           {filteredProducts.map((p, i) => {
-                              const { price, label } = getDisplayPriceInfo(p);
-                              return (
-                                 <motion.div
-                                    key={p.id || p._id}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.05 }}
-                                 >
-                                    <button
-                                       onClick={() => openProductCheckout(p)}
-                                       className="group block w-full text-left bg-white rounded-[2.5rem] border border-plano-50 p-6 transition-all hover:border-plano-600 hover:shadow-2xl hover:shadow-plano-600/5 hover:-translate-y-2"
-                                    >
-                                       <div className="aspect-square rounded-3xl bg-plano-50 mb-6 flex items-center justify-center text-plano-200 group-hover:scale-105 group-hover:bg-plano-100 transition-all overflow-hidden relative">
-                                          <Layers size={64} strokeWidth={1} className={cn("transition-transform duration-700", i % 2 === 0 ? "group-hover:rotate-12" : "group-hover:-rotate-12")} />
-                                          <div className="absolute top-4 right-4 h-7 px-3 rounded-xl bg-white border border-plano-50 text-[10px] font-bold uppercase tracking-widest text-plano-600 flex items-center shadow-sm">
-                                             {p.type}
-                                          </div>
-                                       </div>
+                        <div className="pb-20 space-y-10">
+                           {recurringProducts.length > 0 && (
+                              <div>
+                                 <div className="mb-4 flex items-center gap-3">
+                                    <span className="px-3 py-1 rounded-full bg-plano-50 border border-plano-100 text-[10px] font-bold uppercase tracking-widest text-plano-600">Recurring Subs</span>
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{recurringProducts.length} items</span>
+                                 </div>
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {recurringProducts.map((p, i) => {
+                                       const { price, label } = getDisplayPriceInfo(p);
+                                       const recurringPlans = Array.isArray(p.plans) ? p.plans : [];
+                                       return (
+                                          <motion.div
+                                             key={p.id || p._id}
+                                             initial={{ opacity: 0, y: 30 }}
+                                             animate={{ opacity: 1, y: 0 }}
+                                             transition={{ delay: i * 0.05 }}
+                                          >
+                                             <button
+                                                onClick={() => openProductCheckout(p)}
+                                                className="group block w-full text-left bg-white rounded-[2.5rem] border border-plano-50 p-6 transition-all hover:border-plano-600 hover:shadow-2xl hover:shadow-plano-600/5 hover:-translate-y-2"
+                                             >
+                                                <div className="aspect-square rounded-3xl bg-plano-50 mb-6 flex items-center justify-center text-plano-200 group-hover:scale-105 group-hover:bg-plano-100 transition-all overflow-hidden relative">
+                                                   <Layers size={64} strokeWidth={1} className={cn("transition-transform duration-700", i % 2 === 0 ? "group-hover:rotate-12" : "group-hover:-rotate-12")} />
+                                                   <div className="absolute top-4 right-4 h-7 px-3 rounded-xl bg-white border border-plano-50 text-[10px] font-bold uppercase tracking-widest text-plano-600 flex items-center shadow-sm">
+                                                      {p.type}
+                                                   </div>
+                                                </div>
 
-                                       <div className="flex flex-col h-fit">
-                                          <h3 className="text-lg font-bold text-plano-900 uppercase leading-none mb-2">{p.name}</h3>
-                                          <p className="text-xs font-medium text-gray-400 line-clamp-2 leading-relaxed h-10 mb-6">{p.description}</p>
-                                          <div className="pt-6 border-t border-plano-50 flex items-center justify-between">
-                                             <div>
-                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Starts from</div>
-                                                <div className="text-2xl font-bold text-plano-900 tabular-nums font-mono">₹{price.toLocaleString()}</div>
-                                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">per {label}</div>
-                                             </div>
-                                             <div className="w-12 h-12 rounded-2xl bg-plano-50 flex items-center justify-center text-plano-600 shadow-sm opacity-0 group-hover:opacity-100 transition-all -translate-y-2 group-hover:translate-y-0">
-                                                <Plus size={24} />
-                                             </div>
-                                          </div>
-                                       </div>
-                                    </button>
-                                 </motion.div>
-                              );
-                           })}
+                                                <div className="flex flex-col h-fit">
+                                                   <h3 className="text-lg font-bold text-plano-900 uppercase leading-none mb-2">{p.name}</h3>
+                                                   <p className="text-xs font-medium text-gray-400 line-clamp-2 leading-relaxed h-10 mb-6">{p.description}</p>
+                                                   {recurringPlans.length > 0 && (
+                                                      <div className="flex flex-wrap gap-2 mb-4">
+                                                         {recurringPlans.slice(0, 3).map((plan: any) => (
+                                                            <span
+                                                               key={plan.id || plan._id}
+                                                               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-plano-50 border border-plano-100 text-[10px] font-bold uppercase tracking-widest text-plano-600"
+                                                            >
+                                                               Recurring · {plan.billingCycle}
+                                                            </span>
+                                                         ))}
+                                                         {recurringPlans.length > 3 && (
+                                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                                               +{recurringPlans.length - 3} more
+                                                            </span>
+                                                         )}
+                                                      </div>
+                                                   )}
+                                                   <div className="pt-6 border-t border-plano-50 flex items-center justify-between">
+                                                      <div>
+                                                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Starts from</div>
+                                                         <div className="text-2xl font-bold text-plano-900 tabular-nums font-mono">₹{price.toLocaleString()}</div>
+                                                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">per {label}</div>
+                                                      </div>
+                                                      <div className="w-12 h-12 rounded-2xl bg-plano-50 flex items-center justify-center text-plano-600 shadow-sm opacity-0 group-hover:opacity-100 transition-all -translate-y-2 group-hover:translate-y-0">
+                                                         <Plus size={24} />
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </button>
+                                          </motion.div>
+                                       );
+                                    })}
+                                 </div>
+                              </div>
+                           )}
+
+                           {subscriptionProducts.length > 0 && (
+                              <div>
+                                 <div className="mb-4 flex items-center gap-3">
+                                    <span className="px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] font-bold uppercase tracking-widest text-gray-500">Subs</span>
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{subscriptionProducts.length} items</span>
+                                 </div>
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {subscriptionProducts.map((p, i) => {
+                                       const { price, label } = getDisplayPriceInfo(p);
+                                       const recurringPlans = Array.isArray(p.plans) ? p.plans : [];
+                                       return (
+                                          <motion.div
+                                             key={p.id || p._id}
+                                             initial={{ opacity: 0, y: 30 }}
+                                             animate={{ opacity: 1, y: 0 }}
+                                             transition={{ delay: i * 0.05 }}
+                                          >
+                                             <button
+                                                onClick={() => openProductCheckout(p)}
+                                                className="group block w-full text-left bg-white rounded-[2.5rem] border border-plano-50 p-6 transition-all hover:border-plano-600 hover:shadow-2xl hover:shadow-plano-600/5 hover:-translate-y-2"
+                                             >
+                                                <div className="aspect-square rounded-3xl bg-plano-50 mb-6 flex items-center justify-center text-plano-200 group-hover:scale-105 group-hover:bg-plano-100 transition-all overflow-hidden relative">
+                                                   <Layers size={64} strokeWidth={1} className={cn("transition-transform duration-700", i % 2 === 0 ? "group-hover:rotate-12" : "group-hover:-rotate-12")} />
+                                                   <div className="absolute top-4 right-4 h-7 px-3 rounded-xl bg-white border border-plano-50 text-[10px] font-bold uppercase tracking-widest text-plano-600 flex items-center shadow-sm">
+                                                      {p.type}
+                                                   </div>
+                                                </div>
+
+                                                <div className="flex flex-col h-fit">
+                                                   <h3 className="text-lg font-bold text-plano-900 uppercase leading-none mb-2">{p.name}</h3>
+                                                   <p className="text-xs font-medium text-gray-400 line-clamp-2 leading-relaxed h-10 mb-6">{p.description}</p>
+                                                   {recurringPlans.length > 0 && (
+                                                      <div className="flex flex-wrap gap-2 mb-4">
+                                                         {recurringPlans.slice(0, 3).map((plan: any) => (
+                                                            <span
+                                                               key={plan.id || plan._id}
+                                                               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-plano-50 border border-plano-100 text-[10px] font-bold uppercase tracking-widest text-plano-600"
+                                                            >
+                                                               Recurring · {plan.billingCycle}
+                                                            </span>
+                                                         ))}
+                                                         {recurringPlans.length > 3 && (
+                                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                                               +{recurringPlans.length - 3} more
+                                                            </span>
+                                                         )}
+                                                      </div>
+                                                   )}
+                                                   <div className="pt-6 border-t border-plano-50 flex items-center justify-between">
+                                                      <div>
+                                                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">Starts from</div>
+                                                         <div className="text-2xl font-bold text-plano-900 tabular-nums font-mono">₹{price.toLocaleString()}</div>
+                                                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">per {label}</div>
+                                                      </div>
+                                                      <div className="w-12 h-12 rounded-2xl bg-plano-50 flex items-center justify-center text-plano-600 shadow-sm opacity-0 group-hover:opacity-100 transition-all -translate-y-2 group-hover:translate-y-0">
+                                                         <Plus size={24} />
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </button>
+                                          </motion.div>
+                                       );
+                                    })}
+                                 </div>
+                              </div>
+                           )}
                         </div>
                      ) : (
                         <div className="py-32 text-center">
@@ -385,7 +564,6 @@ export default function ShopPage() {
                               onClick={() => {
                                  setSearch('');
                                  setSelectedCategory(null);
-                                 setPriceRange([0, 150000]);
                               }}
                               className="mt-8 h-12 px-8 rounded-2xl bg-white border border-plano-200 text-plano-900 text-xs font-bold uppercase tracking-widest hover:border-plano-600 hover:text-plano-600 transition-all"
                            >
@@ -542,6 +720,16 @@ export default function ShopPage() {
                               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Total Payable</span>
                               <span className="text-2xl font-bold text-plano-900 tabular-nums">₹{selectedProductTotal.toLocaleString()}</span>
                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-plano-50 bg-white p-4 mb-6">
+                           <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Billing Address</label>
+                           <textarea
+                              value={billingAddress}
+                              onChange={(e) => setBillingAddress(e.target.value)}
+                              placeholder="Enter billing address used for tax invoice"
+                              className="w-full h-24 rounded-xl border border-plano-100 p-3 text-xs font-medium text-plano-900 outline-none focus:border-plano-600 resize-none"
+                           />
                         </div>
 
                         <div className="flex items-center gap-3">

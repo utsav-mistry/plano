@@ -160,6 +160,26 @@ export interface Payment {
   updatedAt: string;
 }
 
+export interface CheckoutAuditEvent {
+  subscriptionId: string;
+  subscriptionCreatedAt: string;
+  customerName: string;
+  customerEmail: string;
+  planName: string;
+  amount: number;
+  currency: string;
+  invoiceId: string | null;
+  invoiceNumber: string | null;
+  invoiceStatus: string | null;
+  invoiceCreatedAt: string | null;
+  paymentId: string | null;
+  paymentStatus: string | null;
+  paymentGateway: string | null;
+  paymentReference: string | null;
+  paymentCreatedAt: string | null;
+  dbChainComplete: boolean;
+}
+
 export interface Tax {
   id: string;
   name: string;

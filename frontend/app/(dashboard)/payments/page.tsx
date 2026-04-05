@@ -96,13 +96,21 @@ export default function PaymentsPage() {
                   Reconcile and manage incoming transactions.
                </p>
             </div>
-            <Link
-               href={toAdminPath(pathname, '/payments/new')}
-               className="flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm"
-            >
-               <Plus size={18} />
-               Record Payment
-            </Link>
+            <div className="flex items-center gap-2">
+               <Link
+                  href={toAdminPath(pathname, '/payments/audit')}
+                  className="flex items-center gap-2 px-5 py-2.5 border border-border dark:border-sidebar-hover rounded-btn hover:bg-sidebar-hover transition-all font-bold text-text-secondary"
+               >
+                  Audit Log
+               </Link>
+               <Link
+                  href={toAdminPath(pathname, '/payments/new')}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm"
+               >
+                  <Plus size={18} />
+                  Record Payment
+               </Link>
+            </div>
          </div>
 
          {/* Filter Bar */}

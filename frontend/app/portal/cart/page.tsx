@@ -14,11 +14,16 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
-type TaxConfig = {
-  type?: 'percentage' | 'fixed';
-  rate?: number;
-};
 
+type TaxRecord = {
+  id: string;
+  _id?: string;
+  name?: string;
+  code?: string;
+  rate?: number;
+  type?: 'inclusive' | 'exclusive';
+  isActive?: boolean;
+};
 type DiscountConfig = {
   code?: string;
   isActive?: boolean;
@@ -29,13 +34,16 @@ type DiscountConfig = {
 };
 
 type RazorpayResponse = {
-  razorpay_payment_id: string;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
+  razorpay_signature?: string;
 };
 
 type RazorpayOptions = {
   key: string;
   amount: number;
   currency: string;
+  order_id?: string;
   name: string;
   description: string;
   image: string;
@@ -71,23 +79,42 @@ export default function CartPage() {
   const [promo, setPromo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isQuotation, setIsQuotation] = useState(false);
-  const [taxesList, setTaxesList] = useState<TaxConfig[]>([]);
+  const [taxesList, setTaxesList] = useState<TaxRecord[]>([]);
   const [discountsList, setDiscountsList] = useState<DiscountConfig[]>([]);
-  const [address] = useState(user?.email ? `Block A, Building 4, ${user.name}'s Residence, Mumbai, MH` : '');
+  const [billingAddress, setBillingAddress] = useState(user?.email ? `Block A, Building 4, ${user.name}'s Residence, Mumbai, MH` : '');
+  const [planTaxMap, setPlanTaxMap] = useState<Record<string, string[]>>({});
+  const [productTaxMap, setProductTaxMap] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
+    const normalizeId = (value: unknown) => {
+      if (typeof value === 'string' || typeof value === 'number') return String(value);
+      if (value && typeof value === 'object') {
+        const record = value as { id?: string; _id?: string };
+        return String(record.id || record._id || '');
+      }
+      return '';
+    };
+    const extractTaxIds = (input: unknown): string[] => {
+      if (!Array.isArray(input)) return [];
+      return input
+        .map((tax) => normalizeId(tax))
+        .filter(Boolean);
+    };
+
     async function fetchConfig() {
       try {
-        const [tRes, dRes] = await Promise.all([
+        const [tRes, dRes, plansRes, productsRes] = await Promise.all([
           api.taxes.getAll(),
-          api.discounts.getAll()
+          api.discounts.getAll(),
+          api.plans.getAll({ isActive: true, limit: 500 }),
+          api.products.getAll({ isActive: true, limit: 500 })
         ]);
         if (tRes.success) {
           const taxesData = tRes.data as { taxes?: unknown[] } | unknown[];
           const normalizedTaxes = Array.isArray(taxesData)
             ? taxesData
             : (taxesData?.taxes ?? []);
-          setTaxesList(normalizedTaxes as TaxConfig[]);
+          setTaxesList(normalizedTaxes as TaxRecord[]);
         }
         if (dRes.success) {
           const discountsData = dRes.data as { discounts?: unknown[] } | unknown[];
@@ -95,6 +122,38 @@ export default function CartPage() {
             ? discountsData
             : (discountsData?.discounts ?? []);
           setDiscountsList(normalizedDiscounts as DiscountConfig[]);
+        }
+
+        if (plansRes.success) {
+          const plansData = plansRes.data as unknown;
+          const plansContainer = plansData as { plans?: unknown[] };
+          const plans = Array.isArray(plansData) ? plansData : (plansContainer.plans ?? []);
+          const nextPlanMap: Record<string, string[]> = {};
+          for (const plan of plans) {
+            const pid = normalizeId(plan);
+            if (!pid) continue;
+            const planRecord = (plan && typeof plan === 'object')
+              ? (plan as { taxIds?: unknown[] })
+              : undefined;
+            nextPlanMap[pid] = extractTaxIds(planRecord?.taxIds);
+          }
+          setPlanTaxMap(nextPlanMap);
+        }
+
+        if (productsRes.success) {
+          const productsData = productsRes.data as unknown;
+          const productsContainer = productsData as { products?: unknown[] };
+          const products = Array.isArray(productsData) ? productsData : (productsContainer.products ?? []);
+          const nextProductMap: Record<string, string[]> = {};
+          for (const product of products) {
+            const pid = normalizeId(product);
+            if (!pid) continue;
+            const productRecord = (product && typeof product === 'object')
+              ? (product as { taxIds?: unknown[] })
+              : undefined;
+            nextProductMap[pid] = extractTaxIds(productRecord?.taxIds);
+          }
+          setProductTaxMap(nextProductMap);
         }
       } catch (err) {
         console.error('Config Fetch Error:', err);
@@ -107,21 +166,82 @@ export default function CartPage() {
     items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
     [items]);
 
-  const taxes = useMemo(() => {
-    // Dynamic Tax Calculation (Module 14)
-    // If no specific taxes defined, default to 18% as safety, but prioritizes dynamic list
-    if (taxesList.length > 0) {
-      return taxesList.reduce((acc, tax) => {
-        const rate = tax.rate ?? 0;
-        if (tax.type === 'percentage') return acc + (subtotal * (rate / 100));
-        if (tax.type === 'fixed') return acc + rate;
-        return acc;
-      }, 0);
+  const taxBreakdown = useMemo(() => {
+    const mapById = new Map<string, TaxRecord>();
+    for (const tax of taxesList) {
+      const id = String(tax.id || tax._id || '');
+      if (id) mapById.set(id, tax);
     }
-    return subtotal * 0.18;
-  }, [subtotal, taxesList]);
 
-  const total = useMemo(() => subtotal + taxes - discountAmount, [subtotal, taxes, discountAmount]);
+    const defaultGstTaxes = taxesList.filter((tax) => {
+      if (tax.isActive === false) return false;
+      const code = String(tax.code || '').toUpperCase();
+      const name = String(tax.name || '').toUpperCase();
+      return code.includes('GST') || code.includes('CGST') || code.includes('SGST') || code.includes('IGST')
+        || name.includes('GST') || name.includes('CGST') || name.includes('SGST') || name.includes('IGST');
+    });
+
+    const effectiveDiscountRatio = subtotal > 0 ? Math.max(0, (subtotal - discountAmount) / subtotal) : 1;
+    const breakdown: Record<string, number> = {};
+    let payableTax = 0;
+    let totalTaxPortion = 0;
+
+    for (const item of items) {
+      const itemBase = item.price * item.quantity * effectiveDiscountRatio;
+      const linkedPlanTaxes = planTaxMap[item.planId] || [];
+      const linkedProductTaxes = productTaxMap[item.productId] || [];
+      const taxIds = [...new Set([...linkedPlanTaxes, ...linkedProductTaxes])];
+
+      const taxCandidates: TaxRecord[] = taxIds.length > 0
+        ? taxIds
+          .map((taxId) => mapById.get(taxId))
+          .filter((tax): tax is TaxRecord => Boolean(tax))
+        : defaultGstTaxes;
+
+      const inclusiveTaxes = taxCandidates.filter((tax) => tax.type === 'inclusive');
+      const exclusiveTaxes = taxCandidates.filter((tax) => tax.type !== 'inclusive');
+
+      const inclusiveRate = inclusiveTaxes.reduce((sum, tax) => sum + Number(tax.rate || 0), 0);
+      const inclusiveTotal = inclusiveRate > 0
+        ? (itemBase - itemBase / (1 + inclusiveRate / 100))
+        : 0;
+
+      for (const tax of inclusiveTaxes) {
+        if (!tax || tax.isActive === false) continue;
+        const rate = Number(tax.rate || 0);
+        if (rate <= 0) continue;
+
+        const taxAmount = inclusiveRate > 0 ? (inclusiveTotal * rate) / inclusiveRate : 0;
+
+        const key = tax.code || tax.name || 'GST';
+        breakdown[key] = (breakdown[key] || 0) + taxAmount;
+        totalTaxPortion += taxAmount;
+      }
+
+      for (const tax of exclusiveTaxes) {
+        if (!tax || tax.isActive === false) continue;
+        const rate = Number(tax.rate || 0);
+        if (rate <= 0) continue;
+
+        const taxAmount = itemBase * (rate / 100);
+
+        const key = tax.code || tax.name || 'GST';
+        breakdown[key] = (breakdown[key] || 0) + taxAmount;
+        totalTaxPortion += taxAmount;
+        payableTax += taxAmount;
+      }
+    }
+
+    return {
+      payableTax,
+      totalTaxPortion,
+      lines: Object.entries(breakdown).map(([label, amount]) => ({ label, amount })),
+    };
+  }, [items, planTaxMap, productTaxMap, taxesList, subtotal, discountAmount]);
+
+  const taxes = taxBreakdown.payableTax;
+
+  const total = useMemo(() => subtotal - discountAmount + taxes, [subtotal, taxes, discountAmount]);
 
   const handleApplyPromo = () => {
     const found = discountsList.find(d => (d.code ?? '').toUpperCase() === promo.toUpperCase() && d.isActive);
@@ -146,7 +266,39 @@ export default function CartPage() {
     }
   };
 
-  const handleRazorpayPayment = () => {
+  async function createSubscriptionsFromCart(paymentId: string) {
+    const recurringItems = items.filter((item) => item.planId && !item.planId.startsWith('base-'));
+    if (recurringItems.length === 0) {
+      throw new Error('No recurring plan found in cart. Please add a plan-based product first.');
+    }
+
+    const created = await Promise.all(
+      recurringItems.map((item) =>
+        api.subscriptions.create({
+          planId: item.planId,
+          quantity: item.quantity,
+          autoRenew: true,
+          paymentReference: paymentId,
+          billingAddress,
+        })
+      )
+    );
+
+    const subscriptionIds = created
+      .map((res) => {
+        const data = res.data as { id?: string; _id?: string };
+        return data?.id || data?._id || '';
+      })
+      .filter(Boolean);
+
+    if (subscriptionIds.length === 0) {
+      throw new Error('Subscriptions were created but IDs were not returned.');
+    }
+
+    return subscriptionIds;
+  }
+
+  const handleRazorpayPayment = async () => {
     if (typeof window === 'undefined') return;
 
     const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
@@ -155,44 +307,91 @@ export default function CartPage() {
       return;
     }
 
+    if (!billingAddress.trim()) {
+      toastError('Billing address required', 'Please provide billing address before payment.');
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulation of Backend Order Creation
-    setTimeout(() => {
-      const options = {
-        key: razorpayKey,
-        amount: Math.round(total * 100),
+    let orderId = '';
+    try {
+      const orderRes = await api.payments.createRazorpayOrder({
+        amount: total,
         currency: 'INR',
-        name: 'Plano Subscriptions',
-        description: `Purchase of ${items.length} services`,
-        image: 'https://cdn.razorpay.com/logos/H6U6f9bA6G6E7M_medium.png',
-        handler: function (response: RazorpayResponse) {
+        notes: {
+          scope: 'portal_cart_checkout',
+          itemCount: String(items.length),
+        },
+      });
+      const orderData = orderRes.data as { order?: { id?: string } };
+      orderId = orderData?.order?.id || '';
+      if (!orderId) {
+        throw new Error('Unable to create Razorpay order id.');
+      }
+    } catch (err) {
+      setIsLoading(false);
+      toastError('Checkout init failed', err instanceof Error ? err.message : 'Unable to initialize payment order.');
+      return;
+    }
+
+    const options = {
+      key: razorpayKey,
+      amount: Math.round(total * 100),
+      currency: 'INR',
+      order_id: orderId,
+      name: 'Plano Subscriptions',
+      description: `Purchase of ${items.length} services`,
+      image: 'https://cdn.razorpay.com/logos/H6U6f9bA6G6E7M_medium.png',
+      handler: async function (response: RazorpayResponse) {
+        try {
+          if (!response.razorpay_payment_id || !response.razorpay_order_id || !response.razorpay_signature) {
+            throw new Error('Missing Razorpay verification fields. Ensure checkout is created with a Razorpay order.');
+          }
+
+          const subscriptionIds = await createSubscriptionsFromCart(response.razorpay_payment_id);
+          await Promise.all(
+            subscriptionIds.map((subscriptionId) =>
+              api.payments.verifyRazorpayCheckout({
+                subscriptionId,
+                razorpay_order_id: response.razorpay_order_id as string,
+                razorpay_payment_id: response.razorpay_payment_id as string,
+                razorpay_signature: response.razorpay_signature as string,
+                method: 'upi',
+                gatewayResponse: response,
+              })
+            )
+          );
+
           toastSuccess('Payment Captured', `Transaction ID: ${response.razorpay_payment_id}`);
-          setIsLoading(false);
           clearCart();
           router.push(`/portal/order/confirmation?id=S100${Math.floor(Math.random() * 1000)}&ref=${response.razorpay_payment_id}`);
-        },
-        prefill: {
-          name: user?.name,
-          email: user?.email,
-          contact: '9999999999'
-        },
-        theme: { color: '#8f5580' },
-        modal: {
-          ondismiss: () => setIsLoading(false)
+        } catch (err) {
+          toastError('Payment captured, subscription failed', err instanceof Error ? err.message : 'Unable to create subscription records.');
+        } finally {
+          setIsLoading(false);
         }
-      };
+      },
+      prefill: {
+        name: user?.name,
+        email: user?.email,
+        contact: '9999999999'
+      },
+      theme: { color: '#8f5580' },
+      modal: {
+        ondismiss: () => setIsLoading(false)
+      }
+    };
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    }, 800);
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   };
 
   const handleRequestQuote = () => {
     setIsLoading(true);
 
     const validItems = items
-      .filter((item) => item.quantity > 0 && item.price >= 0)
+      .filter((item) => item.quantity > 0 && item.price >= 0 && item.planId && !item.planId.startsWith('base-'))
       .map((item) => ({
         productId: item.productId,
         planId: item.planId,
@@ -203,7 +402,7 @@ export default function CartPage() {
       }));
 
     if (validItems.length === 0) {
-      toastError('Quotation failed', 'Your cart does not contain valid items for quotation.');
+      toastError('Quotation failed', 'Your cart has no recurring plan items eligible for quotation.');
       setIsLoading(false);
       return;
     }
@@ -220,6 +419,7 @@ export default function CartPage() {
       currency: 'INR',
       validUntil: validUntil.toISOString(),
       notes: `Portal quotation request by ${user?.email || 'customer'}`,
+      terms: `Billing address: ${billingAddress || 'Not provided'}\nGST Payable: ${taxes.toFixed(2)}\nGST Total Portion: ${taxBreakdown.totalTaxPortion.toFixed(2)}\nGST Breakdown: ${taxBreakdown.lines.map((line) => `${line.label}:${line.amount.toFixed(2)}`).join(', ') || 'N/A'}`,
     })
       .then((res) => {
         if (!res.success) {
@@ -237,7 +437,13 @@ export default function CartPage() {
 
   const handleCheckout = () => {
     if (step === 'order') setStep('address');
-    else if (step === 'address') setStep('payment');
+    else if (step === 'address') {
+      if (!billingAddress.trim()) {
+        toastError('Billing address required', 'Please provide your billing address to continue.');
+        return;
+      }
+      setStep('payment');
+    }
     else if (step === 'payment') {
       if (isQuotation) handleRequestQuote();
       else handleRazorpayPayment();
@@ -372,13 +578,15 @@ export default function CartPage() {
                   </div>
                   <p className="text-xs font-bold text-plano-600 uppercase tracking-widest mb-2">Primary Address</p>
                   <p className="text-sm font-bold text-plano-900 mb-1">{user?.name}</p>
-                  <p className="text-sm font-medium text-gray-500">{address}</p>
+                  <p className="text-sm font-medium text-gray-500">{billingAddress}</p>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-4">Verified Customer Account</p>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Update Shipping Address</label>
                   <textarea
+                    value={billingAddress}
+                    onChange={(e) => setBillingAddress(e.target.value)}
                     placeholder="Enter new address details..."
                     className="w-full p-4 h-32 rounded-2xl border border-plano-100 bg-white text-sm font-medium outline-none focus:border-plano-600 transition-all resize-none"
                   />
@@ -470,9 +678,25 @@ export default function CartPage() {
                 <span className="text-lg font-bold text-plano-900">₹{subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">Taxes (18%)</span>
+                <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">GST Payable (dynamic)</span>
                 <span className="text-lg font-bold text-plano-900">₹{taxes.toLocaleString()}</span>
               </div>
+              {taxBreakdown.totalTaxPortion > taxes && (
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">GST Included In Price</span>
+                  <span className="text-sm font-bold text-plano-700">₹{(taxBreakdown.totalTaxPortion - taxes).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                </div>
+              )}
+              {taxBreakdown.lines.length > 0 && (
+                <div className="space-y-2 pl-1">
+                  {taxBreakdown.lines.map((line) => (
+                    <div key={line.label} className="flex justify-between items-center">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{line.label}</span>
+                      <span className="text-sm font-bold text-plano-700">₹{line.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
               {discountAmount > 0 && (
                 <div className="flex justify-between items-center py-4 bg-success-50 rounded-2xl px-4 border border-success-100">
                   <span className="text-xs font-bold text-success-600 uppercase tracking-widest flex items-center gap-2">
