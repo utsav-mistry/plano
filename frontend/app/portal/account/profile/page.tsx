@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  User, Mail, Phone, MapPin, ShieldCheck, CheckCircle2,
-  Loader2, Save, ArrowLeft, Package, CreditCard, Sparkles, AlertCircle
+  User, Mail, Phone, MapPin, ShieldCheck,
+  Loader2, Save, Package, CreditCard, Sparkles
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/app/context/AuthContext';
@@ -15,6 +15,7 @@ import { User as UserType } from '@/types';
 export default function ProfilePage() {
   const { user } = useAuth();
   const { success: toastSuccess, error: toastError } = useToast();
+  const profileUser = user as (UserType & { phone?: string; address?: string }) | undefined;
 
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
@@ -25,15 +26,15 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (profileUser) {
       setForm({
-        name: user.name || '',
-        email: user.email || '',
-        phone: (user as any).phone || '',
-        address: (user as any).address || ''
+        name: profileUser.name || '',
+        email: profileUser.email || '',
+        phone: profileUser.phone || '',
+        address: profileUser.address || ''
       });
     }
-  }, [user]);
+  }, [profileUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +53,8 @@ export default function ProfilePage() {
       });
       if (res.success) {
         toastSuccess('Profile Updated', 'Your details have been saved successfully.');
-        const responseData = res.data as UserType | { user?: UserType };
-        const updatedUser = ('user' in responseData ? responseData.user : responseData) || null;
+        const responseData = res.data as Partial<UserType> & { user?: UserType };
+        const updatedUser = (responseData.user ?? responseData) as UserType;
         if (updatedUser) {
           localStorage.setItem('plano_user', JSON.stringify({
             ...user,
@@ -62,8 +63,8 @@ export default function ProfilePage() {
           }));
         }
       }
-    } catch (err: any) {
-      toastError('Update Failed', err.message || 'Failed to update profile.');
+    } catch (err: unknown) {
+      toastError('Update Failed', err instanceof Error ? err.message : 'Failed to update profile.');
     } finally {
       setIsLoading(false);
     }

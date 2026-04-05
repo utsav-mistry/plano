@@ -4,7 +4,7 @@
  *
  * Routes:
  *   /           → public/index.html  (status page)
- *   /api/health → JSON health data   (polled every 5s)
+ *   /api/health → JSON health data   (polled every 15s)
  *   /api/stream → SSE live push
  */
 
@@ -34,7 +34,7 @@ try {
 // CONFIG
 // ─────────────────────────────────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT) || 4000;
-const POLL_MS = 5000;
+const POLL_MS = 15000;
 const HYSTERESIS = 3;          // failures before "outage"
 const USE_MOCK = process.env.MOCK_CHECKERS === 'true';
 

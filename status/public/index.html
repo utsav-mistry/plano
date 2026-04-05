@@ -614,6 +614,7 @@
 
     const SC = { operational: 'ok', degraded: 'deg', outage: 'out', unknown: 'unk' };
     const SL = { operational: 'Operational', degraded: 'Degraded', outage: 'Outage', unknown: 'Unknown' };
+    const SERVICE_ORDER = ['backend', 'frontend', 'mongodb', 'redis', 'bullmq', 'smtp'];
     const MSG = {
       ok: ['All systems operational', "We're not aware of any issues affecting Plano systems."],
       deg: ['Partial degradation', 'Some services are experiencing degraded performance.'],
@@ -625,6 +626,18 @@
 
     function fmtMs(ms) { return ms != null ? `${ms}ms` : '—'; }
     function fmtTime(iso) { try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }); } catch { return '—'; } }
+    function normalizeServices(services) {
+      const byId = new Map((services || []).map(service => [service.id, service]));
+      return SERVICE_ORDER.map(id => byId.get(id) || {
+        id,
+        name: id.charAt(0).toUpperCase() + id.slice(1),
+        status: 'unknown',
+        responseTimeMs: null,
+        lastChecked: null,
+        healthScore: null,
+        uptimePercent: 0,
+      });
+    }
     function setClass(id, remove, add) {
       const el = document.getElementById(id);
       if (!el) return;
@@ -666,7 +679,7 @@
 
     <!-- Services grid -->
     <div class="grid">
-      ${data.services.map(buildCard).join('')}
+      ${normalizeServices(data.services).map(buildCard).join('')}
     </div>`;
 
       initialized = true;
@@ -770,7 +783,7 @@
       initialized = false;
     }
 
-    /* ── Fetch & poll every 5s ────────────────────────────────── */
+    /* ── Fetch & poll every 15s ───────────────────────────────── */
     let firstLoad = true;
 
     async function poll() {
@@ -789,7 +802,7 @@
 
     showSkeleton();
     poll();
-    setInterval(poll, 5000);
+    setInterval(poll, 15000);
 
     // SSE — browser connects once and receives live pushes (no polling overhead)
     if (typeof EventSource !== 'undefined') {
