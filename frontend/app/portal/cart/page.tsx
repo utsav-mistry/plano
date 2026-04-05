@@ -14,7 +14,6 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
-read me 
 type TaxConfig = {
   type?: 'percentage' | 'fixed';
   rate?: number;
