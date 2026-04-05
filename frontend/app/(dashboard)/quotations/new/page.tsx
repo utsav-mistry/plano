@@ -20,13 +20,17 @@ import {
   Trash2
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
+import { toAdminPath } from '@/lib/path-scoping';
 
-const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
+const CURRENCIES = ['INR'];
 
 export default function NewQuotationPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
@@ -112,7 +116,7 @@ export default function NewQuotationPage() {
       });
       if (res.success) {
         success('Quote issued!', 'Quotation generated and sent to customer directory.');
-        window.location.href = '/admin/quotations';
+        router.push(toAdminPath(pathname, '/quotations'));
       }
     } catch (err: any) {
       toastError('Generation failed', err.message);
@@ -128,7 +132,7 @@ export default function NewQuotationPage() {
     <div className="flex flex-col gap-8 pb-20 max-w-5xl">
       {/* Header */}
       <div className="flex flex-col gap-3">
-        <Link href="/quotations" className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit">
+        <Link href={toAdminPath(pathname, '/quotations')} className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit">
           <ArrowLeft size={14} /> Back to Quotes
         </Link>
         <div className="flex items-center justify-between">
@@ -147,168 +151,168 @@ export default function NewQuotationPage() {
 
           {/* Section 1: Parties involved */}
           <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8 relative overflow-hidden">
-             <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover relative">
-                <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center border border-plano-100 dark:border-sidebar-hover shadow-sm">
-                  <UserCircle size={20} />
-                </div>
-                <h2 className="text-2xl font-serif font-bold text-text-primary">Customer Profile</h2>
-             </div>
+            <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover relative">
+              <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/10 text-plano-600 dark:text-plano-400 flex items-center justify-center border border-plano-100 dark:border-sidebar-hover shadow-sm">
+                <UserCircle size={20} />
+              </div>
+              <h2 className="text-2xl font-serif font-bold text-text-primary">Customer Profile</h2>
+            </div>
 
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="flex flex-col">
-                  <label className={labelStyle}>Select Recipient *</label>
-                  <div className="relative">
-                    <select 
-                      suppressHydrationWarning
-                      required
-                      value={form.userId}
-                      onChange={(e) => setForm({...form, userId: e.target.value})}
-                      className={cn(inputStyle, "appearance-none pr-10 cursor-pointer")}
-                    >
-                      <option value="" className="bg-bg-surface text-gray-500">Search internal/portal users...</option>
-                      {users.map(u => (
-                        <option key={u._id} value={u._id} className="bg-bg-surface text-text-primary">{u.name} ({u.email})</option>
-                      ))}
-                    </select>
-                    {loadingDeps ? (
-                      <Loader2 size={14} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-gray-300" />
-                    ) : (
-                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    )}
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                    <label className={labelStyle}>Validity Period *</label>
-                    <div className="relative">
-                    <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input
-                        suppressHydrationWarning
-                        type="date"
-                        value={form.validUntil}
-                        onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
-                        className={cn(inputStyle, "pl-11 pr-4 font-mono")}
-                    />
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex flex-col">
+                <label className={labelStyle}>Select Recipient *</label>
+                <div className="relative">
+                  <select
+                    suppressHydrationWarning
+                    required
+                    value={form.userId}
+                    onChange={(e) => setForm({ ...form, userId: e.target.value })}
+                    className={cn(inputStyle, "appearance-none pr-10 cursor-pointer")}
+                  >
+                    <option value="" className="bg-bg-surface text-gray-500">Search internal/portal users...</option>
+                    {users.map(u => (
+                      <option key={u._id} value={u._id} className="bg-bg-surface text-text-primary">{u.name} ({u.email})</option>
+                    ))}
+                  </select>
+                  {loadingDeps ? (
+                    <Loader2 size={14} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-gray-300" />
+                  ) : (
+                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  )}
                 </div>
               </div>
+              <div className="flex flex-col">
+                <label className={labelStyle}>Validity Period *</label>
+                <div className="relative">
+                  <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    suppressHydrationWarning
+                    type="date"
+                    value={form.validUntil}
+                    onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
+                    className={cn(inputStyle, "pl-11 pr-4 font-mono")}
+                  />
+                </div>
+              </div>
+            </div>
           </section>
 
           {/* Section 2: Items Configuration */}
           <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
-             <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover">
-                <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-900/10 text-success-600 flex items-center justify-center border border-success-100 dark:border-sidebar-hover shadow-sm">
-                  <Plus size={20} />
-                </div>
-                <h2 className="text-2xl font-serif font-bold text-text-primary">Line Items</h2>
-             </div>
-
-             {/* Add Item Row */}
-             <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-xl border border-border dark:border-sidebar-hover flex flex-col gap-6">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                   <div className="md:col-span-6 flex flex-col">
-                      <label className={labelStyle}>Product</label>
-                      <select 
-                        suppressHydrationWarning
-                        value={currentItem.productId}
-                        onChange={(e) => handleProductSelect(e.target.value)}
-                        className={inputStyle}
-                      >
-                         <option value="" className="bg-bg-surface text-gray-500">Select offering...</option>
-                         {products.map(p => <option key={p._id} value={p._id} className="bg-bg-surface text-text-primary">{p.name}</option>)}
-                      </select>
-                   </div>
-                   <div className="md:col-span-2 flex flex-col">
-                      <label className={labelStyle}>Qty</label>
-                      <input 
-                        suppressHydrationWarning
-                        type="number" 
-                        min="1"
-                        value={currentItem.quantity}
-                        onChange={(e) => setCurrentItem({...currentItem, quantity: e.target.value})}
-                        className={inputStyle}
-                      />
-                   </div>
-                   <div className="md:col-span-4 flex flex-col">
-                      <label className={labelStyle}>Unit Rate</label>
-                      <div className="relative">
-                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold pr-2 border-r border-border dark:border-sidebar-hover mr-2">₹</div>
-                         <input 
-                           suppressHydrationWarning
-                           type="number" 
-                           placeholder="0.00"
-                           value={currentItem.unitPrice}
-                           onChange={(e) => setCurrentItem({...currentItem, unitPrice: e.target.value})}
-                           className={cn(inputStyle, "pl-11 font-mono")}
-                         />
-                      </div>
-                   </div>
-                </div>
-                <button
-                    type="button"
-                    onClick={addItem}
-                    className="h-12 w-full rounded-xl bg-plano-900 text-white text-xs font-bold uppercase tracking-widest hover:bg-black transition-all shadow-md flex items-center justify-center gap-2"
-                >
-                    <Plus size={16} /> Add to Quote
-                </button>
+            <div className="flex items-center gap-3 pb-5 border-b border-border dark:border-sidebar-hover">
+              <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-900/10 text-success-600 flex items-center justify-center border border-success-100 dark:border-sidebar-hover shadow-sm">
+                <Plus size={20} />
               </div>
+              <h2 className="text-2xl font-serif font-bold text-text-primary">Line Items</h2>
+            </div>
 
-             {/* Items Table */}
-             <div className="overflow-x-auto mt-4">
-                <table className="w-full text-left">
-                   <thead>
-                      <tr className="border-b border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/10">
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Selected Item</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center">Unit Price</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center whitespace-nowrap">Qty</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right">Total</th>
-                        <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right">Action</th>
+            {/* Add Item Row */}
+            <div className="p-6 bg-gray-50 dark:bg-white/5 rounded-xl border border-border dark:border-sidebar-hover flex flex-col gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="md:col-span-6 flex flex-col">
+                  <label className={labelStyle}>Product</label>
+                  <select
+                    suppressHydrationWarning
+                    value={currentItem.productId}
+                    onChange={(e) => handleProductSelect(e.target.value)}
+                    className={inputStyle}
+                  >
+                    <option value="" className="bg-bg-surface text-gray-500">Select offering...</option>
+                    {products.map(p => <option key={p._id} value={p._id} className="bg-bg-surface text-text-primary">{p.name}</option>)}
+                  </select>
+                </div>
+                <div className="md:col-span-2 flex flex-col">
+                  <label className={labelStyle}>Qty</label>
+                  <input
+                    suppressHydrationWarning
+                    type="number"
+                    min="1"
+                    value={currentItem.quantity}
+                    onChange={(e) => setCurrentItem({ ...currentItem, quantity: e.target.value })}
+                    className={inputStyle}
+                  />
+                </div>
+                <div className="md:col-span-4 flex flex-col">
+                  <label className={labelStyle}>Unit Rate</label>
+                  <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold pr-2 border-r border-border dark:border-sidebar-hover mr-2">₹</div>
+                    <input
+                      suppressHydrationWarning
+                      type="number"
+                      placeholder="0.00"
+                      value={currentItem.unitPrice}
+                      onChange={(e) => setCurrentItem({ ...currentItem, unitPrice: e.target.value })}
+                      className={cn(inputStyle, "pl-11 font-mono")}
+                    />
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={addItem}
+                className="h-12 w-full rounded-xl bg-plano-900 text-white text-xs font-bold uppercase tracking-widest hover:bg-black transition-all shadow-md flex items-center justify-center gap-2"
+              >
+                <Plus size={16} /> Add to Quote
+              </button>
+            </div>
+
+            {/* Items Table */}
+            <div className="overflow-x-auto mt-4">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-border dark:border-sidebar-hover bg-gray-50/50 dark:bg-white/10">
+                    <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest">Selected Item</th>
+                    <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center">Unit Price</th>
+                    <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-center whitespace-nowrap">Qty</th>
+                    <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right">Total</th>
+                    <th className="py-4 px-6 text-[10px] uppercase font-bold text-gray-500 tracking-widest text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border dark:divide-sidebar-hover">
+                  {form.items.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-20 text-center">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">No items drafted yet</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    form.items.map((item, i) => (
+                      <tr key={i} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
+                        <td className="py-4 px-6">
+                          <span className="text-sm font-bold text-text-primary">{item.name}</span>
+                        </td>
+                        <td className="py-4 px-6 text-center font-mono text-xs text-text-primary">
+                          {formatCurrency(item.unitPrice, form.currency)}
+                        </td>
+                        <td className="py-4 px-6 text-center font-bold text-xs text-text-secondary">
+                          {item.quantity}
+                        </td>
+                        <td className="py-4 px-6 text-right font-bold text-sm text-text-primary">
+                          {formatCurrency(item.unitPrice * item.quantity, form.currency)}
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <button type="button" onClick={() => removeItem(i)} className="p-2 rounded-lg text-gray-300 hover:text-danger-600 hover:bg-danger-50 transition-all">
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
                       </tr>
-                   </thead>
-                   <tbody className="divide-y divide-border dark:divide-sidebar-hover">
-                      {form.items.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="py-20 text-center">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">No items drafted yet</p>
-                          </td>
-                        </tr>
-                      ) : (
-                        form.items.map((item, i) => (
-                           <tr key={i} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
-                              <td className="py-4 px-6">
-                                 <span className="text-sm font-bold text-text-primary">{item.name}</span>
-                              </td>
-                              <td className="py-4 px-6 text-center font-mono text-xs text-text-primary">
-                                 {formatCurrency(item.unitPrice, form.currency)}
-                              </td>
-                              <td className="py-4 px-6 text-center font-bold text-xs text-text-secondary">
-                                 {item.quantity}
-                              </td>
-                              <td className="py-4 px-6 text-right font-bold text-sm text-text-primary">
-                                 {formatCurrency(item.unitPrice * item.quantity, form.currency)}
-                              </td>
-                              <td className="py-4 px-6 text-right">
-                                 <button type="button" onClick={() => removeItem(i)} className="p-2 rounded-lg text-gray-300 hover:text-danger-600 hover:bg-danger-50 transition-all">
-                                    <Trash2 size={16} />
-                                 </button>
-                              </td>
-                           </tr>
-                        ))
-                      )}
-                   </tbody>
-                </table>
-             </div>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* Section 3: Notes & T&C */}
           <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
-             <label className={labelStyle}>Internal Notes & Terms</label>
-             <textarea 
-               rows={4}
-               placeholder="Payment terms, special discounts, or scope of work details..."
-               value={form.notes}
-               onChange={(e) => setForm({...form, notes: e.target.value})}
-               className={cn(inputStyle, "h-32 py-4 resize-none")}
-             />
+            <label className={labelStyle}>Internal Notes & Terms</label>
+            <textarea
+              rows={4}
+              placeholder="Payment terms, special discounts, or scope of work details..."
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              className={cn(inputStyle, "h-32 py-4 resize-none")}
+            />
           </section>
         </div>
 
@@ -349,30 +353,30 @@ export default function NewQuotationPage() {
             </div>
 
             <div className="flex flex-col gap-4 relative">
-                <button 
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="h-14 w-full rounded-xl bg-plano-400 hover:bg-plano-300 text-plano-950 font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-60 border-2 border-white/20"
-                >
-                    {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
-                    {isSubmitting ? 'Issuing Quote...' : 'Issue Performance Quote'}
-                </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-14 w-full rounded-xl bg-plano-400 hover:bg-plano-300 text-plano-950 font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 disabled:opacity-60 border-2 border-white/20"
+              >
+                {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
+                {isSubmitting ? 'Issuing Quote...' : 'Issue Performance Quote'}
+              </button>
             </div>
           </div>
 
           {/* Logistics Info Box */}
           <div className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover flex flex-col gap-4">
             <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-info-50 dark:bg-info-900/20 flex items-center justify-center text-info-600 shrink-0">
-                  <Info size={20} />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <h5 className="text-xs font-bold text-text-primary uppercase tracking-tight">Financial Policy</h5>
-                  <p className="text-[10px] text-text-secondary leading-relaxed font-medium">
-                      Quotations are legally binding documents once accepted by the customer. 
-                      Ensure line items matched agreed-upon negotiations.
-                  </p>
-                </div>
+              <div className="w-10 h-10 rounded-full bg-info-50 dark:bg-info-900/20 flex items-center justify-center text-info-600 shrink-0">
+                <Info size={20} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <h5 className="text-xs font-bold text-text-primary uppercase tracking-tight">Financial Policy</h5>
+                <p className="text-[10px] text-text-secondary leading-relaxed font-medium">
+                  Quotations are legally binding documents once accepted by the customer.
+                  Ensure line items matched agreed-upon negotiations.
+                </p>
+              </div>
             </div>
           </div>
         </div>

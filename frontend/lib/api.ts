@@ -14,6 +14,51 @@ import {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
+function normalizePlanEntity(plan: any) {
+  if (!plan || typeof plan !== 'object') return plan;
+  return {
+    ...plan,
+    id: plan.id || plan._id,
+  };
+}
+
+function normalizeProductEntity(product: any) {
+  if (!product || typeof product !== 'object') return product;
+  return {
+    ...product,
+    id: product.id || product._id,
+    plans: Array.isArray(product.plans) ? product.plans.map(normalizePlanEntity) : product.plans,
+  };
+}
+
+function normalizeProductsPayload(data: any) {
+  if (Array.isArray(data)) return data.map(normalizeProductEntity);
+  if (data && typeof data === 'object') {
+    if (Array.isArray(data.products)) {
+      return { ...data, products: data.products.map(normalizeProductEntity) };
+    }
+    if (data.product && typeof data.product === 'object') {
+      return { ...data, product: normalizeProductEntity(data.product) };
+    }
+    if (data._id || data.id) return normalizeProductEntity(data);
+  }
+  return data;
+}
+
+function normalizePlansPayload(data: any) {
+  if (Array.isArray(data)) return data.map(normalizePlanEntity);
+  if (data && typeof data === 'object') {
+    if (Array.isArray(data.plans)) {
+      return { ...data, plans: data.plans.map(normalizePlanEntity) };
+    }
+    if (data.plan && typeof data.plan === 'object') {
+      return { ...data, plan: normalizePlanEntity(data.plan) };
+    }
+    if (data._id || data.id) return normalizePlanEntity(data);
+  }
+  return data;
+}
+
 // ─── Token Refresh Mutex ──────────────────────────────────────────────
 // Prevents multiple parallel requests from each triggering a refresh.
 let isRefreshing = false;
@@ -32,7 +77,7 @@ async function silentRefresh(): Promise<void> {
   });
 
   if (!res.ok) throw new Error('Refresh failed');
-  
+
   // refreshToken endpoint now sets both accessToken & refreshToken cookies.
   // We no longer need to manually extract or store any token in localStorage.
 }
@@ -154,13 +199,25 @@ export const api = {
   products: {
     getAll: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
-      return request<Product[]>(`/products${q}`);
+      return request<Product[] | { products?: Product[] }>(`/products${q}`).then((res) => ({
+        ...res,
+        data: normalizeProductsPayload(res.data),
+      }));
     },
-    getById: (id: string) => request<Product>(`/products/${id}`),
+    getById: (id: string) => request<Product | { product?: Product }>(`/products/${id}`).then((res) => ({
+      ...res,
+      data: normalizeProductsPayload(res.data),
+    })),
     create: (data: any) =>
-      request<Product>('/products', { method: 'POST', body: JSON.stringify(data) }),
+      request<Product | { product?: Product }>('/products', { method: 'POST', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeProductsPayload(res.data),
+      })),
     update: (id: string, data: any) =>
-      request<Product>(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+      request<Product | { product?: Product }>(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizeProductsPayload(res.data),
+      })),
     delete: (id: string) =>
       request<null>(`/products/${id}`, { method: 'DELETE' }),
   },
@@ -169,13 +226,25 @@ export const api = {
   plans: {
     getAll: (params?: any) => {
       const q = params ? `?${new URLSearchParams(params)}` : '';
-      return request<Plan[]>(`/plans${q}`);
+      return request<Plan[] | { plans?: Plan[] }>(`/plans${q}`).then((res) => ({
+        ...res,
+        data: normalizePlansPayload(res.data),
+      }));
     },
-    getById: (id: string) => request<Plan>(`/plans/${id}`),
+    getById: (id: string) => request<Plan | { plan?: Plan }>(`/plans/${id}`).then((res) => ({
+      ...res,
+      data: normalizePlansPayload(res.data),
+    })),
     create: (data: any) =>
-      request<Plan>('/plans', { method: 'POST', body: JSON.stringify(data) }),
+      request<Plan | { plan?: Plan }>('/plans', { method: 'POST', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizePlansPayload(res.data),
+      })),
     update: (id: string, data: any) =>
-      request<Plan>(`/plans/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+      request<Plan | { plan?: Plan }>(`/plans/${id}`, { method: 'PUT', body: JSON.stringify(data) }).then((res) => ({
+        ...res,
+        data: normalizePlansPayload(res.data),
+      })),
     delete: (id: string) =>
       request<null>(`/plans/${id}`, { method: 'DELETE' }),
   },

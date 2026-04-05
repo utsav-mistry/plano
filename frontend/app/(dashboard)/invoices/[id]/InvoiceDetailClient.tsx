@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import {
     ArrowLeft,
     Printer,
@@ -18,9 +18,11 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
+import { toAdminPath } from '@/lib/path-scoping';
 
 export default function InvoiceDetailClient() {
     const params = useParams();
+    const pathname = usePathname();
     const id = Array.isArray(params.id) ? params.id[0] : (params.id as string);
     const [invoice, setInvoice] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +108,7 @@ export default function InvoiceDetailClient() {
             <div className="min-h-[400px] flex flex-col items-center justify-center gap-4 text-center">
                 <AlertCircle size={48} className="text-danger-500" />
                 <p className="text-lg font-serif font-bold">{error || 'Invoice not found'}</p>
-                <Link href="/invoices" className="text-sm font-bold text-plano-600 uppercase underline">Back to Invoices</Link>
+                <Link href={toAdminPath(pathname, '/invoices')} className="text-sm font-bold text-plano-600 uppercase underline">Back to Invoices</Link>
             </div>
         );
     }
@@ -115,7 +117,7 @@ export default function InvoiceDetailClient() {
         <div className="flex flex-col gap-6 pb-20 max-w-4xl mx-auto">
             <div className="flex items-center justify-between action-bar print:hidden">
                 <div className="flex items-center gap-4">
-                    <Link href="/invoices" className="p-2 rounded-full border border-border hover:bg-gray-50 transition-colors">
+                    <Link href={toAdminPath(pathname, '/invoices')} className="p-2 rounded-full border border-border hover:bg-gray-50 transition-colors">
                         <ArrowLeft size={18} className="text-gray-400" />
                     </Link>
                     <div className="flex flex-col">

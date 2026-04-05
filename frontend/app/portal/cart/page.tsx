@@ -14,6 +14,53 @@ import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
+read me 
+type TaxConfig = {
+  type?: 'percentage' | 'fixed';
+  rate?: number;
+};
+
+type DiscountConfig = {
+  code?: string;
+  isActive?: boolean;
+  minPurchaseAmount?: number;
+  type?: 'percentage' | 'fixed';
+  value?: number;
+  name?: string;
+};
+
+type RazorpayResponse = {
+  razorpay_payment_id: string;
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  image: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill: {
+    name?: string;
+    email?: string;
+    contact?: string;
+  };
+  theme: { color: string };
+  modal: { ondismiss: () => void };
+};
+
+type RazorpayInstance = {
+  open: () => void;
+};
+
+type RazorpayConstructor = new (options: RazorpayOptions) => RazorpayInstance;
+
+declare global {
+  interface Window {
+    Razorpay: RazorpayConstructor;
+  }
+}
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, discountCode, discountAmount, applyDiscount, clearCart } = useCartStore();
@@ -25,9 +72,9 @@ export default function CartPage() {
   const [promo, setPromo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isQuotation, setIsQuotation] = useState(false);
-  const [taxesList, setTaxesList] = useState<any[]>([]);
-  const [discountsList, setDiscountsList] = useState<any[]>([]);
-  const [address, setAddress] = useState(user?.email ? `Block A, Building 4, ${user.name}'s Residence, Mumbai, MH` : '');
+  const [taxesList, setTaxesList] = useState<TaxConfig[]>([]);
+  const [discountsList, setDiscountsList] = useState<DiscountConfig[]>([]);
+  const [address] = useState(user?.email ? `Block A, Building 4, ${user.name}'s Residence, Mumbai, MH` : '');
 
   useEffect(() => {
     async function fetchConfig() {
@@ -41,14 +88,14 @@ export default function CartPage() {
           const normalizedTaxes = Array.isArray(taxesData)
             ? taxesData
             : (taxesData?.taxes ?? []);
-          setTaxesList(normalizedTaxes as any[]);
+          setTaxesList(normalizedTaxes as TaxConfig[]);
         }
         if (dRes.success) {
           const discountsData = dRes.data as { discounts?: unknown[] } | unknown[];
           const normalizedDiscounts = Array.isArray(discountsData)
             ? discountsData
             : (discountsData?.discounts ?? []);
-          setDiscountsList(normalizedDiscounts as any[]);
+          setDiscountsList(normalizedDiscounts as DiscountConfig[]);
         }
       } catch (err) {
         console.error('Config Fetch Error:', err);
@@ -66,8 +113,9 @@ export default function CartPage() {
     // If no specific taxes defined, default to 18% as safety, but prioritizes dynamic list
     if (taxesList.length > 0) {
       return taxesList.reduce((acc, tax) => {
-        if (tax.type === 'percentage') return acc + (subtotal * (tax.rate / 100));
-        if (tax.type === 'fixed') return acc + tax.rate;
+        const rate = tax.rate ?? 0;
+        if (tax.type === 'percentage') return acc + (subtotal * (rate / 100));
+        if (tax.type === 'fixed') return acc + rate;
         return acc;
       }, 0);
     }
@@ -77,7 +125,7 @@ export default function CartPage() {
   const total = useMemo(() => subtotal + taxes - discountAmount, [subtotal, taxes, discountAmount]);
 
   const handleApplyPromo = () => {
-    const found = discountsList.find(d => d.code.toUpperCase() === promo.toUpperCase() && d.isActive);
+    const found = discountsList.find(d => (d.code ?? '').toUpperCase() === promo.toUpperCase() && d.isActive);
 
     if (found) {
       // Validate Minimum Purchase (Module 13)
@@ -86,8 +134,9 @@ export default function CartPage() {
         return;
       }
 
-      const amt = found.type === 'percentage' ? (subtotal * (found.value / 100)) : found.value;
-      applyDiscount(found.code, amt);
+      const value = found.value ?? 0;
+      const amt = found.type === 'percentage' ? (subtotal * (value / 100)) : value;
+      applyDiscount(found.code ?? promo.toUpperCase(), amt);
       toastSuccess('Success', `${found.name} Applied!`);
     } else if (promo.toUpperCase() === 'PLANO20') {
       // Fallback for demo
@@ -101,18 +150,24 @@ export default function CartPage() {
   const handleRazorpayPayment = () => {
     if (typeof window === 'undefined') return;
 
+    const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    if (!razorpayKey) {
+      toastError('Razorpay key missing', 'Set NEXT_PUBLIC_RAZORPAY_KEY_ID in frontend environment.');
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulation of Backend Order Creation
     setTimeout(() => {
       const options = {
-        key: 'rzp_test_placeholder', // Mock Key for display
+        key: razorpayKey,
         amount: Math.round(total * 100),
         currency: 'INR',
         name: 'Plano Subscriptions',
         description: `Purchase of ${items.length} services`,
         image: 'https://cdn.razorpay.com/logos/H6U6f9bA6G6E7M_medium.png',
-        handler: function (response: any) {
+        handler: function (response: RazorpayResponse) {
           toastSuccess('Payment Captured', `Transaction ID: ${response.razorpay_payment_id}`);
           setIsLoading(false);
           clearCart();
@@ -129,7 +184,7 @@ export default function CartPage() {
         }
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new window.Razorpay(options);
       rzp.open();
     }, 800);
   };
@@ -160,7 +215,7 @@ export default function CartPage() {
           <ShoppingBag size={48} strokeWidth={1} />
         </div>
         <h2 className="text-3xl font-bold text-plano-900 mb-4 uppercase">Your cart is empty</h2>
-        <p className="text-gray-500 font-medium mb-10 max-w-sm mx-auto">Looks like you haven't added any products to your catalog yet.</p>
+        <p className="text-gray-500 font-medium mb-10 max-w-sm mx-auto">Looks like you haven&apos;t added any products to your catalog yet.</p>
         <Link href="/portal/shop" className="h-14 px-10 rounded-2xl bg-plano-600 text-white font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all hover:bg-plano-900 shadow-xl shadow-plano-600/10 mx-auto w-fit">
           Explore Shop
           <ArrowRight size={18} />
@@ -189,7 +244,7 @@ export default function CartPage() {
         <div className="flex items-center justify-center max-w-2xl mx-auto mb-16 relative">
           <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-plano-100 -translate-y-1/2 -z-10" />
           <div className="flex items-center justify-between w-full">
-            {steps.map((s, i) => {
+            {steps.map((s) => {
               const isActive = step === s.id;
               const isDone = (step === 'address' && s.id === 'order') || (step === 'payment' && (s.id === 'order' || s.id === 'address'));
               return (

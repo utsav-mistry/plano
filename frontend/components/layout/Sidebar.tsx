@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/app/context/AuthContext';
+import { toAdminPath } from '@/lib/path-scoping';
 
 const navGroups = [
   {
@@ -63,7 +64,6 @@ const navGroups = [
 export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boolean; toggleCollapsed: () => void }) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const routePrefix = pathname.startsWith('/admin') ? '/admin' : '';
 
   return (
     <aside
@@ -96,7 +96,7 @@ export default function Sidebar({ collapsed, toggleCollapsed }: { collapsed: boo
               )}
               <div className="space-y-0.5">
                 {group.items.map((item) => {
-                  const scopedHref = `${routePrefix}${item.href}`;
+                  const scopedHref = toAdminPath(pathname, item.href);
                   const isActive = pathname === scopedHref || pathname.startsWith(`${scopedHref}/`);
                   return (
                     <Link

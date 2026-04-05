@@ -22,7 +22,7 @@ export default function AdminLayout({
         if (isLoading) return;
 
         if (!user) {
-            router.replace('/login?next=/admin');
+            router.replace('/login?next=/dashboard');
             return;
         }
 

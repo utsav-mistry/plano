@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   CalendarClock, Plus, Search, MoreVertical, Copy, Trash2,
   Edit2, Clock, CheckCircle2, AlertCircle, Loader2, FileText
@@ -10,11 +11,24 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { Plan } from '@/types';
+import { toAdminPath } from '@/lib/path-scoping';
 
 export default function PlansPage() {
+  const pathname = usePathname();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Plan | null>(null);
+  const [editTarget, setEditTarget] = useState<Plan | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    billingCycle: 'monthly',
+    price: '',
+    trialDays: '0',
+    isActive: true,
+  });
   const { error: toastError, success } = useToast();
 
   useEffect(() => { fetchPlans(); }, []);
@@ -37,7 +51,40 @@ export default function PlansPage() {
       await api.plans.delete(id);
       success('Plan deactivated');
       fetchPlans();
+      setDeleteTarget(null);
     } catch (err: unknown) { toastError('Failed', err instanceof Error ? err.message : 'Failed'); }
+  }
+
+  function openEdit(plan: Plan) {
+    setEditTarget(plan);
+    setEditForm({
+      name: plan.name || '',
+      description: plan.description || '',
+      billingCycle: (plan.billingCycle as string) || 'monthly',
+      price: String(plan.price ?? 0),
+      trialDays: String(plan.trialDays ?? 0),
+      isActive: !!plan.isActive,
+    });
+  }
+
+  async function handleUpdatePlan() {
+    if (!editTarget) return;
+    setIsUpdating(true);
+    try {
+      const payload = {
+        ...editForm,
+        price: Number(editForm.price),
+        trialDays: Number(editForm.trialDays),
+      };
+      await api.plans.update(editTarget.id, payload);
+      success('Plan updated');
+      setEditTarget(null);
+      await fetchPlans();
+    } catch (err: unknown) {
+      toastError('Update failed', err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setIsUpdating(false);
+    }
   }
 
   return (
@@ -49,7 +96,7 @@ export default function PlansPage() {
             Design and offer various subscription structures.
           </p>
         </div>
-        <Link href="/plans/new"
+        <Link href={toAdminPath(pathname, '/plans/new')}
           className="flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm">
           <Plus size={18} /> Create Plan
         </Link>
@@ -81,7 +128,7 @@ export default function PlansPage() {
           </div>
           <p className="text-lg font-serif font-bold text-text-primary uppercase tracking-tight">No plans yet</p>
           <p className="text-xs text-text-secondary font-medium uppercase tracking-wider">Create your first recurring plan to get started.</p>
-          <Link href="/plans/new"
+          <Link href={toAdminPath(pathname, '/plans/new')}
             className="mt-2 flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm">
             <Plus size={16} /> Create Plan
           </Link>
@@ -143,12 +190,13 @@ export default function PlansPage() {
               )}
 
               <div className="flex items-center justify-between">
-                <Link href={`/plans/${plan.id}/edit`}
+                <button
+                  onClick={() => openEdit(plan)}
                   className="text-[11px] uppercase font-bold text-text-secondary hover:text-plano-400 transition-all flex items-center gap-1 tracking-widest">
                   <Edit2 size={14} /> Edit
-                </Link>
+                </button>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handleDelete(plan.id)}
+                  <button onClick={() => setDeleteTarget(plan)}
                     className="p-2 rounded-btn border border-border dark:border-sidebar-hover bg-bg-surface text-gray-400 hover:text-danger-600 transition-all">
                     <Trash2 size={16} />
                   </button>
@@ -156,6 +204,51 @@ export default function PlansPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-card border border-sidebar-hover bg-bg-surface p-6 shadow-2xl">
+            <h3 className="text-xl font-serif font-bold text-text-primary">Delete Plan</h3>
+            <p className="mt-2 text-sm text-text-secondary">
+              Delete <span className="font-bold text-text-primary">{deleteTarget.name}</span>? This cannot be undone.
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button onClick={() => setDeleteTarget(null)} className="px-4 py-2 rounded-btn border border-border text-text-secondary hover:bg-sidebar-hover">Cancel</button>
+              <button onClick={() => handleDelete(deleteTarget.id)} className="px-4 py-2 rounded-btn bg-danger-600 text-white hover:bg-danger-700">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editTarget && (
+        <div className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl rounded-card border border-sidebar-hover bg-bg-surface p-6 shadow-2xl">
+            <h3 className="text-2xl font-serif font-bold text-text-primary">Edit Plan</h3>
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input value={editForm.name} onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))} placeholder="Plan name" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
+              <select value={editForm.billingCycle} onChange={(e) => setEditForm((p) => ({ ...p, billingCycle: e.target.value }))} className="h-11 px-4 rounded-lg border border-border bg-white text-sm">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <input type="number" value={editForm.price} onChange={(e) => setEditForm((p) => ({ ...p, price: e.target.value }))} placeholder="Price" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
+              <input type="number" value={editForm.trialDays} onChange={(e) => setEditForm((p) => ({ ...p, trialDays: e.target.value }))} placeholder="Trial days" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
+              <label className="md:col-span-2 flex items-center gap-2 text-sm text-text-secondary">
+                <input type="checkbox" checked={editForm.isActive} onChange={(e) => setEditForm((p) => ({ ...p, isActive: e.target.checked }))} />
+                Active plan
+              </label>
+              <textarea value={editForm.description} onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))} placeholder="Description" className="md:col-span-2 h-28 p-4 rounded-lg border border-border bg-white text-sm resize-none" />
+            </div>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button onClick={() => setEditTarget(null)} className="px-4 py-2 rounded-btn border border-border text-text-secondary hover:bg-sidebar-hover">Cancel</button>
+              <button onClick={handleUpdatePlan} disabled={isUpdating} className="px-4 py-2 rounded-btn bg-plano-600 text-white hover:bg-plano-700 disabled:opacity-70">
+                {isUpdating ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

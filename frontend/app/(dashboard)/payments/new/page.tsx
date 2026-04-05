@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2, ChevronDown, Check, Info, Banknote, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
+import { toAdminPath } from '@/lib/path-scoping';
 
 const PAYMENT_METHODS = [
   { value: 'card', label: 'Credit/Debit Card' },
@@ -14,9 +16,11 @@ const PAYMENT_METHODS = [
   { value: 'cash', label: 'Cash Entry' },
 ];
 
-const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
+const CURRENCIES = ['INR'];
 
 export default function RecordPaymentPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -80,7 +84,7 @@ export default function RecordPaymentPage() {
       });
       if (res.success) {
         success('Payment recorded!', 'Transaction successfully logged and reconciled.');
-        window.location.href = '/admin/payments';
+        router.push(toAdminPath(pathname, '/payments'));
       }
     } catch (err: any) {
       toastError('Submission failed', err.message);
@@ -97,7 +101,7 @@ export default function RecordPaymentPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <Link
-          href="/payments"
+          href={toAdminPath(pathname, '/payments')}
           className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit"
         >
           <ArrowLeft size={14} /> Back to Payments
@@ -109,7 +113,7 @@ export default function RecordPaymentPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
-        
+
         {/* Source Invoice Selection */}
         <div className="flex flex-col">
           <label className={label}>Reference Invoice (Optional)</label>
@@ -228,7 +232,7 @@ export default function RecordPaymentPage() {
 
         {/* Actions */}
         <div className="flex items-center gap-4 pt-6 border-t border-border dark:border-sidebar-hover">
-          <button 
+          <button
             suppressHydrationWarning
             type="submit"
             disabled={isSubmitting}
@@ -238,7 +242,7 @@ export default function RecordPaymentPage() {
             {isSubmitting ? 'Recording Entry...' : 'Record Payment'}
           </button>
           <Link
-            href="/payments"
+            href={toAdminPath(pathname, '/payments')}
             className="px-8 h-12 rounded-xl border border-border dark:border-sidebar-hover bg-bg-surface text-sm font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
           >
             Cancel

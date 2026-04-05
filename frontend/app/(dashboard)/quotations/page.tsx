@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   FileSignature, Plus, Search, Edit2, ExternalLink,
   Clock, AlertCircle, Loader2, FileText
@@ -10,8 +11,10 @@ import { formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { Quotation } from '@/types';
+import { toAdminPath } from '@/lib/path-scoping';
 
 export default function QuotationsPage() {
+  const pathname = usePathname();
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +51,7 @@ export default function QuotationsPage() {
             Send proposals to customers before activating subscriptions.
           </p>
         </div>
-        <Link href="/quotations/new"
+        <Link href={toAdminPath(pathname, '/quotations/new')}
           className="flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm">
           <Plus size={18} /> New Quotation
         </Link>
@@ -80,7 +83,7 @@ export default function QuotationsPage() {
           </div>
           <p className="text-lg font-serif font-bold text-text-primary">No quotations yet</p>
           <p className="text-xs text-text-secondary font-medium">Create your first quotation to send to a customer.</p>
-          <Link href="/quotations/new"
+          <Link href={toAdminPath(pathname, '/quotations/new')}
             className="mt-2 flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn font-bold shadow-sm">
             <Plus size={16} /> New Quotation
           </Link>
@@ -143,7 +146,7 @@ export default function QuotationsPage() {
                   </button>
                 )}
                 <div className="flex items-center gap-2 ml-auto">
-                  <Link href={`/quotations/${q.id}`}
+                  <Link href={toAdminPath(pathname, `/quotations/${q.id}`)}
                     className="p-2 rounded-btn border border-border dark:border-sidebar-hover bg-bg-surface text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 hover:bg-plano-50 dark:hover:bg-white/10 transition-all">
                     <ExternalLink size={16} />
                   </Link>

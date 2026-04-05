@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     ArrowLeft,
     Calendar,
@@ -16,8 +17,9 @@ import {
 import { api } from '@/lib/api';
 import { cn, formatCurrency } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
+import { toAdminPath } from '@/lib/path-scoping';
 
-const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
+const CURRENCIES = ['INR'];
 
 const createEmptyLineItem = () => ({
     description: '',
@@ -28,6 +30,8 @@ const createEmptyLineItem = () => ({
 });
 
 export default function NewInvoicePage() {
+    const pathname = usePathname();
+    const router = useRouter();
     const { success, error: toastError } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
@@ -141,7 +145,11 @@ export default function NewInvoicePage() {
             if (res.success) {
                 success('Invoice created', 'The manual invoice is ready for review.');
                 const createdInvoice = (res.data as any)?.invoice ?? res.data;
-                window.location.href = createdInvoice?._id ? `/admin/invoices/${createdInvoice._id}` : '/admin/invoices';
+                router.push(
+                    createdInvoice?._id
+                        ? toAdminPath(pathname, `/invoices/${createdInvoice._id}`)
+                        : toAdminPath(pathname, '/invoices')
+                );
             }
         } catch (err: any) {
             toastError('Creation failed', err.message);
@@ -156,7 +164,7 @@ export default function NewInvoicePage() {
     return (
         <div className="flex flex-col gap-8 pb-20 max-w-6xl">
             <div className="flex flex-col gap-2">
-                <Link href="/invoices" className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit">
+                <Link href={toAdminPath(pathname, '/invoices')} className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit">
                     <ArrowLeft size={14} /> Back to Invoices
                 </Link>
                 <h1 className="text-4xl text-text-primary">Create Manual Invoice</h1>
@@ -387,7 +395,7 @@ export default function NewInvoicePage() {
                                 {isSubmitting ? 'Creating Invoice...' : 'Create Invoice'}
                             </button>
                             <Link
-                                href="/invoices"
+                                href={toAdminPath(pathname, '/invoices')}
                                 className="h-12 w-full rounded-xl border border-plano-800 text-plano-100 text-sm font-bold flex items-center justify-center hover:bg-plano-800/40 transition-all"
                             >
                                 Cancel

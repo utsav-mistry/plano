@@ -14,9 +14,11 @@ import {
   ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
+import { toAdminPath } from '@/lib/path-scoping';
 
 const PRODUCT_TYPES = [
   { value: 'software', label: 'Software', icon: <Layers size={18} /> },
@@ -24,9 +26,11 @@ const PRODUCT_TYPES = [
   { value: 'addon', label: 'Addon', icon: <Plus size={18} /> },
 ];
 
-const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
+const CURRENCIES = ['INR'];
 
 export default function NewProductPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -54,7 +58,7 @@ export default function NewProductPage() {
       });
       if (res.success) {
         success('Product published!', 'The product is now live in your catalog.');
-        window.location.href = '/admin/products';
+        router.push(toAdminPath(pathname, '/products'));
       }
     } catch (err: any) {
       toastError('Failed to create product', err.message);
@@ -71,7 +75,7 @@ export default function NewProductPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/products" className="p-2.5 rounded-full border border-border dark:border-sidebar-hover hover:bg-sidebar-hover transition-colors group">
+          <Link href={toAdminPath(pathname, '/products')} className="p-2.5 rounded-full border border-border dark:border-sidebar-hover hover:bg-sidebar-hover transition-colors group">
             <ArrowLeft size={18} className="text-gray-400 group-hover:text-plano-400 transition-colors" />
           </Link>
           <div className="flex flex-col gap-1">
@@ -86,7 +90,7 @@ export default function NewProductPage() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Main Form */}
         <div className="lg:col-span-2 flex flex-col gap-8">
-          
+
           <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8">
             <div className="flex items-center gap-3 pb-5 border-b border-sidebar-hover">
               <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/5 text-plano-600 flex items-center justify-center">
@@ -131,8 +135,8 @@ export default function NewProductPage() {
                     onClick={() => setForm({ ...form, type: type.value })}
                     className={cn(
                       "flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 transition-all duration-300 relative overflow-hidden group",
-                      form.type === type.value 
-                        ? "bg-plano-50 dark:bg-white/5 border-plano-500 text-plano-700 dark:text-plano-300 shadow-md ring-4 ring-plano-500/10" 
+                      form.type === type.value
+                        ? "bg-plano-50 dark:bg-white/5 border-plano-500 text-plano-700 dark:text-plano-300 shadow-md ring-4 ring-plano-500/10"
                         : "bg-white dark:bg-bg-elevated border-border dark:border-sidebar-hover text-text-secondary hover:border-plano-200"
                     )}
                   >
@@ -178,7 +182,7 @@ export default function NewProductPage() {
                 <label className={labelStyle}>Base Price *</label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-border dark:border-sidebar-hover pr-3 mr-3">
-                    {form.currency === 'INR' ? '₹' : '$'}
+                    ₹
                   </div>
                   <input
                     suppressHydrationWarning
@@ -211,80 +215,80 @@ export default function NewProductPage() {
           </section>
 
           <div className="flex items-center gap-4">
-             <button 
-               type="submit"
-               disabled={isSubmitting}
-               className="flex-1 h-14 rounded-xl bg-plano-600 text-white text-lg font-bold hover:bg-plano-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-60 flex items-center justify-center gap-3"
-             >
-               {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
-               {isSubmitting ? 'Publishing Product...' : 'Publish Product'}
-             </button>
-             <Link 
-               href="/products"
-               className="px-10 h-14 rounded-xl border-2 border-border dark:border-sidebar-hover bg-bg-surface text-lg font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
-             >
-               Cancel
-             </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 h-14 rounded-xl bg-plano-600 text-white text-lg font-bold hover:bg-plano-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-60 flex items-center justify-center gap-3"
+            >
+              {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
+              {isSubmitting ? 'Publishing Product...' : 'Publish Product'}
+            </button>
+            <Link
+              href={toAdminPath(pathname, '/products')}
+              className="px-10 h-14 rounded-xl border-2 border-border dark:border-sidebar-hover bg-bg-surface text-lg font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
+            >
+              Cancel
+            </Link>
           </div>
         </div>
 
         {/* Right Column: Preview */}
         <div className="flex flex-col gap-6">
-           <div className="bg-bg-surface rounded-card border-2 border-dashed border-border dark:border-sidebar-hover p-6 flex flex-col gap-6 sticky top-24">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Product Preview</span>
-                <div className="flex gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-success-500"></div>
-                  <div className="w-2 h-2 rounded-full bg-success-500/30"></div>
-                </div>
-              </div>
-
-              <div className="bg-bg-page border border-border dark:border-sidebar-hover rounded-2xl p-6 shadow-sm flex flex-col gap-5 relative overflow-hidden">
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-plano-50 dark:bg-white/5 rounded-full blur-3xl opacity-60"></div>
-                
-                <div className="flex flex-col gap-1.5 relative">
-                  <span className="text-[10px] font-bold text-plano-600 dark:text-plano-300 uppercase tracking-widest bg-plano-50 dark:bg-white/5 px-2.5 py-1 rounded-full w-fit">
-                    {form.type}
-                  </span>
-                  <h3 className="text-2xl font-serif font-bold text-text-primary leading-tight line-clamp-2">
-                    {form.name || 'Untitled Offering'}
-                  </h3>
-                </div>
-
-                <div className="flex flex-col gap-0.5 mt-2">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Base Rate</span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-mono font-bold text-text-primary">
-                      {formatCurrency(Number(form.basePrice) || 0, form.currency)}
-                    </span>
-                  </div>
-                </div>
-
-                {form.description && (
-                  <p className="text-sm text-text-secondary line-clamp-3 leading-relaxed border-t border-sidebar-hover pt-4 italic">
-                    {form.description}
-                  </p>
-                )}
-
-                <div className="mt-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-border dark:border-sidebar-hover">
-                  <div className="flex items-center gap-3 text-xs font-bold text-text-primary mb-3 uppercase tracking-tighter">
-                    <Check size={14} className="text-success-600" />
-                    Included in Catalog
-                  </div>
-                  <div className="flex items-center gap-3 text-xs font-bold text-text-primary uppercase tracking-tighter">
-                    <Check size={14} className="text-success-600" />
-                    Billed via Plano
-                  </div>
-                </div>
+          <div className="bg-bg-surface rounded-card border-2 border-dashed border-border dark:border-sidebar-hover p-6 flex flex-col gap-6 sticky top-24">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Product Preview</span>
+              <div className="flex gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-success-500"></div>
+                <div className="w-2 h-2 rounded-full bg-success-500/30"></div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 text-center px-4">
-              <p className="text-xs text-text-secondary font-medium leading-relaxed">
-                Published products are immediately available to be added to plans or quotations.
-              </p>
+            <div className="bg-bg-page border border-border dark:border-sidebar-hover rounded-2xl p-6 shadow-sm flex flex-col gap-5 relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-plano-50 dark:bg-white/5 rounded-full blur-3xl opacity-60"></div>
+
+              <div className="flex flex-col gap-1.5 relative">
+                <span className="text-[10px] font-bold text-plano-600 dark:text-plano-300 uppercase tracking-widest bg-plano-50 dark:bg-white/5 px-2.5 py-1 rounded-full w-fit">
+                  {form.type}
+                </span>
+                <h3 className="text-2xl font-serif font-bold text-text-primary leading-tight line-clamp-2">
+                  {form.name || 'Untitled Offering'}
+                </h3>
+              </div>
+
+              <div className="flex flex-col gap-0.5 mt-2">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Base Rate</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-mono font-bold text-text-primary">
+                    {formatCurrency(Number(form.basePrice) || 0, form.currency)}
+                  </span>
+                </div>
+              </div>
+
+              {form.description && (
+                <p className="text-sm text-text-secondary line-clamp-3 leading-relaxed border-t border-sidebar-hover pt-4 italic">
+                  {form.description}
+                </p>
+              )}
+
+              <div className="mt-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-border dark:border-sidebar-hover">
+                <div className="flex items-center gap-3 text-xs font-bold text-text-primary mb-3 uppercase tracking-tighter">
+                  <Check size={14} className="text-success-600" />
+                  Included in Catalog
+                </div>
+                <div className="flex items-center gap-3 text-xs font-bold text-text-primary uppercase tracking-tighter">
+                  <Check size={14} className="text-success-600" />
+                  Billed via Plano
+                </div>
+              </div>
             </div>
           </div>
+
+          <div className="flex flex-col gap-4 text-center px-4">
+            <p className="text-xs text-text-secondary font-medium leading-relaxed">
+              Published products are immediately available to be added to plans or quotations.
+            </p>
+          </div>
+        </div>
       </form>
     </div>
   );

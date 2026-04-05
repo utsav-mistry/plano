@@ -1,3 +1,5 @@
+import { isAdminHost, isPortalHost } from './path-scoping';
+
 export const normalizeRole = (role?: string | null) => String(role || '').trim().toLowerCase();
 
 export const isAdminRole = (role?: string | null) => {
@@ -8,7 +10,7 @@ export const isAdminRole = (role?: string | null) => {
 export const isPortalRole = (role?: string | null) => normalizeRole(role) === 'portal_user';
 
 export const defaultRouteForRole = (role?: string | null) => {
-    if (isAdminRole(role)) return '/admin/dashboard';
-    if (isPortalRole(role)) return '/portal';
+    if (isAdminRole(role)) return isAdminHost() ? '/dashboard' : '/admin/dashboard';
+    if (isPortalRole(role)) return isPortalHost() ? '/' : '/portal';
     return '/login';
 };

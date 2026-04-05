@@ -14,8 +14,10 @@ import {
    PieChart as PieChartIcon
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
+import { toAdminPath } from '@/lib/path-scoping';
 import {
    AreaChart,
    Area,
@@ -58,7 +60,9 @@ const toNumber = (value: unknown) => {
 };
 
 export default function ReportsPage() {
+   const pathname = usePathname();
    const [period, setPeriod] = useState('30d');
+   const [auditSearch, setAuditSearch] = useState('');
    const [revenueData, setRevenueData] = useState<RevenuePoint[]>([]);
    const [subscriptionData, setSubscriptionData] = useState<SubscriptionPoint[]>([]);
    const [transactions, setTransactions] = useState<PaymentRow[]>([]);
@@ -175,11 +179,48 @@ export default function ReportsPage() {
       ? ((revenueData[revenueData.length - 1].revenue - revenueData[0].revenue) / (revenueData[0].revenue || 1) * 100).toFixed(1)
       : '0';
 
+   const filteredTransactions = transactions.filter((row) => {
+      const q = auditSearch.toLowerCase().trim();
+      if (!q) return true;
+
+      const customerName = typeof row.userId === 'object' ? (row.userId?.name || '') : 'customer';
+      return (
+         String(row._id || '').toLowerCase().includes(q) ||
+         customerName.toLowerCase().includes(q) ||
+         String(row.paymentMethod || row.method || '').toLowerCase().includes(q) ||
+         String(row.status || '').toLowerCase().includes(q)
+      );
+   });
+
+   function exportReportCsv() {
+      const header = ['payment_id', 'date', 'customer', 'method', 'amount_inr', 'status'];
+      const rows = filteredTransactions.map((row) => [
+         row._id || '',
+         row.paymentDate ? new Date(row.paymentDate).toISOString().slice(0, 10) : '',
+         typeof row.userId === 'object' ? (row.userId?.name || 'Customer') : 'Customer',
+         (row.paymentMethod || row.method || 'unknown').replace('_', ' '),
+         String(row.amount || 0),
+         row.status || 'unknown',
+      ]);
+
+      const csv = [header, ...rows]
+         .map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+         .join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reports-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+   }
+
    return (
       <div className="flex flex-col lg:flex-row gap-8 pb-12">
          {/* Left Sidebar: Filters */}
          <aside className="w-full lg:w-64 flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
-         <div className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
+            <div className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
                <div className="flex items-center gap-2 pb-4 border-b border-border dark:border-sidebar-hover">
                   <Filter size={18} className="text-plano-600" />
                   <h3 className="text-[11px] uppercase font-bold text-text-primary tracking-widest">Report Filters</h3>
@@ -239,9 +280,9 @@ export default function ReportsPage() {
                   </div>
                </div>
                <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-2 px-6 h-11 bg-bg-surface border border-border dark:border-sidebar-hover rounded-xl text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover hover:border-plano-200 transition-all shadow-sm">
+                  <button onClick={exportReportCsv} className="flex items-center gap-2 px-6 h-11 bg-bg-surface border border-border dark:border-sidebar-hover rounded-xl text-[11px] font-bold uppercase tracking-widest text-text-secondary hover:bg-sidebar-hover hover:border-plano-200 transition-all shadow-sm">
                      <Download size={16} />
-                     Export PDF
+                     Export CSV
                   </button>
                </div>
             </div>
@@ -377,7 +418,7 @@ export default function ReportsPage() {
                         </div>
                         <div className="relative">
                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                           <input type="text" placeholder="Audit lookup..." className="h-9 pl-9 pr-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary text-[10px] font-bold focus:outline-none focus:border-plano-500 dark:focus:bg-white/10 transition-all w-48" />
+                           <input value={auditSearch} onChange={(e) => setAuditSearch(e.target.value)} type="text" placeholder="Audit lookup..." className="h-9 pl-9 pr-4 rounded-lg border border-border dark:border-sidebar-hover bg-white dark:bg-bg-page text-text-primary text-[10px] font-bold focus:outline-none focus:border-plano-500 dark:focus:bg-white/10 transition-all w-48" />
                         </div>
                      </div>
                      <div className="overflow-x-auto">
@@ -392,7 +433,7 @@ export default function ReportsPage() {
                               </tr>
                            </thead>
                            <tbody className="divide-y divide-border dark:divide-sidebar-hover">
-                              {transactions.length === 0 ? (
+                              {filteredTransactions.length === 0 ? (
                                  <tr>
                                     <td colSpan={5} className="py-20 text-center">
                                        <div className="flex flex-col items-center gap-3">
@@ -402,7 +443,7 @@ export default function ReportsPage() {
                                     </td>
                                  </tr>
                               ) : (
-                                 transactions.map((row) => (
+                                 filteredTransactions.map((row) => (
                                     <tr key={row._id} className="group hover:bg-gray-25 dark:hover:bg-white/10 transition-colors">
                                        <td className="py-5 px-8 text-xs text-text-secondary font-mono font-bold">
                                           {row.paymentDate ? new Date(row.paymentDate).toLocaleDateString() : '-'}
@@ -442,7 +483,7 @@ export default function ReportsPage() {
                         </table>
                      </div>
                      <div className="p-6 bg-bg-page dark:bg-white/5 flex justify-center border-t border-border dark:border-sidebar-hover">
-                        <Link href="/payments" className="text-[10px] font-bold text-plano-600 uppercase tracking-[0.2em] hover:underline flex items-center gap-2">
+                        <Link href={toAdminPath(pathname, '/payments')} className="text-[10px] font-bold text-plano-600 uppercase tracking-[0.2em] hover:underline flex items-center gap-2">
                            Analyze full activity ledger <ArrowUpRight size={14} />
                         </Link>
                      </div>

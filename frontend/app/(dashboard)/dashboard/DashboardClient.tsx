@@ -14,16 +14,17 @@ import KPICard from '@/components/dashboard/KPICard';
 import RevenueChart from '@/components/dashboard/RevenueChart';
 import StatusDonut from '@/components/dashboard/StatusDonut';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/app/context/AuthContext';
 import { api } from '@/lib/api';
 import { KPIStats } from '@/types';
+import { toAdminPath } from '@/lib/path-scoping';
 
 export default function DashboardClient() {
     const { user } = useAuth();
     const pathname = usePathname();
-    const routePrefix = pathname.startsWith('/admin') ? '/admin' : '';
+    const router = useRouter();
     const [stats, setStats] = React.useState<KPIStats | null>(null);
     const [recentSubs, setRecentSubs] = React.useState<any[]>([]);
     const [renewals, setRenewals] = React.useState<any[]>([]);
@@ -113,7 +114,7 @@ export default function DashboardClient() {
                     </p>
                 </div>
                 <Link
-                    href={`${routePrefix}/subscriptions/new`}
+                    href={toAdminPath(pathname, '/subscriptions/new')}
                     className="flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-semibold shadow-sm hover:shadow-md"
                 >
                     <Plus size={18} />
@@ -140,7 +141,7 @@ export default function DashboardClient() {
                 <div className="bg-bg-surface p-6 rounded-card border border-border mt-2">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-xl font-serif font-bold text-text-primary">Recent Subscriptions</h3>
-                        <Link href={`${routePrefix}/subscriptions`} className="text-xs font-semibold text-plano-600 hover:underline flex items-center gap-1 uppercase tracking-widest">
+                        <Link href={toAdminPath(pathname, '/subscriptions')} className="text-xs font-semibold text-plano-600 hover:underline flex items-center gap-1 uppercase tracking-widest">
                             View all <ArrowRight size={14} />
                         </Link>
                     </div>
@@ -173,7 +174,7 @@ export default function DashboardClient() {
                                     </tr>
                                 ) : (
                                     recentSubs.map((sub: any) => (
-                                        <tr key={sub._id} className="group hover:bg-gray-25 transition-colors cursor-pointer" onClick={() => window.location.href = `${routePrefix}/subscriptions/${sub._id}`}>
+                                        <tr key={sub._id} className="group hover:bg-gray-25 transition-colors cursor-pointer" onClick={() => router.push(toAdminPath(pathname, `/subscriptions/${sub._id}`))}>
                                             <td className="py-4 px-2 font-mono text-[10px] text-text-secondary">SUB-{sub._id.slice(-5).toUpperCase()}</td>
                                             <td className="py-4 px-2 text-sm font-medium">
                                                 {typeof sub.userId === 'object' ? sub.userId?.name : 'Customer'}
@@ -223,7 +224,7 @@ export default function DashboardClient() {
                                     <div key={item._id} className={cn(
                                         "flex items-center justify-between p-3 rounded-lg border-l-4 transition-all hover:bg-gray-50 cursor-pointer",
                                         urgency === 'high' ? "border-danger-500 bg-danger-50/10" : urgency === 'medium' ? "border-warning-500 bg-warning-50/10" : "border-border bg-gray-50/20"
-                                    )} onClick={() => window.location.href = `${routePrefix}/subscriptions/${item._id}`}>
+                                    )} onClick={() => router.push(toAdminPath(pathname, `/subscriptions/${item._id}`))}>
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-plano-100 flex items-center justify-center text-xs font-bold text-plano-600 border border-plano-200">
                                                 {typeof item.userId === 'object' ? item.userId?.name?.charAt(0) : 'U'}

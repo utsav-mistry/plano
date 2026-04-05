@@ -18,9 +18,11 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
+import { toAdminPath } from '@/lib/path-scoping';
 
 const DISCOUNT_TYPES = [
   { value: 'percentage', label: 'Percentage (%)', icon: <Percent size={18} /> },
@@ -34,6 +36,8 @@ const DISCOUNT_ENTITY_TARGETS = [
 ];
 
 export default function NewDiscountPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,7 +72,7 @@ export default function NewDiscountPage() {
       });
       if (res.success) {
         success('Coupon published!', 'The discount code is now active for users.');
-        window.location.href = '/admin/discounts';
+        router.push(toAdminPath(pathname, '/discounts'));
       }
     } catch (err: any) {
       toastError('Setup interrupted', err.message);
@@ -84,7 +88,7 @@ export default function NewDiscountPage() {
     <div className="flex flex-col gap-8 pb-20 max-w-5xl">
       {/* Header */}
       <div className="flex flex-col gap-3">
-        <Link href="/discounts" className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit">
+        <Link href={toAdminPath(pathname, '/discounts')} className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit">
           <ArrowLeft size={14} /> Back to Campaigns
         </Link>
         <div className="flex items-center justify-between">
@@ -117,18 +121,18 @@ export default function NewDiscountPage() {
               <div className="flex flex-col">
                 <label className={labelStyle}>Coupon Code *</label>
                 <div className="relative">
-                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-plano-400 font-bold border-r border-border dark:border-sidebar-hover pr-3 mr-3 uppercase text-xs">
-                     CODE
-                   </div>
-                   <input 
-                     suppressHydrationWarning
-                     required
-                     type="text" 
-                     placeholder="e.g. SUMMER25"
-                     value={form.code}
-                     onChange={(e) => setForm({...form, code: e.target.value.toUpperCase()})}
-                     className={cn(inputStyle, "pl-16 font-mono font-bold tracking-widest")}
-                   />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-plano-400 font-bold border-r border-border dark:border-sidebar-hover pr-3 mr-3 uppercase text-xs">
+                    CODE
+                  </div>
+                  <input
+                    suppressHydrationWarning
+                    required
+                    type="text"
+                    placeholder="e.g. SUMMER25"
+                    value={form.code}
+                    onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                    className={cn(inputStyle, "pl-16 font-mono font-bold tracking-widest")}
+                  />
                 </div>
               </div>
               <div className="flex flex-col">
@@ -156,14 +160,14 @@ export default function NewDiscountPage() {
                       onClick={() => setForm({ ...form, type: type.value as 'percentage' | 'fixed' })}
                       className={cn(
                         "flex items-center gap-4 p-5 rounded-xl border-2 transition-all duration-300 relative",
-                        form.type === type.value 
-                          ? "bg-plano-50 dark:bg-white/10 border-plano-500 text-plano-700 dark:text-plano-300 shadow-lg ring-4 ring-plano-100 dark:ring-white/5" 
+                        form.type === type.value
+                          ? "bg-plano-50 dark:bg-white/10 border-plano-500 text-plano-700 dark:text-plano-300 shadow-lg ring-4 ring-plano-100 dark:ring-white/5"
                           : "bg-white dark:bg-bg-page border-border dark:border-sidebar-hover text-text-secondary hover:border-plano-200"
                       )}
                     >
                       <div className={cn(
                         "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
-                         form.type === type.value ? "bg-plano-600 text-white" : "bg-gray-100 dark:bg-white/10 text-gray-400"
+                        form.type === type.value ? "bg-plano-600 text-white" : "bg-gray-100 dark:bg-white/10 text-gray-400"
                       )}>
                         {type.icon}
                       </div>
@@ -184,18 +188,18 @@ export default function NewDiscountPage() {
               <div className="flex flex-col">
                 <label className={labelStyle}>Discount Amount Value *</label>
                 <div className="relative">
-                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-border dark:border-sidebar-hover pr-3 mr-3">
-                     {form.type === 'percentage' ? '%' : '₹'}
-                   </div>
-                   <input 
-                     suppressHydrationWarning
-                     required
-                     type="number" 
-                     placeholder={form.type === 'percentage' ? '25' : '500'}
-                     value={form.value}
-                     onChange={(e) => setForm({...form, value: e.target.value})}
-                     className={cn(inputStyle, "pl-16 font-mono font-bold text-lg")}
-                   />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-border dark:border-sidebar-hover pr-3 mr-3">
+                    {form.type === 'percentage' ? '%' : '₹'}
+                  </div>
+                  <input
+                    suppressHydrationWarning
+                    required
+                    type="number"
+                    placeholder={form.type === 'percentage' ? '25' : '500'}
+                    value={form.value}
+                    onChange={(e) => setForm({ ...form, value: e.target.value })}
+                    className={cn(inputStyle, "pl-16 font-mono font-bold text-lg")}
+                  />
                 </div>
               </div>
             </div>
@@ -256,90 +260,90 @@ export default function NewDiscountPage() {
 
           {/* Action Footer */}
           <div className="flex items-center gap-4">
-             <button 
-               type="submit"
-               disabled={isSubmitting}
-               className="flex-1 h-14 rounded-xl bg-plano-600/90 hover:bg-plano-700 text-white text-lg font-bold transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3 decoration-none border-0"
-             >
-               {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
-               {isSubmitting ? 'Publishing...' : 'Publish Discount Campaign'}
-             </button>
-             <Link 
-               href="/discounts"
-               className="px-10 h-14 rounded-xl border-2 border-border dark:border-sidebar-hover bg-bg-surface text-lg font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
-             >
-               Discard
-             </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 h-14 rounded-xl bg-plano-600/90 hover:bg-plano-700 text-white text-lg font-bold transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3 decoration-none border-0"
+            >
+              {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
+              {isSubmitting ? 'Publishing...' : 'Publish Discount Campaign'}
+            </button>
+            <Link
+              href={toAdminPath(pathname, '/discounts')}
+              className="px-10 h-14 rounded-xl border-2 border-border dark:border-sidebar-hover bg-bg-surface text-lg font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
+            >
+              Discard
+            </Link>
           </div>
         </div>
 
         {/* Right Sidebar: Target Selection & Summary */}
         <div className="flex flex-col gap-6">
-           <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
-              <div className="flex items-center gap-2 pb-4 border-b border-border dark:border-sidebar-hover">
-                 <LayoutDashboard size={18} className="text-plano-600" />
-                 <label className={labelStyle}>Applies To</label>
+          <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-border dark:border-sidebar-hover">
+              <LayoutDashboard size={18} className="text-plano-600" />
+              <label className={labelStyle}>Applies To</label>
+            </div>
+
+            <div className="flex flex-col gap-4 mt-2">
+              {DISCOUNT_ENTITY_TARGETS.map((target) => (
+                <button
+                  key={target.value}
+                  type="button"
+                  onClick={() => setForm({ ...form, appliesTo: target.value })}
+                  className={cn(
+                    "flex flex-col p-4 rounded-xl border-2 transition-all text-left group",
+                    form.appliesTo === target.value
+                      ? "bg-plano-600 dark:bg-plano-500 border-plano-600 dark:border-plano-400 text-white shadow-lg shadow-plano-600/20"
+                      : "bg-bg-page border-border dark:border-sidebar-hover text-text-secondary hover:border-plano-300 dark:hover:border-plano-600"
+                  )}
+                >
+                  <span className="text-xs font-bold uppercase tracking-widest">{target.label}</span>
+                  <span className={cn(
+                    "text-[10px] mt-1 font-medium",
+                    form.appliesTo === target.value ? "text-plano-300" : "text-gray-400"
+                  )}>{target.sub}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Campaign Summary Card */}
+          <div className="bg-plano-50 dark:bg-white/5 rounded-card p-8 flex flex-col gap-6 border-2 border-dashed border-plano-200 dark:border-sidebar-hover">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-plano-600 dark:text-plano-400 uppercase tracking-widest border border-plano-200 dark:border-sidebar-hover rounded-full px-3 py-1 w-fit bg-white dark:bg-white/10">Campaign Preview</span>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col">
+                <span className="text-[9px] uppercase font-bold text-gray-400 tracking-widest">Active Coupon</span>
+                <h4 className="text-3xl font-serif font-bold text-plano-900 dark:text-white tracking-tighter">
+                  {form.code || '...'}
+                </h4>
               </div>
 
-              <div className="flex flex-col gap-4 mt-2">
-                 {DISCOUNT_ENTITY_TARGETS.map((target) => (
-                    <button 
-                      key={target.value}
-                      type="button"
-                      onClick={() => setForm({...form, appliesTo: target.value})}
-                      className={cn(
-                        "flex flex-col p-4 rounded-xl border-2 transition-all text-left group",
-                        form.appliesTo === target.value 
-                          ? "bg-plano-600 dark:bg-plano-500 border-plano-600 dark:border-plano-400 text-white shadow-lg shadow-plano-600/20" 
-                          : "bg-bg-page border-border dark:border-sidebar-hover text-text-secondary hover:border-plano-300 dark:hover:border-plano-600"
-                      )}
-                    >
-                       <span className="text-xs font-bold uppercase tracking-widest">{target.label}</span>
-                       <span className={cn(
-                         "text-[10px] mt-1 font-medium",
-                         form.appliesTo === target.value ? "text-plano-300" : "text-gray-400"
-                       )}>{target.sub}</span>
-                    </button>
-                 ))}
-              </div>
-           </section>
-
-           {/* Campaign Summary Card */}
-           <div className="bg-plano-50 dark:bg-white/5 rounded-card p-8 flex flex-col gap-6 border-2 border-dashed border-plano-200 dark:border-sidebar-hover">
-              <div className="flex flex-col gap-1">
-                 <span className="text-[10px] font-bold text-plano-600 dark:text-plano-400 uppercase tracking-widest border border-plano-200 dark:border-sidebar-hover rounded-full px-3 py-1 w-fit bg-white dark:bg-white/10">Campaign Preview</span>
-              </div>
-              
-              <div className="flex flex-col gap-4">
-                 <div className="flex flex-col">
-                    <span className="text-[9px] uppercase font-bold text-gray-400 tracking-widest">Active Coupon</span>
-                    <h4 className="text-3xl font-serif font-bold text-plano-900 dark:text-white tracking-tighter">
-                       {form.code || '...'}
-                    </h4>
-                 </div>
-
-                 <div className="flex flex-col">
-                   <span className="text-[9px] uppercase font-bold text-gray-400 tracking-widest">Reduction Value</span>
-                   <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-mono font-bold text-success-600 dark:text-success-400">
-                        {form.type === 'percentage' ? `${form.value || '0'}%` : formatCurrency(Number(form.value) || 0, 'INR')}
-                      </span>
-                      <span className="text-[10px] font-bold text-gray-400 uppercase">OFF Total</span>
-                   </div>
-                 </div>
-
-                 <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-plano-100 dark:border-sidebar-hover italic">
-                    <p className="text-xs text-plano-700 dark:text-plano-300 leading-relaxed">
-                       {form.name ? `"${form.name}"` : 'Campaign title...'} will apply to {form.appliesTo.replace('_', ' ')} based on the configured logic.
-                    </p>
-                 </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] uppercase font-bold text-gray-400 tracking-widest">Reduction Value</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-mono font-bold text-success-600 dark:text-success-400">
+                    {form.type === 'percentage' ? `${form.value || '0'}%` : formatCurrency(Number(form.value) || 0, 'INR')}
+                  </span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase">OFF Total</span>
+                </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-white dark:bg-white/10 border border-plano-100 dark:border-sidebar-hover flex items-center gap-3">
-                 <div className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></div>
-                 <span className="text-[10px] font-bold text-success-700 dark:text-success-400 uppercase tracking-widest">Valid across catalog</span>
+              <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-plano-100 dark:border-sidebar-hover italic">
+                <p className="text-xs text-plano-700 dark:text-plano-300 leading-relaxed">
+                  {form.name ? `"${form.name}"` : 'Campaign title...'} will apply to {form.appliesTo.replace('_', ' ')} based on the configured logic.
+                </p>
               </div>
             </div>
+
+            <div className="p-4 rounded-xl bg-white dark:bg-white/10 border border-plano-100 dark:border-sidebar-hover flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></div>
+              <span className="text-[10px] font-bold text-success-700 dark:text-success-400 uppercase tracking-widest">Valid across catalog</span>
+            </div>
+          </div>
         </div>
       </form>
     </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowRight, Loader2, Check, X } from 'lucide-react';
 import { useAuth } from '@/app/context/AuthContext';
 import { useToast } from '@/components/ui/Toast';
@@ -48,6 +49,7 @@ function PasswordStrength({ password }: { password: string }) {
 }
 
 export default function SignupPage() {
+  const router = useRouter();
   const { register, user, isLoading: authLoading } = useAuth();
   const { error: toastError } = useToast();
   const [showPassword, setShowPassword] = useState(false);
@@ -57,9 +59,9 @@ export default function SignupPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!authLoading && user) {
-      window.location.href = defaultRouteForRole(user?.role);
+      router.replace(defaultRouteForRole(user?.role));
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

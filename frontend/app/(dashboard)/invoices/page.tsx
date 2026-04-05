@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
    Plus,
    Search,
@@ -15,8 +16,10 @@ import {
 import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
+import { toAdminPath } from '@/lib/path-scoping';
 
 export default function InvoicesPage() {
+   const pathname = usePathname();
    const [invoices, setInvoices] = useState<any[]>([]);
    const [isLoading, setIsLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
@@ -26,23 +29,24 @@ export default function InvoicesPage() {
    const getInvoiceDate = (invoice: any) => invoice.issueDate || invoice.createdAt;
    const getInvoiceTotal = (invoice: any) => invoice.totalAmount ?? invoice.grandTotal ?? 0;
 
-   useEffect(() => {
-      async function fetchInvoices() {
-         setIsLoading(true);
-         setError(null);
-         try {
-            const params = activeTab !== 'ALL' ? { status: activeTab.toLowerCase() } : {};
-            const response = await api.invoices.getAll(params);
-            if (response.success) {
-               const data = response.data as any;
-               setInvoices(data.invoices ?? data ?? []);
-            }
-         } catch (err: any) {
-            setError(err.message || 'Failed to load invoices');
-         } finally {
-            setIsLoading(false);
+   async function fetchInvoices() {
+      setIsLoading(true);
+      setError(null);
+      try {
+         const params = activeTab !== 'ALL' ? { status: activeTab.toLowerCase() } : {};
+         const response = await api.invoices.getAll(params);
+         if (response.success) {
+            const data = response.data as any;
+            setInvoices(data.invoices ?? data ?? []);
          }
+      } catch (err: any) {
+         setError(err.message || 'Failed to load invoices');
+      } finally {
+         setIsLoading(false);
       }
+   }
+
+   useEffect(() => {
       fetchInvoices();
    }, [activeTab]);
 
@@ -70,7 +74,7 @@ export default function InvoicesPage() {
                </p>
             </div>
             <Link
-               href="/invoices/new"
+               href={toAdminPath(pathname, '/invoices/new')}
                className="flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm"
             >
                <Plus size={18} />
@@ -148,7 +152,7 @@ export default function InvoicesPage() {
                   </div>
                   <p className="text-sm font-bold text-text-primary uppercase tracking-tight">{error}</p>
                   <button
-                     onClick={() => window.location.reload()}
+                     onClick={fetchInvoices}
                      className="text-xs font-bold text-plano-600 underline uppercase tracking-widest"
                   >
                      Try again
@@ -182,7 +186,7 @@ export default function InvoicesPage() {
                                  <div className="flex flex-col">
                                     <span className="text-xs font-mono font-bold text-text-primary tracking-tighter">{inv.invoiceNumber}</span>
                                     <Link
-                                       href={`/subscriptions/${typeof inv.subscriptionId === 'object' ? inv.subscriptionId?._id : inv.subscriptionId}`}
+                                       href={toAdminPath(pathname, `/subscriptions/${typeof inv.subscriptionId === 'object' ? inv.subscriptionId?._id : inv.subscriptionId}`)}
                                        className="text-[10px] text-plano-600 font-bold hover:underline"
                                     >
                                        {typeof inv.subscriptionId === 'object' ? 'View Sub' : 'View Sub'}
@@ -224,7 +228,7 @@ export default function InvoicesPage() {
                               <td className="py-4 px-6 text-right">
                                  <div className="flex items-center justify-end gap-2">
                                     <Link
-                                       href={`/invoices/${inv._id || inv.id}`}
+                                       href={toAdminPath(pathname, `/invoices/${inv._id || inv.id}`)}
                                        className="p-1.5 rounded-btn hover:bg-plano-50 dark:hover:bg-white/10 text-gray-400 hover:text-plano-600 dark:hover:text-plano-400 transition-all opacity-0 group-hover:opacity-100"
                                     >
                                        <Eye size={18} />

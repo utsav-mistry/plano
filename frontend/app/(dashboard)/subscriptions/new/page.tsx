@@ -3,11 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { Plan, User } from '@/types';
+import { toAdminPath } from '@/lib/path-scoping';
 
 export default function NewSubscriptionPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,7 +66,7 @@ export default function NewSubscriptionPage() {
       });
       if (res.success) {
         success('Subscription created!', 'The subscription is now in Draft status.');
-        window.location.href = '/subscriptions';
+        router.push(toAdminPath(pathname, '/subscriptions'));
       }
     } catch (err: unknown) {
       toastError('Failed to create subscription', err instanceof Error ? err.message : 'Failed to create subscription');
@@ -79,7 +83,7 @@ export default function NewSubscriptionPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <Link
-          href="/subscriptions"
+          href={toAdminPath(pathname, '/subscriptions')}
           className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-600 transition-colors w-fit"
         >
           <ArrowLeft size={14} /> Back to Subscriptions
@@ -178,7 +182,7 @@ export default function NewSubscriptionPage() {
               {isSubmitting ? 'Creating...' : 'Create Subscription'}
             </button>
             <Link
-              href="/subscriptions"
+              href={toAdminPath(pathname, '/subscriptions')}
               className="px-6 py-2.5 rounded-btn border border-border text-sm font-bold text-text-secondary hover:bg-gray-50 transition-all"
             >
               Cancel

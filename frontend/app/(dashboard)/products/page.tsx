@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Package,
   Search,
@@ -21,13 +22,26 @@ import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
 import { Product } from '@/types';
+import { toAdminPath } from '@/lib/path-scoping';
 
 export default function ProductsPage() {
+  const pathname = usePathname();
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [editTarget, setEditTarget] = useState<Product | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    sku: '',
+    type: 'software',
+    basePrice: '',
+    currency: 'INR',
+    description: '',
+  });
   const { error: toastError, success } = useToast();
 
   useEffect(() => {
@@ -51,13 +65,46 @@ export default function ProductsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this product?')) return;
     try {
       await api.products.delete(id);
       success('Product deleted successfully');
       fetchProducts();
+      setDeleteTarget(null);
     } catch (err: unknown) {
       toastError('Failed to delete product', err instanceof Error ? err.message : 'Failed to delete');
+    }
+  }
+
+  function openEdit(product: Product) {
+    setEditTarget(product);
+    setEditForm({
+      name: product.name || '',
+      sku: product.sku || '',
+      type: product.type || 'software',
+      basePrice: String(product.basePrice ?? 0),
+      currency: product.currency || 'INR',
+      description: product.description || '',
+    });
+  }
+
+  async function handleUpdateProduct() {
+    if (!editTarget) return;
+
+    setIsUpdating(true);
+    try {
+      const payload = {
+        ...editForm,
+        basePrice: Number(editForm.basePrice),
+        sku: editForm.sku?.toUpperCase?.() || '',
+      };
+      await api.products.update(editTarget.id, payload);
+      success('Product updated successfully');
+      setEditTarget(null);
+      await fetchProducts();
+    } catch (err: unknown) {
+      toastError('Failed to update product', err instanceof Error ? err.message : 'Update failed');
+    } finally {
+      setIsUpdating(false);
     }
   }
 
@@ -77,7 +124,7 @@ export default function ProductsPage() {
           </p>
         </div>
         <Link
-          href="/products/new"
+          href={toAdminPath(pathname, '/products/new')}
           className="flex items-center gap-2 px-5 py-2.5 bg-plano-600 text-white rounded-btn hover:bg-plano-700 transition-all font-bold shadow-sm"
         >
           <Plus size={18} />
@@ -140,7 +187,7 @@ export default function ProductsPage() {
             <FileText size={32} />
           </div>
           <p className="text-lg font-serif font-bold text-text-primary">No products found</p>
-          <Link href="/products/new" className="text-xs font-bold text-plano-600 uppercase tracking-widest hover:underline">
+          <Link href={toAdminPath(pathname, '/products/new')} className="text-xs font-bold text-plano-600 uppercase tracking-widest hover:underline">
             Create your first product
           </Link>
         </div>
@@ -180,11 +227,14 @@ export default function ProductsPage() {
               </div>
 
               <div className="mt-4 pt-4 border-t border-sidebar-hover flex items-center justify-between">
-                <Link href={`/products/${product.id}/edit`} className="text-xs font-bold text-text-secondary hover:text-plano-400 transition-all flex items-center gap-1 uppercase tracking-widest">
-                  Edit <Edit2 size={12} />
-                </Link>
                 <button
-                  onClick={() => handleDelete(product.id)}
+                  onClick={() => openEdit(product)}
+                  className="text-xs font-bold text-text-secondary hover:text-plano-400 transition-all flex items-center gap-1 uppercase tracking-widest"
+                >
+                  Edit <Edit2 size={12} />
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(product)}
                   className="text-xs font-bold text-danger-500 hover:text-danger-700 transition-all flex items-center gap-1 uppercase tracking-widest"
                 >
                   Delete <Trash2 size={12} />
@@ -233,11 +283,14 @@ export default function ProductsPage() {
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Link href={`/products/${product.id}/edit`} className="p-1.5 rounded-btn hover:bg-sidebar-hover text-gray-400 hover:text-plano-400 transition-all">
-                          <Edit2 size={16} />
-                        </Link>
                         <button
-                          onClick={() => handleDelete(product.id)}
+                          onClick={() => openEdit(product)}
+                          className="p-1.5 rounded-btn hover:bg-sidebar-hover text-gray-400 hover:text-plano-400 transition-all"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(product)}
                           className="p-1.5 rounded-btn hover:bg-danger-500/10 text-gray-400 hover:text-danger-600 transition-all"
                         >
                           <Trash2 size={16} />
@@ -248,6 +301,53 @@ export default function ProductsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-card border border-sidebar-hover bg-bg-surface p-6 shadow-2xl">
+            <h3 className="text-xl font-serif font-bold text-text-primary">Delete Product</h3>
+            <p className="mt-2 text-sm text-text-secondary">
+              Delete <span className="font-bold text-text-primary">{deleteTarget.name}</span>? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button onClick={() => setDeleteTarget(null)} className="px-4 py-2 rounded-btn border border-border text-text-secondary hover:bg-sidebar-hover">Cancel</button>
+              <button onClick={() => handleDelete(deleteTarget.id)} className="px-4 py-2 rounded-btn bg-danger-600 text-white hover:bg-danger-700">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {editTarget && (
+        <div className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl rounded-card border border-sidebar-hover bg-bg-surface p-6 shadow-2xl">
+            <h3 className="text-2xl font-serif font-bold text-text-primary">Edit Product</h3>
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input value={editForm.name} onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
+              <input value={editForm.sku} onChange={(e) => setEditForm((p) => ({ ...p, sku: e.target.value.toUpperCase() }))} placeholder="SKU" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
+              <select value={editForm.type} onChange={(e) => setEditForm((p) => ({ ...p, type: e.target.value }))} className="h-11 px-4 rounded-lg border border-border bg-white text-sm">
+                <option value="software">Software</option>
+                <option value="service">Service</option>
+                <option value="addon">Addon</option>
+              </select>
+              <input type="number" value={editForm.basePrice} onChange={(e) => setEditForm((p) => ({ ...p, basePrice: e.target.value }))} placeholder="Base Price" className="h-11 px-4 rounded-lg border border-border bg-white text-sm" />
+              <select value={editForm.currency} onChange={(e) => setEditForm((p) => ({ ...p, currency: e.target.value }))} className="h-11 px-4 rounded-lg border border-border bg-white text-sm">
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </select>
+              <div />
+              <textarea value={editForm.description} onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))} placeholder="Description" className="md:col-span-2 h-28 p-4 rounded-lg border border-border bg-white text-sm resize-none" />
+            </div>
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button onClick={() => setEditTarget(null)} className="px-4 py-2 rounded-btn border border-border text-text-secondary hover:bg-sidebar-hover">Cancel</button>
+              <button onClick={handleUpdateProduct} disabled={isUpdating} className="px-4 py-2 rounded-btn bg-plano-600 text-white hover:bg-plano-700 disabled:opacity-70">
+                {isUpdating ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -17,9 +17,11 @@ import {
   Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn, formatCurrency } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/Toast';
+import { toAdminPath } from '@/lib/path-scoping';
 
 const BILLING_CYCLES = [
   { value: 'monthly', label: 'Monthly', icon: <Calendar size={14} /> },
@@ -28,9 +30,11 @@ const BILLING_CYCLES = [
   { value: 'annual', label: 'Yearly', icon: <Calendar size={14} /> },
 ];
 
-const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP'];
+const CURRENCIES = ['INR'];
 
 export default function NewPlanPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -83,7 +87,7 @@ export default function NewPlanPage() {
       });
       if (res.success) {
         success('Plan active!', 'Your new billing plan is now live.');
-        window.location.href = '/admin/plans';
+        router.push(toAdminPath(pathname, '/plans'));
       }
     } catch (err: any) {
       toastError('Setup failed', err.message);
@@ -99,7 +103,7 @@ export default function NewPlanPage() {
     <div className="flex flex-col gap-8 pb-20 max-w-5xl">
       {/* Header */}
       <div className="flex flex-col gap-3">
-        <Link href="/plans" className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-400 transition-colors w-fit">
+        <Link href={toAdminPath(pathname, '/plans')} className="flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-plano-400 transition-colors w-fit">
           <ArrowLeft size={14} /> Back to Catalog
         </Link>
         <div className="flex items-center justify-between">
@@ -115,10 +119,10 @@ export default function NewPlanPage() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Form Area */}
         <div className="lg:col-span-2 flex flex-col gap-8">
-          
+
           <section className="bg-bg-surface p-8 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-8 relative overflow-hidden">
             <div className="absolute -top-12 -right-12 w-48 h-48 bg-plano-50 dark:bg-white/5 rounded-full blur-3xl opacity-40"></div>
-            
+
             <div className="flex items-center gap-3 pb-5 border-b border-sidebar-hover relative">
               <div className="w-10 h-10 rounded-xl bg-plano-50 dark:bg-white/10 text-plano-600 flex items-center justify-center border border-plano-100 dark:border-sidebar-hover shadow-sm">
                 <Layers size={20} />
@@ -175,8 +179,8 @@ export default function NewPlanPage() {
                       onClick={() => setForm({ ...form, billingCycle: cycle.value })}
                       className={cn(
                         "flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-300 relative",
-                        form.billingCycle === cycle.value 
-                          ? "bg-plano-900 dark:bg-plano-600 border-plano-900 dark:border-plano-600 text-white shadow-lg" 
+                        form.billingCycle === cycle.value
+                          ? "bg-plano-900 dark:bg-plano-600 border-plano-900 dark:border-plano-600 text-white shadow-lg"
                           : "bg-white dark:bg-bg-elevated border-border dark:border-sidebar-hover text-text-secondary hover:border-plano-200"
                       )}
                     >
@@ -260,106 +264,106 @@ export default function NewPlanPage() {
 
           {/* Action Footer */}
           <div className="flex items-center gap-4">
-             <button 
-               type="submit"
-               disabled={isSubmitting}
-               className="flex-1 h-14 rounded-xl bg-plano-600 dark:bg-plano-500 text-white text-lg font-bold hover:bg-black transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3"
-             >
-               {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
-               {isSubmitting ? 'Creating Plan...' : 'Publish Subscription Plan'}
-             </button>
-             <Link 
-               href="/plans"
-               className="px-10 h-14 rounded-xl border-2 border-border dark:border-sidebar-hover bg-bg-surface text-lg font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
-             >
-               Discard
-             </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 h-14 rounded-xl bg-plano-600 dark:bg-plano-500 text-white text-lg font-bold hover:bg-black transition-all shadow-xl hover:shadow-2xl disabled:opacity-60 flex items-center justify-center gap-3"
+            >
+              {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
+              {isSubmitting ? 'Creating Plan...' : 'Publish Subscription Plan'}
+            </button>
+            <Link
+              href={toAdminPath(pathname, '/plans')}
+              className="px-10 h-14 rounded-xl border-2 border-border dark:border-sidebar-hover bg-bg-surface text-lg font-bold text-text-secondary hover:bg-sidebar-hover transition-all flex items-center justify-center"
+            >
+              Discard
+            </Link>
           </div>
         </div>
 
         {/* Right Sidebar: Features & Preview */}
         <div className="flex flex-col gap-6">
-           <section className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
-              <label className={labelStyle}>Featured Benefits</label>
-              <div className="flex gap-2">
-                 <input 
-                    suppressHydrationWarning
-                    type="text" 
-                    placeholder="e.g. 24/7 Support"
-                    value={featureInput}
-                    onChange={(e) => setFeatureInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
-                    className={inputStyle}
-                 />
-                 <button 
-                   type="button"
-                   onClick={addFeature}
-                   className="w-11 h-11 rounded-lg bg-plano-900 text-white flex items-center justify-center shrink-0 hover:bg-black transition-colors shadow-lg"
-                 >
-                   <Plus size={20} />
-                 </button>
-              </div>
-
-              <div className="flex flex-col gap-2 mt-2">
-                 {form.features.length === 0 ? (
-                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic text-center py-4 border-2 border-dashed border-sidebar-hover rounded-lg">
-                     No features listed yet
-                   </p>
-                 ) : (
-                   form.features.map((f, i) => (
-                     <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-border dark:border-sidebar-hover group">
-                        <span className="text-xs font-bold text-text-primary flex items-center gap-2">
-                          <Check size={14} className="text-success-600" />
-                          {f}
-                        </span>
-                        <button type="button" onClick={() => removeFeature(f)} className="text-gray-300 hover:text-danger-600 transition-colors opacity-0 group-hover:opacity-100">
-                          <X size={14} />
-                        </button>
-                     </div>
-                   ))
-                 )}
-              </div>
-           </section>
-
-           {/* Plan Preview */}
-           <div className="bg-bg-page dark:bg-bg-surface rounded-card p-8 flex flex-col gap-6 shadow-xl relative overflow-hidden group border border-border dark:border-white/5">
-              <div className="absolute top-0 right-0 p-4">
-                 <Zap size={24} className="text-plano-600 dark:text-plano-400 opacity-20 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-plano-500 rounded-full blur-[80px] opacity-10"></div>
-
-              <div className="flex flex-col gap-1.5 relative">
-                 <span className="text-[10px] font-bold text-plano-600 dark:text-plano-400 uppercase tracking-[0.3em]">
-                   {form.billingCycle.replace('_', ' ')} / {form.currency}
-                 </span>
-                 <h3 className="text-3xl font-serif font-bold leading-tight line-clamp-1 text-text-primary">
-                   {form.name || 'Untitled Plan'}
-                 </h3>
-              </div>
-
-              <div className="flex items-baseline gap-1 mt-2">
-                 <span className="text-4xl font-serif font-bold text-text-primary">{formatCurrency(Number(form.price) || 0, form.currency)}</span>
-                 <span className="text-xs font-bold text-plano-600 dark:text-plano-400 uppercase">/ {form.billingCycle.split('_')[0]}</span>
-              </div>
-
-              <div className="flex flex-col gap-3 mt-4 border-t border-border dark:border-white/10 pt-6">
-                 {form.features.slice(0, 4).map((f, i) => (
-                   <div key={i} className="flex items-center gap-3 text-xs font-medium text-text-secondary dark:text-plano-100">
-                      <Sparkles size={12} className="text-plano-600 dark:text-plano-400 shrink-0" />
-                      {f}
-                   </div>
-                 ))}
-                 {form.features.length === 0 && (
-                   <div className="text-[10px] italic text-text-tertiary dark:text-plano-400/50 uppercase tracking-widest">
-                     Features will appear here
-                   </div>
-                 )}
-              </div>
-
-              <button disabled type="button" className="w-full h-12 rounded-xl bg-plano-600 dark:bg-white text-white dark:text-plano-900 font-bold text-sm shadow-xl active:scale-95 transition-all">
-                 Select This Plan
+          <section className="bg-bg-surface p-6 rounded-card border border-border dark:border-sidebar-hover shadow-sm flex flex-col gap-6">
+            <label className={labelStyle}>Featured Benefits</label>
+            <div className="flex gap-2">
+              <input
+                suppressHydrationWarning
+                type="text"
+                placeholder="e.g. 24/7 Support"
+                value={featureInput}
+                onChange={(e) => setFeatureInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
+                className={inputStyle}
+              />
+              <button
+                type="button"
+                onClick={addFeature}
+                className="w-11 h-11 rounded-lg bg-plano-900 text-white flex items-center justify-center shrink-0 hover:bg-black transition-colors shadow-lg"
+              >
+                <Plus size={20} />
               </button>
             </div>
+
+            <div className="flex flex-col gap-2 mt-2">
+              {form.features.length === 0 ? (
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic text-center py-4 border-2 border-dashed border-sidebar-hover rounded-lg">
+                  No features listed yet
+                </p>
+              ) : (
+                form.features.map((f, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-border dark:border-sidebar-hover group">
+                    <span className="text-xs font-bold text-text-primary flex items-center gap-2">
+                      <Check size={14} className="text-success-600" />
+                      {f}
+                    </span>
+                    <button type="button" onClick={() => removeFeature(f)} className="text-gray-300 hover:text-danger-600 transition-colors opacity-0 group-hover:opacity-100">
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+
+          {/* Plan Preview */}
+          <div className="bg-bg-page dark:bg-bg-surface rounded-card p-8 flex flex-col gap-6 shadow-xl relative overflow-hidden group border border-border dark:border-white/5">
+            <div className="absolute top-0 right-0 p-4">
+              <Zap size={24} className="text-plano-600 dark:text-plano-400 opacity-20 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-plano-500 rounded-full blur-[80px] opacity-10"></div>
+
+            <div className="flex flex-col gap-1.5 relative">
+              <span className="text-[10px] font-bold text-plano-600 dark:text-plano-400 uppercase tracking-[0.3em]">
+                {form.billingCycle.replace('_', ' ')} / {form.currency}
+              </span>
+              <h3 className="text-3xl font-serif font-bold leading-tight line-clamp-1 text-text-primary">
+                {form.name || 'Untitled Plan'}
+              </h3>
+            </div>
+
+            <div className="flex items-baseline gap-1 mt-2">
+              <span className="text-4xl font-serif font-bold text-text-primary">{formatCurrency(Number(form.price) || 0, form.currency)}</span>
+              <span className="text-xs font-bold text-plano-600 dark:text-plano-400 uppercase">/ {form.billingCycle.split('_')[0]}</span>
+            </div>
+
+            <div className="flex flex-col gap-3 mt-4 border-t border-border dark:border-white/10 pt-6">
+              {form.features.slice(0, 4).map((f, i) => (
+                <div key={i} className="flex items-center gap-3 text-xs font-medium text-text-secondary dark:text-plano-100">
+                  <Sparkles size={12} className="text-plano-600 dark:text-plano-400 shrink-0" />
+                  {f}
+                </div>
+              ))}
+              {form.features.length === 0 && (
+                <div className="text-[10px] italic text-text-tertiary dark:text-plano-400/50 uppercase tracking-widest">
+                  Features will appear here
+                </div>
+              )}
+            </div>
+
+            <button disabled type="button" className="w-full h-12 rounded-xl bg-plano-600 dark:bg-white text-white dark:text-plano-900 font-bold text-sm shadow-xl active:scale-95 transition-all">
+              Select This Plan
+            </button>
+          </div>
 
         </div>
       </form>
